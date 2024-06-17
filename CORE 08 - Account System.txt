@@ -1,0 +1,23 @@
+@skip isdbref(tag(setr(1,acc)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(Account System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=SAFE SIDEFX INHERIT !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom()}
+
+&FUN_LIST_ACCOUNTS #acc=search(TOTEMS=A)
+&FUN_FIND_ACCOUNT #acc=namegrab(u(FUN_LIST_ACCOUNTS),%0,0,1)
+
+&FUN_VALID_ACCOUNT_NAME #acc=ofparse(3,if(strlen(%0),1,#-1 ACCOUNT NAMES CANNOT BE EMPTY),if(lte(strlen(%0),25),1,#-1 ACCOUNT NAMES MUST BE LESS THAN 26 CHARACTERS),if(valid(name,%0),1,#-1 ACCOUNT NAME CONTAINS INVALID FORMATTING),if(words(setdiff(u(FUN_FIND_ACCOUNT,%0),%1)),#-1 ACCOUNT NAME IN USE,1))
+@@ %0 - name to check. %1 - A dbref to exclude when checking for duplicates.
+
+&FUN_CREATE_ACCOUNT #acc=localize(if(isdbref(setr(0,create(%0,,t))),[null([tel(%q0,%!,1)][totemset(%q0,ACCOUNT)][set(%q0,SAFE)][attrpass(%q0/_PASSWORD,%1,SET)])]%q0,%q0))
+@@ %0 - name to use. This should already have been validated. %1 - password to set. Also needs to have been used valid(password,%1) on it.
+
+&FUN_SET_PASSWORD #acc=null(iter(%0 [get(%0/CHARACTERS)],attrpass(%i0/_PASSWORD,%1,SET)))
+@@ %0 - dbref of account. %1 - password. needs to have already been validated.
+
+&FUN_RANDOM_PASSWORD #acc=scramble(!@#$^&*0123456789[digest(md5,secs())])
+
+&FUN_ADD_CHARACTER #acc=null([set(%0,CHARACTERS:[setunion(get(%0/CHARACTERS),objid(%1))])][set(%1,ACCOUNT:[objid(%0)])][set(%1,_PASSWORD:_%0/_PASSWORD)])
+&FUN_REMOVE_CHARACTER #acc=null(set(%0,CHARACTERS:[setdiff(get(%0/CHARACTERS),objid(%1))])[wipe(%1/ACCOUNT)][wipe(%1/_PASSWORD)])
+
+&FUN_INIT_PLAYER #acc=null(Does nothing by default.)
+
+&FUN_CREATE_CHARACTER #acc=localize(if(isdbref(setr(0,create(%1,u(FUN_RANDOM_PASSWORD),p))),[null([FUN_ADD_CHARACTER(%0,%q0)][u(FUN_INIT_PLAYER,%0,%q0)])],%q0))
+@@ %0 - dbref of account. %1 - name of character. Must've already been validated.

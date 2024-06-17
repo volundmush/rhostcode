@@ -1,0 +1,7 @@
+@set me=SIDEFX
+@cmdquota me=99999
+
+@if !isdbref(globalroom())=@pemit %#=[ansi(hr,ERROR: You have not set a global room yet!)]
+@if lte(config(includenest),3)=@pemit %#=[ansi(hr,ERROR: Includenest is far too low. Check the readme!)]
+
+@skip isdbref(tag(stor))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No global room set!;@assert/inline isdbref(setr(0,create(Library Storage,,t)))=@pemit %#=ERROR: Could not create code object: %q0;@set %q0=SAFE SIDEFX INHERIT NO_COMMAND;@tag/add stor=%q0;@tel #stor=[globalroom()]}

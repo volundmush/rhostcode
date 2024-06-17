@@ -1,0 +1,51 @@
+@@ CORE xx - Include Library
+
+@skip isdbref(tag(setr(1,inc)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Include Library,,t)))=@pemit %#=ERROR: Could not create Include Library: %q0;@set %q0=SAFE NO_COMMAND;@tag/add %q1=%q0;@tel #inc=#stor}
+
+&MSG #inc=@pemit/list strfirstof(%1,%#)=%0
+@@ %0 - Message. %1 - Recipients.
+
+&MSG_ERROR #inc=@attach #inc/MSG=[ansi(hr,ERROR:)] %0,%1,%2,%3
+&MSG_SUCCESS #inc=@attach #inc/MSG=[ansi(hg,SUCCESS:)] %0,%1,%2,%3
+
+&GET_PLAYER #inc=@assert/inline strlen(%0)=@attach #inc/MSG_ERROR=You must enter a player name!;@assert/inline strlen(%1);@assert/inline isdbref(setr(!,objid(pmatch(%0)),t%1))=@attach #inc/MSG_ERROR=%0 [if(strmatch(r(t%1),#-2*),matches multiple players!,does not match a player!)]
+@@ GET_PLAYER Arguments: %0 = player being checked, %1 = register number to load their data into.
+
+&VALID_BASE #inc=@assert/inline strlen(setr(!,trim(%0),value))=@attach #inc/MSG_ERROR=Nothing entered!
+
+&VALID_EMAIL #inc=@attach #inc/VALID_BASE=%0;@assert/inline lte(strlen(%q<value>),255)=@attach #inc/MSG_ERROR=Emails must be 255 characters or less.;@break/inline strmatch(%q<value>,* *)=@attach #inc/MSG_ERROR=Email addresses may not contain spaces.;@assert/inline strmatch(%q<value>,*@*.*)=@attach #inc/MSG_ERROR=An Email must be in the format: *@*.* (example@game.com).;th setq(!,%q<value>,valueformat)
+
+&VALID_COLOR #inc=@break/inline strmatch(ansi(setr(!,%0,value),Test),#-*)=@attach #inc/MSG_ERROR='%0' is not a valid color.;th setq(!,ansi(%q<value>,%q<value>),valueformat)
+
+&VALID_WORD #inc=@attach #inc/VALID_BASE=%0;th setq(!,%q<value>,valueformat)
+
+&VALID_LIST #inc=@attach #inc/VALID_BASE=%0;th setq(!,%q<value>,valueformat)
+
+&VALID_BOOL #inc=@attach #inc/VALID_BASE=%0;@assert/inline match(0 1,%q<value>)=@attach #inc/MSG_ERROR={ERROR: BOOL options can only be 0 (false) or 1 (true).};th setq(!,if(%q<value>,True,False),valueformat)
+
+&VALID_DBREF #inc=@assert/inline isdbref(%0)=@attach #inc/MSG_ERROR={ERROR: DBREF not found.};th setq(!,objid(%0),value);th setq(!,name(%q<value>),valueformat)
+
+&VALID_TIMEZONE #inc=@attach #inc/VALID_BASE=%0;@assert/inline valid(timezone,%q<value>)=@attach #inc/MSG_ERROR={That is not a valid timezone. Check help timezone};th setq(!,%q<value>,valueformat)
+
+&VALID_DURATION #inc=@attach #inc/VALID_BASE=%0;@assert/inline setr(!,stringsecs(%0),value)=@attach #inc/MSG_ERROR={'%0' did not resolve into a time. Check help stringsecs()};th setq(!,u(etime,%q<value>),valueformat)
+
+&VALID_POSINT #inc=@assert/inline u(valnum,%0)=@attach #inc/MSG_ERROR={'[strfirstof(%1,%0)]' must be a whole number 1 or greater.};th setq(!,%0,value);th setq(!,%q<value>,valueformat)
+
+&VALID_POSNUM #inc=@assert/inline gt(u(setr,value,%0),0)=@attach #inc/MSG_ERROR='%0' must be a positive number.;th setq(!,%q<value>,valueformat)
+
+&VALID_NUMBER #inc=@assert/inline isnum(u(setr,value,%0))=@attach #inc/MSG_ERROR='%0' must be a number.;th setq(!,%q<value>,valueformat)
+
+&VALID_INT #inc=@assert/inline isint(%0)=@attach #inc/MSG_ERROR={'%0' must be a whole number 0 or greater.};th setq(!,%0,value);th setq(!,%q<value>,valueformat)
+
+&VALID_LOCK #inc=@assert/inline valid(lockkey,%0)=@attach #inc/MSG_ERROR={'%0' was not accepted by the @lock system.};th setq(!,%0,value);th setq(!,%q<value>,valueformat)
+
+&VALID_TIME #inc=@assert/inline strlen(%0)=@attach %!/INC`MSG=You didn't enter a date!;@assert/inline gt(u(setr,time,convtime(%0,u(gettz,%#))),0)=@attach %!/INC`MSG=The entered date was not recognized. Did you typo? Dates should be in abbreviated 24-hour <month> <day> <hour>:<minute> format using YOUR timezone\, such as Jun 26 7:00 or Oct 31 13:00.;th u(setq,valueformat,convsecs(%q<value>,UTC))
+
+&VALID_FUTURE #inc=@attach %!/VALID_TIME;@assert/inline gt(%q<time>,secs())=@attach %!/INC`MSG=That would be in the past!
+
+&REGISTER_FUNCTIONS #inc=@dolist/inline lattr(%!/GPFUN_*)={@function/protect/notrace/privilege [after(%d0,_)]=%!/%d0};@dolist/inline lattr(%!/GFUN_*)={@function/notrace/protect [after(%d0,_)]=%!/%d0}
+
+&PARTIAL #inc=@if or(not(strlen(%0)),setr(!,match(%1,setr(!,%0,strfirstof(%3,choice)),strfirstof(%2,%b)),matched))={@if cand(t(strlen(%0)),t(%q<matched>))={th setq(!,elementsmux(%1,%q<matched>,strfirstof(%2,%b)),strfirstof(%3,choice))}},{@check words(setr(!,graball(%1,%0*,strfirstof(%2,%b),strfirstof(%2,%b)),strfirstof(%3,choice)))=@attach #inc/MSG_ERROR={Invalid %4! Valid choices are: [itemize(%1,strfirstof(%2,%b),and,\,)]};@break/inline gt(words(r(strfirstof(%3,choice)),strfirstof(%2,%b)),1)=@attach #inc/MSG_ERROR={ERROR: %0 matched [itemize(r(strfirstof(%3,choice)),strfirstof(%2,%b),and,\,)]. Please be more specific.}}
+@@ PARTIAL %0 = entry, %1 = choices, %2 = delimiter, %3 = register name, %4 = topic name
+
+&GET_SWITCH #inc=@if strlen(%0)={@attach #inc/PARTIAL=%0,get_switches(%!,%#),|,switch,switch}

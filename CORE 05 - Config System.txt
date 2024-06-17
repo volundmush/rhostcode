@@ -1,0 +1,7 @@
+@skip isdbref(tag(setr(1,conf)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master_room set!;@assert/inline isdbref(setr(0,create(Config System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=SAFE SIDEFX INHERIT !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom()}
+
+&CMD_+CONFIG #conf=$^(?s)(?\:\+)?(gameconfig)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?))?(?\:=(.*))?$:
+
+
+&FUN_LIST_CONFIGS #conf=iter(lattr(%!/CONFIG_*),after(%i0,CONFIG_),%b,|)
+

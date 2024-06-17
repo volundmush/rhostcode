@@ -1,0 +1,54 @@
+@@ Core
+
+@skip isdbref(tag(setr(1,help_db)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Help Database,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=SAFE SIDEFX INHERIT NO_COMMAND;@tag/add %q1=%q0;@tel %q0=#stor}
+
+@skip isdbref(tag(setr(1,help)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Help System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=SAFE SIDEFX INHERIT !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=[globalroom()]}
+
+&CMD_+HELP #help=$^(?s)(?\:\+)?(help)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?))?(?\:/(.+?))?(?\:=(.+?))?$:@attach %!/START=%0,%1,%2,%3,%4,%5,%6
+@set #help/CMD_+HELP=regexp
+
+&INIT_HELP #help=th setq(!,HELP,root);th setq(!,+help,cmd)
+
+&START #help=@attach %!/INIT_%1;@attach %!/GET_SWITCH=%2;@attach %!/INC_[strfirstof(%q<switch>,MAIN)]=trim(%3),trim(%4),trim(%5),trim(%6),%1
+
+&INC_MAIN #help=
+
+&INC_VIEW_CATEGORY #help=
+
+&INC_VIEW_FILE #help=
+
+&INC_HELP #help=
+
+&INC_ADD #help=
+
+&INC_CATEGORY #help=
+
+&INC_RENAMECATEGORY #help=
+
+&INC_RENAME #help=
+
+&INC_DELETECATEGORY #help=
+
+&INC_DELETE #help=
+
+&FUN_REMOVE_FILE #help=null(localize([setq(!,get_kv(get(#help_db/CATEGORIES_%0),%1),cat)]
+[iter(%0 CATEGORIES_%0,set(#help_db,%i0:[del_kv(get(#help_db/%i0),%1)]))][set(#help_db,%0_%q<cat>:[setdiff(get(#help_db/%0_%q<cat>),%1,|,|,i)])]))
+&FUN_FILE_EXISTS #help=t(strlen(get_kv(get(#help_lib/%0),%1)))
+@@ %0 - root, %1 - file name
+
+&FUN_ADD_FILE #help=null(localize([if(u(FUN_FILE_EXISTS,%0,%2),u(FUN_REMOVE_FILE,%0,%2))][set(#help_lib,%0:[set_kv(get(#help_lib/%0),%2,%3)])][set(#help_lib,%0_%1:[setunion(get(#help_lib/%0_%1),%2,|,|,i)])][set(#help_lib,CATEGORIES_%0:[set_kv(get(#help_lib/CATEGORIES_%0),%2,%1)])]))
+@@ %0 - root, %1 - category, %2 - name, %3 - path
+
+&FUN_CHANGE_CATEGORY #help=null(localize([setq(!,get_kv(setr(!,get(#help_db/CATEGORIES_%0),catdata),%1),cat)][set(#help_db,CATEGORIES_%0:[set_kv(%q<catdata>,%1,%2)])][set(#help_db,%0_%q<cat>:[setdiff(get(#help_db/%0_%q<cat>),%1,|,|i)])][set(#help_db,%0_%2:[setunion(get(#help_db/%0_%2),%1,|,|i)])]))
+@@ %0 - root, %1 - file name, %2 - new category name.
+
+&FUN_RENAME_CATEGORY #help=null(localize([setq(!,get(#help_db/CATEGORIES_%0),cathelp)][iter(get(#help_db/%0_%1),setq(!,set_kv(%q<cathelp>,%i0,%2),cathelp),|)][set(#help_db,%0_%2:_#help_db/%0_%1)][wipe(#help_db/%0_%1)]))
+@@ %0 - root, %1 - category, %2 - new category name
+
+&FUN_DELETE_CATEGORY #help=null(localize([setq(!,get(#help_db/CATEGORIES_%0),cathelp)][iter(setr(!,get(#help_db/%0_%1),files),setq(!,del_kv(%q<cathelp>,%i0),cathelp),|)][set(#help_db,%0_%2:_#help_db/%0_%1)][wipe(#help_db/%0_%1)][setq(!,get(#help_db/%0),idx)][iter(%q<files>,setq(!,del_kv(%q<idx>,%i0),idx),|)][set(#help_db/%0:%q<idx>)]))
+@@ %0 - root, %1 - category, %2 - new category name
+
+@@ &HELP db=Filename1~#obj/attr|Filename2~#obj/attr
+@@ &CATEGORIES_HELP db=Filename1~Navigation|Filename2~Communication
+@@ &HELP_NAVIGATION db=Filename1
+@@ &HELP_COMMUNICATION db=Filename2

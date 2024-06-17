@@ -1,0 +1,100 @@
+@@ DEPENDENCIES - CORE
+@@ The info_lib object is used for storing all major API functionality used by every system that works like +info.
+@@ Simply @parent your new thing to #info_lib, and define a simple INFO_* set of INFO_NAME, INFO_PLURAL, INFO_ATTR, etc.
+
+@skip isdbref(tag(setr(1,info_lib)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Info System Library,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=SAFE SIDEFX INHERIT;@tag/add %q1=%q0;@tel %q0=#stor}
+
+&SWITCHES_1 #info_lib=GET|RENAME|DELETE|SUMMARY
+&SWITCHES_4 #info_lib=LOCK|UNLOCK|LSET
+
+&INC_MAIN #info_lib=@if strlen(%2)={@attach %!/INC_SET},{@attach %!/INC_VIEW}
+
+@@ Replace targeting on a child to target something other than a player?
+
+&FUN_IS_TARGET #info_lib=isdbref(setr(!,pmatch(%0),target))
+&INC_GET_TARGET #info_lib=@attach #inc/GET_PLAYER=%0,1;th setq(!,%q<t1>,target)
+&INC_DEFAULT_TARGET #info_lib=@attach %!/INC_GET_TARGET=%#
+
+@@ Used to determine the object and info file name.
+&INC_TARGET #info_lib=@switch/first/inline [t(strlen(%0))][t(strlen(%1))]=10,{@if u(FUN_IS_TARGET,%0)={th setq(!,%1,filename)},{@attach %!/INC_DEFAULT_TARGET;th setq(!,%0,filename)}},00,{@attach %!/INC_DEFAULT_TARGET},11,{@attach %!/INC_GET_TARGET=%0;th setq(!,%1,filename)};th setq(!,iter(%q<filename>,trim(%i0),|,|),filename)
+
+&MAX_NAME_LENGTH #info_lib=23
+
+&BADCHARS #info_lib=/ | ~ +
+
+&FUN_BADCHARS #info_lib=lmax(iter(v(BADCHARS)),strmatch(%0,*%i0*))
+@@ %0 - The name to be checked.
+
+&FUN_VALID_FILENAME #info_lib=ofparse(3,if(strlen(%0),1,#-1 FILENAMES MAY NOT BE EMPTY),if(lte(strlen(%0),v(MAX_NAME_LENGTH)),1,#-1 FILENAMES MUST BE <=[v(MAX_NAME_LENGTH)] CHARACTERS,if(u(FUN_BADCHARS,%0),1,#-1 FILENAMES MAY NOT CONTAIN [v(BADCHARS)]),if(u(FUN_IS_TARGET,%0),#-1 FILENAMES MAY NOT BE PLAYER/TARGET NAMES,1)))
+@@ %0 - The name being checked.
+
+&FUN_PREFIX #info_lib=INFO_[v(INFO_ATTR)]
+
+&FUN_FILENAME #info_lib=[u(FUN_PREFIX)]_[ucrc32(%0)]
+
+&FUN_LIST_FILENAMES #info_lib=sort(iter(lattr(%0/[u(FUN_PREFIX)]_*),get_kv(get(%0/%i0),Name),%b,|),i,|,|)
+
+&INFO_ATTR #info_lib=INFO
+&INFO_NAME #info_lib=Info
+&INFO_PLURAL #info_lib=Info
+
+&INFO_ADMIN #info_lib=gtebittype(%0,4)
+
+&INC_FINDFILE #info_lib=@assert/inline strlen(%0)=@attach #inc/MSG_ERROR=File name empty.;@assert/inline words(setr(!,u(FUN_LIST_FILENAMES,%q<target>),files),|)=@attach #inc/MSG_ERROR=No files to choose from.;@attach #inc/PARTIAL=%0,%q<files>,|,filename,info file;@assert/inline hasattr(%q<target>,setr(!,u(FUN_FILENAME,%q<filename>),attr))=@attach #inc/MSG_ERROR=Code error! No attribute for this name. Contact a codewiz.;th setq(!,get(%q<target>/%q<attr>),contents);th setq(!,get_kv(%q<contents>,Name),fname);
+@@ Use INC_FINDFILE above to partial match existing files when searching for them.
+
+&INC_SETFILE #info_lib=@assert/inline setr(!,u(FUN_VALID_FILENAME,setr(!,trim(%0),fname)),results)=@attach #inc/MSG_ERROR=%q<results>;@assert/inline valid(attrname,setr(!,u(FUN_FILENAME,%q<fname>),attr))=@attach #inc/MSG_ERROR=Code Error: Invalid Attribute name. Try simplifying the name or contact a coder for advice.;th setq(!,get(%q<target>/%q<attr>),contents)
+@@ use INC_SETFILE when creating/replacing files using info or summary setting/replacing.
+
+&INC_LOCK #info_lib=@attach %!/INC_TARGET;@assert/inline strlen(%q<filename>)=@attach #inc/MSG_ERROR=[v(INFO_NAME)] name empty.;@dolist/inline/nobreak/delimit | %q<filename>={@attach %!/INC_FINDFILE=%d0;@assert/inline t(get_kv(%q<contents>,Locked))=@attach #inc/MSG_ERROR=[v(INFO_NAME)] File '%q<fname>' is already Locked!;@set %q<target>=%q<attr>:[set_kv(set_kv(%q<contents>,LockedBy,%:),Locked,secs())];@attach %!/REPORT_LOCK=%#,%q<target>,%q<attr>,%q<fname>
+
+&INC_UNLOCK #info_lib=@attach %!/INC_TARGET;@assert/inline strlen(%q<filename>)=@attach #inc/MSG_ERROR=[v(INFO_NAME)] name empty.;@dolist/inline/nobreak/delimit | %q<filename>={@attach %!/INC_FINDFILE=%d0;@assert/inline t(get_kv(%q<contents>,Locked))=@attach #inc/MSG_ERROR=[v(INFO_NAME)] File %q<fname> is not Locked!;@set %q<target>=%q<attr>:[del_kv(del_kv(%q<contents>,LockedBy),Locked)];@attach %!/REPORT_UNLOCK=%#,%q<target>,%q<attr>,%q<fname>
+
+&INC_DELETE #info_lib=@attach %!/INC_TARGET;@assert/inline strlen(%q<filename>)=@attach #inc/MSG_ERROR=[v(INFO_NAME)] name empty.;@dolist/inline/delimit | %q<filename>={@attach %!/INC_FINDFILE=%d0;@assert/inline cor(strmatch(%#,%q<target>),u(INFO_ADMIN,%#))=@attach #inc/MSG_ERROR=You may not delete another's Info files.;@break/inline cand(cor(get_kv(%q<contents>,Locked),cand(%q<lockapprove>,get(%q<target>/APPROVED))),not(u(INFO_ADMIN,%#)))=@attach #inc/MSG_ERROR=Locked Files must be Unlocked by admin first.;@wipe %q<target>/%q<attr>;@attach %!/REPORT_DELETE=%#,%q<target>,%q<attr>,%q<fname>
+
+&INC_GET #info_lib=@attach %!/INC_TARGET;@dolist/inline/nobreak/delimit | %q<filename>={@attach %!/INC_FINDFILE=%d0;@pemit %#=header(Unformatted Contents of %q<fname>);@pemit %#=decompose(decode64(get_kv(%q<contents>,Body)));@pemit %#=u(FOOTER)}
+
+&INC_GETSUM #info_lib=@attach %!/INC_TARGET;@dolist/inline/nobreak/delimit | %q<filename>={@attach %!/INC_FINDFILE=%d0;@pemit %#=header(Unformatted Contents of %q<fname> Summary);@pemit %#=decompose(decode64(get_kv(%q<contents>,Summary)));@pemit %#=u(FOOTER)}
+
+&INC_VIEW #info_lib=@attach %!/INC_TARGET;@if %q<private>=1,{@assert/inline cor(strmatch(%#,%q<target>),u(INFO_ADMIN,%#))=@attach #inc/MSG_ERROR=%q<sysname> files are private.};@if [gt(strlen(%q<filename>),0)]={@attach %!/INC_VIEW_CONTENTS},{@attach %!/INC_VIEW_FILES}
+
+&INC_VIEW_FILES #info_lib=@pemit %#=header(name(%q<target>)'s [v(INFO_NAME)] Files);@pemit %#=columns(iter(u(FUN_LIST_FILENAMES,%q<target>),left(%i0,26)[if(get_kv(setr(!,get(%q<target>/[setr(!,u(FUN_FILENAME,%i0),attr)]),contents),Locked),\([ansi(hw,+)]\))],|,|),26,3,l,1,1,,%b,,1,|,,);@pemit %#=footer(Legend: + - Locked)
+
+&INC_VIEW_CONTENTS #info_lib=@dolist/inline/nobreak/delimit | %q<filename>={@attach %!/INC_FINDFILE=%d0;@pemit %#=header(%q<t1name>'s +[lcstr(%q<sysname>)]: %q<i1name>);@if [cand(%q<summary>,strlen(setr(!,decode64(get_kv(%q<contents>,Summary)),sum)))]={@pemit %#=%q<sum>;@pemit %#=u(separator)};@pemit %#=decode64(get_kv(%q<contents>,Body));@if u(INFO_ADMIN,%#)={@pemit %#=separator(Admin Info);@pemit %#=[ansi(h,Last set by:)] [name(get_kv(%q<contents>,Author))] [ansi(h,On:)] [fancytime(get_kv(%q<contents>,DateModified))][if(setr(!,get_kv(%q<contents>,Locked),lockedon),%R[ansi(h,Locked by:)] [name(get_kv(%q<contents>,LockedBy))] [ansi(h,On:)] [fancytime(%q<lockedon>)])]};@pemit %#=subheader(if(%q<lockedon>,Admin Locked File))}
+
+&INC_LSET #info_lib=@attach %!/INC_SET=%0,%1,%2,1
+
+&INC_PREPARE_SET #info_lib=@attach %!/INC`TARGET;@break/inline cand(isdbref(pmatch(%0)),not(strlen(%1)))=@attach #inc/MSG_ERROR='%0' matches player [name(%q<target>)]. Use <name>/<filename> format to be more explicit.;@assert/inline strlen(%q<filename>)=@attach #inc/MSG_ERROR=File name empty.;@if u(setr,field_id,u(mysql,FIND`EXACT,get(%q<target>/D`ID),%q<root>,%q<filename>))={@assert/inline cor(strmatch(%#,%q<target>),u(INFO_ADMIN,%#))=@attach #inc/MSG_ERROR=You may not change another's [v(INFO_NAME)] files.;@attach %!/INC`LOADFILE=%q<field_id>,1;@if cor(%q<i1lockerid>,cand(%q<lockapprove>,u(approved,%q<target>)))={@assert/inline u(INFO_ADMIN,%#)=@attach #inc/MSG_ERROR=That File may not be changed by you.}},{@break/inline cand(%q<lockapprove>,u(approved,%q<target>),not(u(INFO_ADMIN,%#)))=@attach #inc/MSG_ERROR=Cannot create files post-approval.};@attach %!/INC`VALID`FILENAME=%q<filename>,%q<field_id>;
+
+&INC_SET #info_lib=@attach %!/INC_PREPARE_SET;@attach %!/INC_FINISH_SET=%0,%1,%2,%3,0,File,Body
+
+&INC_SUMMARY #info_lib=@assert/inline t(%q<summary>)=@attach #inc/MSG_ERROR=Summary is disabled for [v(INFO_NAME)] Files.;@attach %!/INC_PREPARE_SET;@attach %!/INC_FINISH_SET=%0,%1,%2,%3,1,Summary,Summary
+
+&INC_FINISH_SET #info_lib=@assert/inline strlen(%2)=@attach #inc/MSG_ERROR=%5 field empty. To delete a file use %q<comm>/delete.;@if %3={th setq(!,set_kv(set_kv(%q<contents>,Locked,secs()),LockedBy,%:),contents)};@set %q<target>=%q<attr>:[set_kv(set_kv(set_kv(%q<contents>,%6,encode64(%2)),Author,%:),DateModified,secs())];@attach %!/REPORT_FINISH_SET=%#,%q<target>,%q<attr>,%q<fname>
+
+&INC_RENAME #info_lib=@attach %!/INC`TARGET;@attach %!/INC`FINDFILE=%q<filename>,1;@attach %!/INC`VALID`FILENAME=%2,%q<i1>;@attach %!/INC`DOSQL=RENAME`FILE,%q<filename>,%q<i1>;
+
+@@ Report section
+&REPORT_LOCK #info_lib=@select/inline %q<target>=%:,{@attach #inc/MSG=You Locked your %q<fname> [v(INFO_NAME)] File},{@attach #inc/MSG=You Locked [name(%q<target>)]'s %q<fname> [v(INFO_NAME)] File!;@attach #inc/MSG_NOTICE=Your %q<fname> [v(INFO_NAME)] File was locked.,%q<target>};@attach #inc/MSG_CHAN=Locked %q<t1name>'s %q<fname> [v(INFO_NAME)] File.}
+
+&REPORT_UNLOCK #info_lib=@select/inline %q<target>=%#,{@attach #inc/MSG=You Unlocked your %q<fname> Info File},{@attach #inc/MSG_SUCCESS=You Unlocked [name(%q<target>)]'s [v(INFO_NAME)] File %q<fname>!;@attach #inc/MSG_NOTICE=Your [v(INFO_NAME)] File %q<fname> was unlocked.};@attach #inc/MSG_CHAN=Unlocked %q<t1name>'s %q<fname> [v(INFO_NAME)] File.}
+
+&REPORT_DELETE #info_lib=@select/inline %q<target>=%#,{@attach #inc/MSG=You deleted your [v(INFO_NAME)] File %q<i1name>},{@attach #inc/MSG=You deleted [name(%q<target>)]'s [v(INFO_NAME)] File %q<i1name>!;@attach %!/INC`MSG`NOTICE=Your [v(INFO_NAME)] File %q<i1name> was deleted.,%q<target>}}
+
+&REPORT_FINISH_SET #info_lib=@select/inline %q<target>=%#,{@attach #inc/MSG=You [if(%3,lock-)]set your %q<filename> [v(INFO_NAME)] %5},{@attach #inc/MSG=You [if(%3,lock-)]set %q<t1name>'s [v(INFO_NAME)] %5 %q<filename>!;@attach %!/INC`MSG`NOTICE=Your [v(INFO_NAME)] %5 %q<filename> was [if(%3,lock-)]set.,%q<target>}
+
+&REPORT_RENAME #info_lib=@select/inline %q<target>=%#,{@attach #inc/MSG=File named to '%q<filename>'!},{@attach #inc/MSG=You renamed %q<t1name>'s %q<i1name> [v(INFO_NAME)] File to %q<filename>;@attach %!/INC`MSG`NOTICE=Your [v(INFO_NAME)] File %q<iname> was renamed to %q<filename>,%q<target>}
+
+@@ After this is the actual default +info system.
+
+@skip isdbref(tag(info))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No global room set!;@assert/inline isdbref(setr(0,create(Info Files,,t)))=@pemit %#=ERROR: Could not create code object: %q0;@set %q0=SAFE SIDEFX INHERIT;@tag/add info=%q0;@tel #info=globalroom();@parent #info=#info_lib}
+
+&CMD_+INFO #info=$^(?s)(?\:\+)?(info|inf)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?))?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2;@attach %!/INC_[strfirstof(%q<switch>,MAIN)]=trim(%3),trim(%4),%5
+@set #info/CMD_+INFO=regexp
+
+@@ CHARACTER - +INFO
+&HLP`+INFO #info=The Info system allows Players to store notes about their character. These notes can be used for a number of things, such as tracking details of resources, backgrounds, cheat sheets, or other notes that might be several paragraphs in length. Anything stored in +info is visible to ALL PLAYERS. If you want private files, use +pinfo (the commands are the same.)%R%R[ansi(hc,Concepts)]%R[align(5 [sub(u(width,%#),6)],,[ansi(h,infonames)] - Info files can't be very long\, may not contain special characters\, and are not case sensitive.%R[ansi(h,filelists)] - Some commands let you specify a list of files. Seperate their names with | symbols\, such as file1|file2.%R[ansi(h,locked)] - Locked files have been verified by staff and are read-only.)]%R%R[ansi(hc,Managing Infos)]%R[align(5 [sub(u(width,%#),6)],,[ansi(h,+info <infoname>=<text>)] - Creates or replaces an info file.%R[ansi(h,+info/delete <filelist>)] - Deletes a file or series of files.%R[ansi(h,+info/rename <infoname>=<newname>)] - Renames Info files.)]%R%R[ansi(hc,Viewing Infos)]%R[align(5 [sub(u(width,%#),6)],,[ansi(h,+info)] - Show all of your Info files.%R[ansi(h,+info <filelist>)] - Display an info's contents.%R[ansi(h,+info <player>)] - Show a player's visible files.%R[ansi(h,+info <player>/<filelist>)] - Display a player's info contents.%R%RUse the /get switch as you would reading files to retrieve a decompile'd version for easy editing.%R%RIf your File name matches a player's\, you will have to use +info <yourname>/<filename> to set or view it.)]
++help/add Character/+info=[u(cobj,info)]/HLP`+INFO
+
+&SHLP`+INFO #info=Staff are able to see, create, edit, delete, rename, and otherwise manage +info and +pinfo files on any character. The commands work the same as for players via <name>/<filename>.%R%R[ansi(hc,Staff Commands)]%R[align(5 [sub(u(width,%#),6)],,[ansi(h,+info/lock <player>/<filelist>)] - Lock one or more info files.%R[ansi(h,+info/unlock <player>/<filelist>)] - Unlock one or more info files.%R[ansi(h,+info/lset <player>/<file>=<contents>)] - Works just like setting an +info file but locks it simultaneously.%R%RLocked files cannot be edited by players. This is useful for 'approved information' depending on the game.)]
++shelp/add Character/+info=[u(cobj,info)]/SHLP`+INFO

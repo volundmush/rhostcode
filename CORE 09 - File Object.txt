@@ -1,0 +1,4 @@
+@@ Core
+
+@skip isdbref(tag(setr(1,fobj)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No object storage set!;@assert/inline isdbref(setr(0,create(File Object,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=SAFE SIDEFX INHERIT !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=#stor}
+
