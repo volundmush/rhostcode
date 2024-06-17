@@ -2,20 +2,23 @@
 
 @skip isdbref(tag(setr(1,help_db)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Help Database,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=SAFE SIDEFX INHERIT NO_COMMAND;@tag/add %q1=%q0;@tel %q0=#stor}
 
-@skip isdbref(tag(setr(1,help)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Help System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=SAFE SIDEFX INHERIT !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=[globalroom()]}
+@skip isdbref(tag(setr(1,help)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No global room set!;@assert/inline isdbref(setr(0,create(Help System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=SAFE SIDEFX INHERIT !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=[globalroom()]}
 
-&CMD_+HELP #help=$^(?s)(?\:\+)?(help)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?))?(?\:/(.+?))?(?\:=(.+?))?$:@attach %!/START=%0,%1,%2,%3,%4,%5,%6
+&CMD_+HELP #help=$^(?s)(?\:\+)?(help)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.+?))?$:@attach %!/START=%1,%2,%3,%4
 @set #help/CMD_+HELP=regexp
-
 &INIT_HELP #help=th setq(!,HELP,root);th setq(!,+help,cmd)
 
-&START #help=@attach %!/INIT_%1;@attach %!/GET_SWITCH=%2;@attach %!/INC_[strfirstof(%q<switch>,MAIN)]=trim(%3),trim(%4),trim(%5),trim(%6),%1
+&SWITCHES_0 #help=
+&SWITCHES_5 #help=HELP|ADD|CATEGORY|RENAMECATEGORY|RENAME|DELETE
+&SWITCHES_6 #help=DELETECATEGORY
 
-&INC_MAIN #help=
+&START #help=@attach %!/INIT_%0;@attach %!/GET_SWITCH=%1;@attach %!/INC_[strfirstof(%q<switch>,MAIN)]=trim(%2),trim(%3)
 
-&INC_VIEW_CATEGORY #help=
+&INC_MAIN #help=@if strlen(%0)={@attach %!/INC_VIEW_CATEGORIES},{@attach %!/INC_VIEW_FILE}
 
-&INC_VIEW_FILE #help=
+&INC_VIEW_CATEGORIES #help=@pemit %#=header(mudname() %q<cmd> Categories);@dolist/inline/delimit | [u(FUN_CATEGORIES,%q<root>)]={@pemit %#=subheader(%d0);@pemit %#=columns(u(FUN_FILES,%q<root>,%d0),26,3,l,1,1,,%b,,1,|,,)};@pemit %#=footer(%q<cmd>/help for help)
+
+&INC_VIEW_FILE #help=@assert/inline words(setr(!,u(FUN_FILES,%q<root>),files),|)=@attach #inc/MSG_ERROR=There are no files to view!;@attach #inc/PARTIAL=%0,%q<files>,|,file,file;th setq(!,get_kv(get(#help_db/%q<root>),%q<file>),path);@pemit %#=header(mudname() %q<cmd>: %q<file>);@pemit %#=u(%q<path>,%#);@pemit %#=footer()
 
 &INC_HELP #help=
 
@@ -48,6 +51,17 @@
 &FUN_DELETE_CATEGORY #help=null(localize([setq(!,get(#help_db/CATEGORIES_%0),cathelp)][iter(setr(!,get(#help_db/%0_%1),files),setq(!,del_kv(%q<cathelp>,%i0),cathelp),|)][set(#help_db,%0_%2:_#help_db/%0_%1)][wipe(#help_db/%0_%1)][setq(!,get(#help_db/%0),idx)][iter(%q<files>,setq(!,del_kv(%q<idx>,%i0),idx),|)][set(#help_db/%0:%q<idx>)]))
 @@ %0 - root, %1 - category, %2 - new category name
 
+&FUN_CATEGORIES #help=sort(capnames(iter(lattr(#help_db/%0_*),after(%i0,_),%b,|)),i,|,|)
+@@ %0 - root
+
+&FUN_FILES #help=sort(if(strlen(%1),get(#help_db/%0_%1),iter(get(#help_db/%0),before(%i0,~),|,|)),i,|,|)
+@@ %0 - root, %1 - optional category
+
+&FUN_VALID_FILENAME #help=ofparse(3,)
+
+&FUN_VALID_CATEGORY #help=ofparse(3,)
+
+@@ File schema
 @@ &HELP db=Filename1~#obj/attr|Filename2~#obj/attr
 @@ &CATEGORIES_HELP db=Filename1~Navigation|Filename2~Communication
 @@ &HELP_NAVIGATION db=Filename1
