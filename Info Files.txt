@@ -25,7 +25,7 @@
 &FUN_BADCHARS #info_lib=lmax(iter(v(BADCHARS)),strmatch(%0,*%i0*))
 @@ %0 - The name to be checked.
 
-&FUN_VALID_FILENAME #info_lib=ofparse(3,if(strlen(%0),1,#-1 FILENAMES MAY NOT BE EMPTY),if(lte(strlen(%0),v(MAX_NAME_LENGTH)),1,#-1 FILENAMES MUST BE <=[v(MAX_NAME_LENGTH)] CHARACTERS,if(u(FUN_BADCHARS,%0),1,#-1 FILENAMES MAY NOT CONTAIN [v(BADCHARS)]),if(u(FUN_IS_TARGET,%0),#-1 FILENAMES MAY NOT BE PLAYER/TARGET NAMES,1)))
+&FUN_VALID_FILENAME #info_lib=ofparse(3,if(strlen(%0),1,#-1 FILENAMES MAY NOT BE EMPTY),if(lte(strlen(%0),v(MAX_NAME_LENGTH)),1,#-1 FILENAMES MUST BE <=[v(MAX_NAME_LENGTH)] CHARACTERS,if(contains_characters(%0,v(BADCHARS)),1,#-1 FILENAMES MAY NOT CONTAIN [v(BADCHARS)]),if(u(FUN_IS_TARGET,%0),#-1 FILENAMES MAY NOT BE PLAYER/TARGET NAMES,1)))
 @@ %0 - The name being checked.
 
 &FUN_PREFIX #info_lib=INFO_[v(INFO_ATTR)]

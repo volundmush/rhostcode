@@ -1,0 +1,76 @@
+@@ Core
+
+@@ the chan_lib is the parent of all channel-like systems.
+@skip isdbref(tag(setr(1,chan_lib)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Channel System Library,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=SAFE SIDEFX INHERIT NO_COMMAND;@tag/add %q1=%q0;@tel %q0=#stor}
+
+&SWITCHES #chan_lib=setunion(LIST|WHO,if(u(CHANNEL_ADMIN,%0),CREATE|RENAME|DELETE|EXAMINE|LOCK|UNLOCK),|,|)
+
+&FUN_SYS_NAME #chan_lib=mudname()
+&FUN_CHANNELS #chan_lib=sortname(lcon(%!/OBJECT,,,,1))
+&FUN_VISIBLE_CHANNELS #chan_lib=filter(CHECK,u(FUN_CHANNELS),%b,%b,JOIN,%0)
+
+&FUN_VALID_NAME #chan_lib=ofparse(3,if(strlen(%0),1,#-1 CHANNEL NAMES CANNOT BE EMPTY),if(lte(strlen(%0),30),1,#-1 CHANNEL NAMES MUST BE <=30 CHARACTERS),if(valid(name,%0),1,#-1 CHANNEL NAMES MUST BE VALID THING NAMES))
+
+&FUN_FIND_CHANNEL #chan_lib=localize(ofparse(3,if(strlen(%0),1,#-1 CHANNEL NAME EMPTY),if(words(setr(0,u(FUN_VISIBLE_CHANNELS,%0))),1,#-1 NO VISIBLE CHANNELS IN SYSTEM),if(lt(words(setr(0,switch(%2,1,namefind(%q0,%1),2,namegraball(%q0,%1),namegrab(%q0,%1)))),2),1,#-1 MATCHED MULTIPLE CHANNELS: [iter(%q0,name(%i0),%b,|)]),strfirstof(%q0,if(strfirstof(%3,1),#-1 CHANNEL NOT FOUND))))
+@@ %0 - for who, %1 channel name, %2 - 0 (default) for namegrab, 1 for namefind, 2 for namegraball, %3 - (default true) error on empty
+@@ Can Error.
+
+
+&SW_MAIN #chan_lib=@attach %!/INC_LIST=u(FUN_VISIBLE_CHANNELS,%#),MAIN
+&SW_LIST #chan_lib=@attach %!/INC_LIST=u(FUN_VISIBLE_CHANNELS,%#),MAIN
+
+&INC_ADMIN #chan_lib=@assert/inline u(CHANNEL_ADMIN,%#)=@attach #inc/MSG_ERROR=Permission Denied.;
+&INC_FIND #chan_lib=@assert/inline setr(!,u(FUN_FIND_CHANNEL,%#,stripansi(%0)),chan)=@attach #inc/MSG_ERROR=%q<chan>
+
+&INC_LIST #chan_lib=@pemit %#=header(u(FUN_SYS_NAME) Channels);@pemit %#=Columns Here;@pemit %#=separator();@dolist/inline %0={@attach %!/INC_LIST_%1=%d0};@pemit %#=footer()
+
+&INC_LIST_MAIN #chan_lib=@pemit %#=cname(%0)
+
+&SW_WHO #chan_lib=@attach %!/INC_FIND;
+
+&SW_EXAMINE #chan_lib=@attach %!/INC_ADMIN;@attach %!/INC_FIND;
+
+&SW_DELETE #chan_lib=@attach %!/INC_ADMIN;@attach %!/INC_FIND;
+
+&SW_CREATE #chan_lib=@attach %!/INC_ADMIN;@assert/inline setr(!,u(FUN_VALID_NAME,setr(!,trim(stripansi(%0)),channame)))=@attach #inc/MSG_ERROR=%q<result>;@break/inline cand(isobjid(setr(!,u(FUN_FIND_CHANNEL,%#,%q<channame>),found)),!strmatch(%q<chan>,%q<found>))=@attach #inc/MSG_ERROR=Channel name conflict detected.;@assert/inline isdbref(setr(!,create(%q<channame>,,t),chan))=@attach #inc/MSG_ERROR=Could not create Channel: %q<chan>;@name/ansi %q<chan>=%q<channame>;@tel %q<chan>=%!;
+
+&SW_RENAME #chan_lib=@attach %!/INC_ADMIN;@attach %!/INC_FIND;@assert/inline setr(!,u(FUN_VALID_NAME,setr(!,trim(stripansi(%0)),channame)))=@attach #inc/MSG_ERROR=%q<result>;@break/inline cand(isobjid(setr(!,u(FUN_FIND_CHANNEL,%#,%q<channame>),found)),!strmatch(%q<chan>,%q<found>))=@attach #inc/MSG_ERROR=Channel name conflict detected.;
+
+&SW_LOCK #chan_lib=@attach %!/INC_ADMIN;@attach %!/INC_FIND;
+
+&SW_UNLOCK #chan_lib=@attach %!/INC_ADMIN;@attach %!/INC_FIND;
+
+&CHANNEL_ADMIN #chan_lib=gtebittype(%0,5)
+
+&LOCKS #chan_lib=JOIN|LEAVE|TALK|MODERATE|ADMIN
+&DEFAULT_LOCK_JOIN #chan_lib=1
+&DEFAULT_LOCK_LEAVE #chan_lib=u(DEFAULT_LOCK_%1,%0)
+&DEFAULT_LOCK_TALK #chan_lib=u(DEFAULT_LOCK_%1,%0)
+&DEFAULT_LOCK_MODERATE #chan_lib=u(DEFAULT_LOCK_ADMIN,%0)
+&DEFAULT_LOCK_ADMIN #chan_lib=u(CHANNEL_ADMIN,%0)
+
+&CHECK_HELPER #chan_lib=switch([hasattr(%0/LOCK_%1)][hasattr(%0/EVAL_LOCK_%1)],11,cor(testlock(get(%0/LOCK_%1),%2),u(%0/EVAL_LOCK_%1,%2,%1)),10,testlock(get(%0/LOCK_%1),%2),01,u(%0/EVAL_LOCK_%1,%2,%1),00,u(DEFAULT_LOCK_%1,%2,%1))
+&CHECK #chan_lib=if(u(CHANNEL_ADMIN,%2),1,u(CHECK_HELPER,%0,%1,%2))
+%0 - channel, %1 - permission, %2 - object
+
+&BASE_FORMAT #chan_lib=<[cname(%1)]> [parsestr(%5,%5,",",,&[cname(%3)])]
+
+&FORMAT_MESSAGE #chan_lib=udefault(%#/CHAN_[num(%1)],u(BASE_FORMAT,%0,%1,%2,%3,%4),%0,%1,%2,%3,%4,%5)
+%0 - original message without CHAN_ formatter, %1 - channel dbref, %3 - sender, %4 - recipient, %5 - text string
+
+&FUN_SEND_MESSAGE #chan_lib=iter()
+%0 - channel dbref, %1 - message, %2 - sender
+
+&FUN_CEMIT #chan_lib=
+%0 - channel name/dbref, %1 - message
+
+@@ After this is the actual default +channel system.
+
+@skip isdbref(tag(setr(1,chan)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No global room set!;@assert/inline isdbref(setr(0,create(Channel System,,t)))=@pemit %#=ERROR: Could not create code object: %q0;@set %q0=SAFE SIDEFX INHERIT;@tag/add %q1=%q0;@tel %q0=globalroom();@parent %q0=#chan_lib}
+
+&CMD_@CHANNEL #info=$^(?s)(?\:@|\+)?(chan|channel)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2;@attach %!/SW_[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
+@set #info/CMD_@CHANNEL=regexp
+
+&GPFUN_CEMIT #chan=
+
+@startup #chan=@attach #inc/REGISTER_FUNCTIONS
