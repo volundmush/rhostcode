@@ -40,7 +40,7 @@
 
 &VALID_INT #inc=@assert/inline isint(%0)=@pemit %#={'%0' must be a whole number 0 or greater.};th setq(!,setr(!,%0,value),valueformat)
 
-&VALID_LOCK #inc=@assert/inline valid(lockkey,%0)=@pemit %#={'%0' was not accepted by the @lock system.};th setq(!,setr(!,%0,value),valueformat)
+&VALID_LOCKKEY #inc=@assert/inline valid(lockkey,%0)=@pemit %#={'%0' was not accepted by the @lock system.};th setq(!,setr(!,%0,value),valueformat)
 
 &VALID_TIME #inc=@assert/inline strlen(%0)=@attach %!/INC`MSG=You didn't enter a date!;@assert/inline gt(setr(!,setr(!,runintz(gettz(%#),convtime(%0)),value),time),0)=@attach %!/INC`MSG=The entered date was not recognized. Did you typo? Dates should be in abbreviated 24-hour <month> <day> <hour>:<minute> format using YOUR timezone\, such as Jun 26 7:00 or Oct 31 13:00. Check [ansi(hw,@list options convtime)] for more information.;th setq(!,runintz(UTC,convsecs(%q<value>)),valueformat)
 

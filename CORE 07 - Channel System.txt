@@ -3,7 +3,7 @@
 @@ the chan_lib is the parent of all channel-like systems.
 @skip isdbref(tag(setr(1,chan_lib)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Channel System Library,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=SAFE SIDEFX INHERIT NO_COMMAND;@tag/add %q1=%q0;@tel %q0=#stor}
 
-&SWITCHES #chan_lib=setunion(LIST|WHO|ON|OFF|GAG|UNGAG|JOIN|LEAVE|SEND|RESTRICT|UNRESTRICT|BAN|UNBAN|HELP,if(u(CHANNEL_ADMIN,%0),CREATE|RENAME|DELETE|EXAMINE|LOCK|UNLOCK),|,|)
+&SWITCHES #chan_lib=setunion(LIST|WHO|ON|OFF|GAG|UNGAG|JOIN|LEAVE|RESTRICT|UNRESTRICT,if(u(CHANNEL_ADMIN,%0),CREATE|RENAME|DELETE|EXAMINE|LOCK|UNLOCK),|,|)
 
 &CHAN_TYPE #chan_lib=CHANNELS
 
@@ -31,15 +31,17 @@
 &FUN_COLUMNS_MAIN #chan_lib=ansi(g,printf($4-s $3s $-15s $|"-45s $:0:3s/$:0:3s,DBRF,Sta,Name,Description,Cur,Mem))
 &INC_LIST_MAIN #chan_lib=@pemit %#=printf($4-s $3s $-15s $|"-45s $:0:3s/$:0:3s,num(%0),u(FUN_PLAYER_STATUS,%0,%#),cname(%0),default(%0/DESCRIBE,No description.),words(setinter(filterobjid(setr(!,get(%0/MEMBERS),mem)),%q<online>)),words(%q<mem>))
 
-&SW_WHO #chan_lib=@attach %!/INC_FIND;
+&FUN_NAMES #chan_lib=itemize(iter(filterobjid(%0),cname(%i0),%b,|),|,and,%,%B)
 
-&SW_EXAMINE #chan_lib=@attach %!/INC_ADMIN;@attach %!/INC_FIND;
+&SW_WHO #chan_lib=@attach %!/INC_FIND;@pemit %#=[u(FUN_NAMES,get(%q<chan>/MEMBERS)))]
+
+&SW_EXAMINE #chan_lib=@attach %!/INC_ADMIN;@attach %!/INC_FIND;@pemit %#=header(Examine: [cname(%q<chan>)] (%q<chan>));@pemit %#=[ansi(hw,MEMBERS:)]%B[u(FUN_NAMES,get(%q<chan>/MEMBERS))];@pemit %#=[ansi(hw,GAGGING:)]%B[u(FUN_NAMES,get(%q<chan>/GAGGING))];@if words(setr(!,get(%q<chan>/RESTRICT),restrict),|)={@pemit %#=separator(Restricted);@dolist/inline/delimit | %q<restrict>={@pemit %#=[cname(before(%d0,~))] - until [fancytime(after(%d0,~))]}};@pemit %#=separator(Locks);@dolist/inline/delimit | [get(%!/LOCKS)]={@pemit %#=[ansi(hw,LOCK_%d0:)] [default(%q<chan>/LOCK_%d0,Default: [v(DEFAULT_LOCK_%d0)])];@pemit %#=[ansi(hw,EVAL_LOCK_%d0:)]%B[default(%q<chan>/EVAL_LOCK_%d0,<unset>)]};@pemit %#=footer()
 
 &SW_DELETE #chan_lib=@attach %!/INC_ADMIN;@attach %!/INC_FIND;
 
 &SW_CREATE #chan_lib=@attach %!/INC_ADMIN;@assert/inline setr(!,u(FUN_VALID_NAME,setr(!,trim(%0),channame)))=@pemit %#=%q<result>;@break/inline cand(isobjid(setr(!,u(FUN_FIND_CHANNEL,%#,%q<channame>),found)),!strmatch(%q<chan>,%q<found>))=@pemit %#=Channel name conflict detected.;@assert/inline isdbref(setr(!,create(%q<channame>,,t),chan))=@pemit %#=Could not create Channel: %q<chan>;@name/ansi %q<chan>=%q<channame>;@tel %q<chan>=%!;@pemit %#=Created a new channel: %q<channame>;@attach #inc/MSG_ALERT=New channel created: %q<channame>
 
-&SW_RENAME #chan_lib=@attach %!/INC_ADMIN;@attach %!/INC_FIND;@assert/inline setr(!,u(FUN_VALID_NAME,setr(!,trim(%0),channame)))=@pemit %#=%q<result>;@break/inline cand(isobjid(setr(!,u(FUN_FIND_CHANNEL,%#,stripansi(%q<channame>),found))),!strmatch(%q<chan>,%q<found>))=@pemit %#=Channel name conflict detected.
+&SW_RENAME #chan_lib=@attach %!/INC_ADMIN;@attach %!/INC_FIND;@assert/inline setr(!,u(FUN_VALID_NAME,setr(!,trim(%0),channame)))=@pemit %#=%q<result>;@break/inline cand(isobjid(setr(!,u(FUN_FIND_CHANNEL,%#,stripansi(%q<channame>),found))),!strmatch(%q<chan>,%q<found>))=@pemit %#=Channel name conflict detected.;th setq(!,cname(%q<chan>),oldname);@name/ansi %q<chan>=%q<channame>;@pemit %#=Channel '%q<oldname>' renamed to '%q<channame>';@attach #inc/MSG_ALERT=Channel '%q<oldname>' renamed to '%q<channame>';th u(FUN_CEMIT,%q<chan>,:renamed '%q<oldname>' to '%q<channame>',%#)
 
 &SW_LOCK #chan_lib=@attach %!/INC_ADMIN;@attach %!/INC_FIND=before(stripansi(%0),/);@attach #inc/PARTIAL=after(stripansi(%0),/),get(%!/LOCKS),|,lock,locktype;@attach #inc/VALID_LOCKKEY=%1;@set %q<chan>=LOCK_%q<lock>:%q<value>;@pemit %#=[setr(!,Set Channel '[cname(%q<chan>)]' %q<lock> Lock to: %q<valueformat>,msg)];@attach #inc/MSG_ALERT=%q<msg>
 
@@ -52,7 +54,8 @@
 &JOIN_CHANNEL_AFTER #chan_lib=th u(FUN_CEMIT,%0,:has joined the channel.,%1)
 @@ %0 - channel, %1 - new member
 
-&SW_LEAVE #chan_lib=@attach %!/INC_FIND;@assert/inline match(get(%q<chan>/MEMBERS),%:)=@pemit %#=You are not a member!;@attach %!/LEAVE_CHANNEL=%q<chan>,%:
+&SW_OFF #chan_lib=@attach %!/SW_LEAVE
+&SW_LEAVE #chan_lib=@attach %!/INC_FIND;@assert/inline u(CHECK,%q<chan>,LEAVE,%:)=@pemit %#=Permission denied.;@assert/inline match(get(%q<chan>/MEMBERS),%:)=@pemit %#=You are not a member!;@attach %!/LEAVE_CHANNEL=%q<chan>,%:;@pemit %#=You have left the channel.
 
 &LEAVE_CHANNEL #chan_lib=@set %0=MEMBERS:[setdiff(filterobjid(get(%0/MEMBERS)),%1)];@set %1=CHANNELS_[v(CHAN_TYPE)]:[setdiff(filterobjid(get(%1/CHANNELS_[v(CHAN_TYPE)])),objid(%0))];@attach %!/UNGAG_CHANNEL=%0,%1;@attach %!/LEAVE_CHANNEL_AFTER
 &LEAVE_CHANNEL_AFTER #chan_lib=th u(FUN_CEMIT,%0,:has left the channel.,%1)
@@ -73,8 +76,8 @@
 
 &LOCKS #chan_lib=JOIN|LEAVE|TALK|MODERATE|ADMIN
 &DEFAULT_LOCK_JOIN #chan_lib=1
-&DEFAULT_LOCK_LEAVE #chan_lib=u(DEFAULT_LOCK_%1,%0)
-&DEFAULT_LOCK_TALK #chan_lib=u(DEFAULT_LOCK_%1,%0)
+&DEFAULT_LOCK_LEAVE #chan_lib=u(DEFAULT_LOCK_JOIN,%0)
+&DEFAULT_LOCK_TALK #chan_lib=u(DEFAULT_LOCK_JOIN,%0)
 &DEFAULT_LOCK_MODERATE #chan_lib=u(DEFAULT_LOCK_ADMIN,%0)
 &DEFAULT_LOCK_ADMIN #chan_lib=u(CHANNEL_ADMIN,%0)
 
@@ -128,3 +131,11 @@
 &FUN_ERR_CHANNEL #chan=privatize(1,if(words(setr(!,setinter(get(%0/CHANNELS_[v(CHAN_TYPE)]),u(FUN_CHANNELS)),avail)),if(isobjid(setr(!,namegrab(%q<avail>,%1),chan)),if(setr(!,cemit(%q<chan>,%2,%0),res),1,0[pemit(%0,Permission denied: %q<res>)]),0),0))
 
 @startup #chan=@attach [parent(me)]/STARTUP;@attach #inc/REGISTER_FUNCTIONS
+
+@@ Help Section
+
++help/add Communications/@channel=#chan/HLP_CHANNELS
+&HLP_CHANNELS #chan=[ansi(hw,Command Aliases:)]+chan, +channel, @chan, @channel%R%RThe Channels System provides global chat channels with unique names and a straightforward permissions and moderation system.%R%R[ansi(hc,Commands)]%R%R[ansi(hw,@chan)]%R%TDisplay all channels you can see.%R%R[ansi(hw,@chan/join <channel>)]%R%TJoin a channel.%R%R[ansi(hw,@chan/leave <channel>)]%R%TLeave a channel.%R%R[ansi(hw,@chan/gag <channel>)]%R%TSquelch output from a channel. You won't hear it until you /ungag. Clears at logout.%R%R[ansi(hw,@chan/ungag <channel>)]%R%TReleases a gag. Hear messages again.%R%R[ansi(hc,Sending Messages)]%R%RYou can send messages by typing [ansi(hw,+<channel> <message>)], where <channel> is able to partial match by prefix. For example, to speak on a channel named Public, you could use [ansi(hw,+p hello!)] or [ansi(hw,+pub yo!)]%R%R[ansi(hc,Moderator Commands)]%R%R[ansi(hw,@chan/restrict <channel>=<player>/<duration>)]%R%TApply a duration-based send block. Duration example: 30d 5h 40m for 30 days, 5 hours, and 40 minutes.%R%R[ansi(hw,@chan/unrestrict <channel>=<player>)]%R%TRelease a ban early.
+
++Shelp/add Communications/@channel=#chan/SHLP_CHANNELS
+&SHLP_CHANNELS #chan=[ansi(hc,Administrator Commands)]%R%R[ansi(hw,@chan/create <channel>)]%R%TCreates a new channel. use the ansi%(%) function to create one with a colored name!%R%R[ansi(hw,@chan/rename <old name>=<new name>)]%R%TRename a channel. Can rename to itself to fix case or color.%R%R[ansi(hw,@chan/delete <channel>=<verify>)]%R%TDelete a channel. Must enter the full name in <verify> to confirm.%R%R[ansi(hw,@chan/lock <channel>/<lock>=<lockkey>)]%R%TSet a MUSHcode lock string to one of the channel locks. See more below.%R%R[ansi(hw,@chan/unlock <channel>/<lock>)]%R%TRelease a lock back to defaults.%R%R[ansi(hc,Normal Locks)]%R[ansi(hw,JOIN:)] Who may JOIN the channel. Also covers seeing it.%R[ansi(hw,LEAVE:)] Who may leave the channel.%R[ansi(hw,TALK:)] Who may speak on the channel, if not restricted.%R[ansi(hw,MODERATE:)] Allows usage of the /restrict and /unrestrict feature.%R[ansi(hw,ADMIN:)] Grants full authority. Not much purpose yet.%R%R[ansi(hc,Special Eval Locks)]%RChannels are Objects, and you can set a MUSHcode function-based lock on a channel using the attributes EVAL_LOCK_<type>. For instance, EVAL_LOCK_JOIN. These are cor%(%)'d with the normal locks.
