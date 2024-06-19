@@ -1,7 +1,34 @@
 @skip isdbref(tag(setr(1,conf)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master_room set!;@assert/inline isdbref(setr(0,create(Config System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=SAFE SIDEFX INHERIT !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom()}
 
-&CMD_+CONFIG #conf=$^(?s)(?\:\+)?(gameconfig)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?))?(?\:=(.*))?$:
+&CMD_+GLOBALCONFIG #conf=$^(?s)(?\:\+)?(globalconfig)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@assert/inline gtebittype(%#,5)=@pemit %#=error();@attach #inc/GET_SWITCHES=%2;@attach %!/SW_[strfirstof(%q<switch>,MAIN)]
+@set #config/CMD_+GLOBALCONFIG=regexp
 
+&FUN_LIST_CONFIGS #conf=setunion(iter(lattr(%!/CONFIG_*_*),elementsmux(%i0,2,_),%b,|),,|,|)
 
-&FUN_LIST_CONFIGS #conf=iter(lattr(%!/CONFIG_*),after(%i0,CONFIG_),%b,|)
+&CONFIG_ALERTLEVEL_DESC #conf=bittype()>=this to hear staff alerts.
+&CONFIG_ALERTLEVEL_DEFAULT #conf=4
+&CONFIG_ALERTLEVEL_TYPE #conf=POSINT
 
+&CONFIG_BORDER_DESC #conf=Color for header/footer/boxes.
+&CONFIG_BORDER_DEFAULT #conf=m
+&CONFIG_BORDER_TYPE #conf=COLOR
+
+&CONFIG_HDRSTAR_DESC #conf=Color for header *
+&CONFIG_HDRSTAR_DEFAULT #conf=hm
+&CONFIG_HDRSTAR_TYPE #conf=COLOR
+
+&CONFIG_REQAPPROVAL_DESC #conf=Game requires use of approval system?
+&CONFIG_REQAPPROVAL_DEFAULT #conf=1
+&CONFIG_REQAPPROVAL_TYPE #conf=BOOL
+
+&CONFIG_EMAIL_DESC #conf=Game's public email, for relevant messages?
+&CONFIG_EMAIL_DEFAULT #conf=
+&CONFIG_EMAIL_TYPE #conf=WORD
+
+&SW_MAIN #conf=@if strlen(%0)={@attach %!/SW_SET},{@attach %!/SW_LIST}
+
+&SW_SET #conf=@assert/inline gtebittype(%#,6)=@pemit %#=Permission denied.;@assert/inline strlen(setr(!,partial(u(FUN_LIST_CONFIGS),%0,|),op))
+
+&GPFUN_GLOBALCONF #conf=default(%!/CONFIG_%0_VALUE,v(CONFIG_%0_DEFAULT))
+
+@startup #conf=@attach #inc/REGISTER_FUNCTIONS

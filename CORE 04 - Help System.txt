@@ -18,7 +18,7 @@
 
 &INC_VIEW_CATEGORIES #help=@pemit %#=header(mudname() %q<cmd> Categories);@dolist/inline/delimit | [u(FUN_CATEGORIES,%q<root>)]={@pemit %#=subheader(%d0);@pemit %#=columns(u(FUN_FILES,%q<root>,%d0),26,3,l,1,1,,%b,,1,|,,)};@pemit %#=footer(%q<cmd>/help for help)
 
-&INC_FIND_FILE #help=@assert/inline words(setr(!,u(FUN_FILES,%q<root>),files),|)=@attach #inc/MSG_ERROR=There are no files!;@attach #inc/PARTIAL=%0,%q<files>,|,%1,file;
+&INC_FIND_FILE #help=@assert/inline words(setr(!,u(FUN_FILES,%q<root>),files),|)=@pemit %#=There are no files!;@attach #inc/PARTIAL=%0,%q<files>,|,%1,file;
 
 &INC_VIEW_FILE #help=@attach %!/INC_FIND_FILE=%0,file;th setq(!,get_kv(get(#help_db/%q<root>),%q<file>),path);@pemit %#=header(mudname() %q<cmd>: %q<file>);@pemit %#=u(%q<path>,%#);@pemit %#=footer()
 
@@ -26,7 +26,7 @@
 
 &HLP_INTERNAL #help=[ansi(h,%q<cmd>/add <category>/<filename>=<#dbref/attribute>)]%RCreates or update a helpfile AND the respective category if it does not exist. The given attribute will be u()'d for retrieval.%R[ansi(h,%q<cmd>/category <filename>=<category>)]%RRe-Assign a helpfile to a different category.%R[ansi(h,%q<cmd>/renamecategory <category>=<new name>)]%RRe-assign all helpfiles of a given category to a new or existing one.%R[ansi(h,%q<cmd>/rename <filename>)]=<newname>%RRename a file.%R[ansi(h,%q<cmd>/deletecategory <category>)]%RDelete a category and all associated files.%R[ansi(h,%q<cmd>/delete <filename>)]%RDelete a helpfile.
 
-&INC_ADD #help=@assert/inline strlen(setr(!,capnames(trim(before(%0,/))),category))=@attach #inc/MSG_ERROR=Category field is empty.;@assert/inline setr(!,u(FUN_VALID_CATEGORY,%q<category>),result)=@attach #inc/MSG_ERROR=%q<result>;@assert/inline strlen(setr(!,trim(after(%0,/)),filename))=@attach #inc/MSG_ERROR=Filename field is empty.;@assert/inline setr(!,u(FUN_VALID_FILENAME,%q<filename>))=@attach #inc/MSG_ERROR=%q<result>;@assert/inline strlen(%2)=@attach #inc/MSG_ERROR=Entry field empty.;@attach/localize %!/ADD_FILE=%q<root>,%q<category>,%q<filename>,%2
+&INC_ADD #help=@assert/inline strlen(setr(!,capnames(trim(before(%0,/))),category))=@pemit %#=Category field is empty.;@assert/inline setr(!,u(FUN_VALID_CATEGORY,%q<category>),result)=@pemit %#=%q<result>;@assert/inline strlen(setr(!,trim(after(%0,/)),filename))=@pemit %#=Filename field is empty.;@assert/inline setr(!,u(FUN_VALID_FILENAME,%q<filename>))=@pemit %#=%q<result>;@assert/inline strlen(%2)=@pemit %#=Entry field empty.;@attach/localize %!/ADD_FILE=%q<root>,%q<category>,%q<filename>,%2
 
 &INC_CATEGORY #help=@attach %!/INC_FIND_FILE=%0,file;
 

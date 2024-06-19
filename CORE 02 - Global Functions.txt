@@ -32,7 +32,7 @@
 &GFUN_GRABNAME #gfun=strmatch(name(%0),%1*)
 
 &GFUN_NAMEFIND #gfun=trim(localize(iter(sortname(%0),if(namematch(%i0,%1,%2),%i0[ibreak()]),%b,|)))
-&GFUN_NAMEGRAB #gfun=trim(localize(iter(setr(0,sortname(%0)),if(namematch(%i0,%1,%2),%i0[ibreak()]),%b,|),iter(%q0,if(grabname(%i0,%1),%i0[ibreak()]))))
+&GFUN_NAMEGRAB #gfun=trim(localize(ofparse(1,iter(setr(0,sortname(%0)),if(namematch(%i0,%1,%2),%i0[ibreak()])),iter(%q0,if(grabname(%i0,%1),%i0[ibreak()])))))
 &GFUN_NAMEGRABALL #gfun=trim(localize(ofparse(1,iter(setr(0,sortname(%0)),if(namematch(%i0,%1,%2),%i0[ibreak()])),iter(%q0,if(grabname(%i0,%1),%i0),))))
 @@ %0 - dbrefs. %1 - name. %2 - check aliases.
 
@@ -65,6 +65,14 @@
 
 &GFUN_CTIME #gfun=createtime(%0)
 
+&GFUN_GETTZ #gfun=UTC
+
+&GFUN_LWHOID #gfun=setunion(lwho(,,1),)
+
+&GFUN_BITWHO #gfun=filter(#lambda/[lit(gte(bittype(%0),%1))],lwhoid(),%b,%b,%0)
+
+&GFUN_FILTEROBJID #gfun=filter(#lambda/[lit(isobjid(%0))],%0)
+
 &GFUN_FANCYTIME #gfun=if(%0,timefmt(switch(%1,2,$a $b $02D $02I:$02M$p $Z,3,$b $02D $02I:$02M$p $Y $Z,day,$b $02D $Y,date,$m/$d/$Y,$b $02D $02H:$02T$P $i),%0,if(strlen(%2),if(isdbref(%2),gettz(%2),%2),gettz(%#))),<invalid date>)
 
 &GFUN_BASECONV #gfun=pack(unpack(%0,%1),%2)
@@ -80,6 +88,14 @@
 &GFUN_HASATTRVAL #gfun=!!$get(%0)
 
 &GFUN_CONTAINS_CHARACTER #gfun=lmax(iter(%1,strmatch(%0,*%i0*)))
+
+&GFUN_PMATCHID #gfun=localize(if(setr(!,pmatch(%0),res),objid(%q<res>),%q<res>))
+
+&GFUN_PMATCHREG #gfun=setr(!,pmatch(%0),%1)
+
+&GFUN_PARTIAL #gfun=localize(if(setr(0,match(%0,%1,%2)),elementsmux(%0,%q0,%2),grab(%0,%1*,%2)))
+
+&GFUN_SECS_REMAIN #gfun=max(0,sub(%0,secs()))
 
 &GFUN_NAMELIST #gfun=localize(iter(%0,if(!match(setr(0,pmatch(%i0)),#-1*),%q0,#-1[objeval(%#,u(%1,%i0,#-1))])))
 

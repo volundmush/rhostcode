@@ -3,7 +3,9 @@
 @@ the chan_lib is the parent of all channel-like systems.
 @skip isdbref(tag(setr(1,chan_lib)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Channel System Library,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=SAFE SIDEFX INHERIT NO_COMMAND;@tag/add %q1=%q0;@tel %q0=#stor}
 
-&SWITCHES #chan_lib=setunion(LIST|WHO,if(u(CHANNEL_ADMIN,%0),CREATE|RENAME|DELETE|EXAMINE|LOCK|UNLOCK),|,|)
+&SWITCHES #chan_lib=setunion(LIST|WHO|ON|OFF|GAG|UNGAG|JOIN|LEAVE|SEND,if(u(CHANNEL_ADMIN,%0),CREATE|RENAME|DELETE|EXAMINE|LOCK|UNLOCK),|,|)
+
+&SYSTEM_NAME #chan_lib=Channels
 
 &FUN_SYS_NAME #chan_lib=mudname()
 &FUN_CHANNELS #chan_lib=sortname(lcon(%!/OBJECT,,,,1))
@@ -11,7 +13,7 @@
 
 &FUN_VALID_NAME #chan_lib=ofparse(3,if(strlen(%0),1,#-1 CHANNEL NAMES CANNOT BE EMPTY),if(lte(strlen(%0),30),1,#-1 CHANNEL NAMES MUST BE <=30 CHARACTERS),if(valid(name,%0),1,#-1 CHANNEL NAMES MUST BE VALID THING NAMES))
 
-&FUN_FIND_CHANNEL #chan_lib=localize(ofparse(3,if(strlen(%0),1,#-1 CHANNEL NAME EMPTY),if(words(setr(0,u(FUN_VISIBLE_CHANNELS,%0))),1,#-1 NO VISIBLE CHANNELS IN SYSTEM),if(lt(words(setr(0,switch(%2,1,namefind(%q0,%1),2,namegraball(%q0,%1),namegrab(%q0,%1)))),2),1,#-1 MATCHED MULTIPLE CHANNELS: [iter(%q0,name(%i0),%b,|)]),strfirstof(%q0,if(strfirstof(%3,1),#-1 CHANNEL NOT FOUND))))
+&FUN_FIND_CHANNEL #chan_lib=privatize(1,ofparse(3,if(strlen(%0),1,#-1 CHANNEL NAME EMPTY),if(words(setr(0,u(FUN_VISIBLE_CHANNELS,%0))),1,#-1 NO VISIBLE CHANNELS IN SYSTEM),if(lt(words(setr(1,switch(%2,1,namefind(%q0,%1),2,namegraball(%q0,%1),namegrab(%q0,%1)))),2),1,#-1 MATCHED MULTIPLE CHANNELS: [iter(%q0,name(%i0),%b,|)]),strfirstof(%q1,if(strfirstof(%3,1),#-1 CHANNEL '%1' NOT FOUND))))
 @@ %0 - for who, %1 channel name, %2 - 0 (default) for namegrab, 1 for namefind, 2 for namegraball, %3 - (default true) error on empty
 @@ Can Error.
 
@@ -19,8 +21,8 @@
 &SW_MAIN #chan_lib=@attach %!/INC_LIST=u(FUN_VISIBLE_CHANNELS,%#),MAIN
 &SW_LIST #chan_lib=@attach %!/INC_LIST=u(FUN_VISIBLE_CHANNELS,%#),MAIN
 
-&INC_ADMIN #chan_lib=@assert/inline u(CHANNEL_ADMIN,%#)=@attach #inc/MSG_ERROR=Permission Denied.;
-&INC_FIND #chan_lib=@assert/inline setr(!,u(FUN_FIND_CHANNEL,%#,stripansi(%0)),chan)=@attach #inc/MSG_ERROR=%q<chan>
+&INC_ADMIN #chan_lib=@assert/inline u(CHANNEL_ADMIN,%#)=@pemit %#=Permission Denied.;
+&INC_FIND #chan_lib=@assert/inline setr(!,u(FUN_FIND_CHANNEL,%#,stripansi(%0)),chan)=@pemit %#=%q<chan>
 
 &INC_LIST #chan_lib=@pemit %#=header(u(FUN_SYS_NAME) Channels);@pemit %#=Columns Here;@pemit %#=separator();@dolist/inline %0={@attach %!/INC_LIST_%1=%d0};@pemit %#=footer()
 
@@ -32,13 +34,20 @@
 
 &SW_DELETE #chan_lib=@attach %!/INC_ADMIN;@attach %!/INC_FIND;
 
-&SW_CREATE #chan_lib=@attach %!/INC_ADMIN;@assert/inline setr(!,u(FUN_VALID_NAME,setr(!,trim(stripansi(%0)),channame)))=@attach #inc/MSG_ERROR=%q<result>;@break/inline cand(isobjid(setr(!,u(FUN_FIND_CHANNEL,%#,%q<channame>),found)),!strmatch(%q<chan>,%q<found>))=@attach #inc/MSG_ERROR=Channel name conflict detected.;@assert/inline isdbref(setr(!,create(%q<channame>,,t),chan))=@attach #inc/MSG_ERROR=Could not create Channel: %q<chan>;@name/ansi %q<chan>=%q<channame>;@tel %q<chan>=%!;
+&SW_CREATE #chan_lib=@attach %!/INC_ADMIN;@assert/inline setr(!,u(FUN_VALID_NAME,setr(!,trim(%0),channame)))=@pemit %#=%q<result>;@break/inline cand(isobjid(setr(!,u(FUN_FIND_CHANNEL,%#,%q<channame>),found)),!strmatch(%q<chan>,%q<found>))=@pemit %#=Channel name conflict detected.;@assert/inline isdbref(setr(!,create(%q<channame>,,t),chan))=@pemit %#=Could not create Channel: %q<chan>;@name/ansi %q<chan>=%q<channame>;@tel %q<chan>=%!;@pemit %#=Created a new channel: %q<channame>;@attach #inc/MSG_ALERT=New channel created: %q<channame>
 
-&SW_RENAME #chan_lib=@attach %!/INC_ADMIN;@attach %!/INC_FIND;@assert/inline setr(!,u(FUN_VALID_NAME,setr(!,trim(stripansi(%0)),channame)))=@attach #inc/MSG_ERROR=%q<result>;@break/inline cand(isobjid(setr(!,u(FUN_FIND_CHANNEL,%#,%q<channame>),found)),!strmatch(%q<chan>,%q<found>))=@attach #inc/MSG_ERROR=Channel name conflict detected.;
+&SW_RENAME #chan_lib=@attach %!/INC_ADMIN;@attach %!/INC_FIND;@assert/inline setr(!,u(FUN_VALID_NAME,setr(!,trim(%0),channame)))=@pemit %#=%q<result>;@break/inline cand(isobjid(setr(!,u(FUN_FIND_CHANNEL,%#,stripansi(%q<channame>),found))),!strmatch(%q<chan>,%q<found>))=@pemit %#=Channel name conflict detected.
 
-&SW_LOCK #chan_lib=@attach %!/INC_ADMIN;@attach %!/INC_FIND;
+&SW_LOCK #chan_lib=@attach %!/INC_ADMIN;@attach %!/INC_FIND=before(%0,/);@assert/inline strlen(setr(!,partial(get(%!/LOCKS),after(stripansi(%0),/),|),lock))
 
 &SW_UNLOCK #chan_lib=@attach %!/INC_ADMIN;@attach %!/INC_FIND;
+
+&SW_ON #chan_lib=@attach %!/SW_JOIN
+&SW_JOIN #chan_lib=@attach %!/INC_FIND;@assert/inline u(CHECK,%q<chan>,JOIN,%:)=@pemit %#=Permission denied.;
+
+&SW_RESTRICT #chan_lib=@attach %!/INC_FIND;@assert/inline u(CHECK,%q<chan>,MODERATE)=@pemit %#=Permission denied.;@attach #inc/GET_PLAYER=before(%1,/),t1;@break/inline u(CHECK,%q<chan>,MODERATE)=@pemit %#=You cannot moderate other moderators.;@attach #inc/VALID_FUTURE=after(%1,/);@set %q<chan>=RESTRICT:[set_kv(get(%q<chan>/RESTRICT),%q<t1>,%q<value>)];@pemit %#=[cname(%q<t1>)] has been restricted from talking on [cname(%q<chan>)] until [fancytime(%q<value>)].;@pemit %q<t1>=You have been restricted from talking on [cname(%q<chan>)] until [fancytime(%q<value>,,%q<t1>)]
+
+&SW_UNRESTRICT #chan_lib=@attach %!/INC_FIND;@attach #inc/GET_PLAYER=%1,t1;@assert/inline setr(!,get_kv(setr(!,get(%q<chan>/RESTRICT),data),%q<t1>),gag)=@pemit %#=[cname(%q<t1>)] is not restricted.;@if gte(sub(%q<gag>,secs()),0)={@pemit %#=[cname(%q<t1>)] has been un-restricted.;},{@pemit %#=[cname(%q<t1>)]'s restriction has already expired. It has been cleaned up.};@attach %!/CLEAN_RESTRICTIONS=%q<chan>
 
 &CHANNEL_ADMIN #chan_lib=gtebittype(%0,5)
 
@@ -50,27 +59,52 @@
 &DEFAULT_LOCK_ADMIN #chan_lib=u(CHANNEL_ADMIN,%0)
 
 &CHECK_HELPER #chan_lib=switch([hasattr(%0/LOCK_%1)][hasattr(%0/EVAL_LOCK_%1)],11,cor(testlock(get(%0/LOCK_%1),%2),u(%0/EVAL_LOCK_%1,%2,%1)),10,testlock(get(%0/LOCK_%1),%2),01,u(%0/EVAL_LOCK_%1,%2,%1),00,u(DEFAULT_LOCK_%1,%2,%1))
-&CHECK #chan_lib=if(u(CHANNEL_ADMIN,%2),1,u(CHECK_HELPER,%0,%1,%2))
+&CHECK_HELPER_EXTRA #chan_lib=switch(%1,JOIN,!match(get(%0/BANNED),objid(%2)),TALK,if(setr(!,secs_remain(get_kv(get(%0/GAGGED),%:)),gag),0[null(pemit(%2,You are gagged from [cname(%0)] for: [etime(%q<gag>)]))]),1)
+&CHECK #chan_lib=localize(if(u(CHANNEL_ADMIN,%2),1,cand(u(CHECK_HELPER,%0,%1,%2),u(CHECK_HELPER_EXTRA,%0,%1,%2))))
 %0 - channel, %1 - permission, %2 - object
 
-&BASE_FORMAT #chan_lib=<[cname(%1)]> [parsestr(%5,%5,",",,&[cname(%3)])]
+&BASE_FORMAT #chan_lib=<[cname(%1)]> [parsestr(%2,%0,",",,&[cname(%3)])]
+%0 - recipient, %1 - channel dbref, %2 - message, %3 - sender
 
-&FORMAT_MESSAGE #chan_lib=udefault(%#/CHAN_[num(%1)],u(BASE_FORMAT,%0,%1,%2,%3,%4),%0,%1,%2,%3,%4,%5)
-%0 - original message without CHAN_ formatter, %1 - channel dbref, %3 - sender, %4 - recipient, %5 - text string
+&CUSTOM_FORMATTER #chan_lib=CHATFORMAT
+%0 - original message without custom formatter, %1 - channel dbref, %3 - message, %4 - sender
 
-&FUN_SEND_MESSAGE #chan_lib=iter()
-%0 - channel dbref, %1 - message, %2 - sender
+&FORMAT_MESSAGE #chan_lib=uldefault(%0/[v(CUSTOM_FORMATTER)],u(BASE_FORMAT,,%1,%2,%3),u(BASE_FORMAT,,%1,%2,%3),%1,%2,%3)
+%0 - recipient, %1 - channel dbref, %2 - message, %3 - sender
 
-&FUN_CEMIT #chan_lib=
-%0 - channel name/dbref, %1 - message
+&CUSTOM_IGNORE #chan_lib=CHATIGNORE
+&FUN_DISTRIBUTE #chan_lib=localize([if(!match(get(%0/[v(CUSTOM_IGNORE)],objid(%2))),pemit(%0,u(FORMAT_MESSAGE,%0,%1,%2,%3)))])
+%0 - target, %1 - channel objid, %2 - message, %3 - sender
+
+&FUN_SEND_MESSAGES #chan_lib=iter(setdiff(get(%0/MEMBERS),get(%0/GAGGED)),u(FUN_DISTRIBUTE,%i0,%0,%1,%2))
+%0 - channel objid, %1 - message, %2 - sender
+
+&FUN_CEMIT #chan_lib=privatize(1,ofparse(3,if(setr(!,u(FUN_FIND_CHANNEL,setr(!,strfirstof(%2,%#),sender),%0),chan),1,%q<chan>),if(u(CHECK,%q<chan>,TALK,%q<sender>),1,#-1 PERMISSION DENIED),1[null(u(FUN_SEND_MESSAGES,%q<chan>,%1,%q<sender>))]))
+%0 - channel name/dbref, %1 - message, %2 - sender (defaults to %#)
+
+@startup #chan=@trigger %!/GAG_CLEANER
+
+&CHANNEL_CLEANER #chan=@dolist u(FUN_CHANNELS)={@attach %!/CLEAN=%d0};@wait 3600=@trigger %!/CHANNEL_CLEANER
+
+&CLEAN #chan=@attach %!/CLEAN_GAGS=%0;
+
+&FIL_RESTRICT #chan_lib=[cand(isobjid(before(%0,~)),remaining(after(%0,~)))]
+&CLEAN_RESTRICT #chan_lib=@set %0=RESTRICT:[filter(FIL_GAGS,get(%0/RESTRICT),|,|)]
+
+&FIL_ISOBJID #chan_lib=isobjid(%0)
+
+&CLEAN_LISTS #chan_lib=@dolist/inline MEMBERS GAGGED={@set %0=%d0:[filter(FIL_ISOBJID,get(%0/%d0))]}
+%0 - object to clean.
 
 @@ After this is the actual default +channel system.
 
-@skip isdbref(tag(setr(1,chan)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No global room set!;@assert/inline isdbref(setr(0,create(Channel System,,t)))=@pemit %#=ERROR: Could not create code object: %q0;@set %q0=SAFE SIDEFX INHERIT;@tag/add %q1=%q0;@tel %q0=globalroom();@parent %q0=#chan_lib}
+@skip isdbref(tag(setr(1,chan)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No global room set!;@assert/inline isdbref(setr(0,create(Channel System,,t)))=@pemit %#=ERROR: Could not create code object: %q0;@set %q0=SAFE SIDEFX INHERIT !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom();@parent %q0=#chan_lib}
 
-&CMD_@CHANNEL #info=$^(?s)(?\:@|\+)?(chan|channel)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2;@attach %!/SW_[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
-@set #info/CMD_@CHANNEL=regexp
+&CMD_@CHANNEL #chan=$^(?s)(?\:@|\+)?(chan|channel)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2;@attach %!/SW_[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
+@set #chan/CMD_@CHANNEL=regexp
 
-&GPFUN_CEMIT #chan=
+&GPFUN_CEMIT #chan=privatize(1,u(FUN_CEMIT,%0,%1))
 
-@startup #chan=@attach #inc/REGISTER_FUNCTIONS
+&FUN_ERR_CHANNEL #chan=privatize(1,if(words(setr(!,setinter(get(%0/CHANNELS),u(FUN_CHANNELS)),avail)),if(isobjid(setr(!,namegrab(%q<avail>,%1),chan)),if(setr(!,cemit(%q<chan>,%2,%0),res),1,0[pemit(%0,Permission denied: %q<res>)]),0),0))
+
+@startup #chan=@attach [parent(me)]/STARTUP;@attach #inc/REGISTER_FUNCTIONS
