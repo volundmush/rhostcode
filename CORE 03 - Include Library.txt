@@ -9,8 +9,7 @@
 &MSG_SUCCESS #inc=@pemit %#=[ansi(hg,SUCCESS:)] %0,%1,%2,%3
 
 &MSG_ALERT #inc=@attach/localize #inc/MSG_ALERT_DO=%0,%1
-
-&MSG_ALERT_DO #inc=th setq(!,%[[time()]%]-%[[strfirstof(%1,cname(%!) - %!)]%]-%[%k%] %0,msg);@log %q<msg>;@dolist/inline filter(#lambda/[lit(default(%0/ALERTS,1))],bitwho(globalconf(ALERTLVL)))={@pemit %d0=%q<msg>}
+&MSG_ALERT_DO #inc=th setq(!,%[[strfirstof(%1,cname(%!) - %!)]%]-%[%k%] %0,msg);@log %[[time()]%]-%q<msg>;@dolist/inline filter(#lambda/[lit(default(%0/ALERTS,1))],bitwho(globalconf(ALERTLVL)))={@pemit %d0=%[[runintz(gettz(%d0),time())]%]-%q<msg>}
 
 &GET_PLAYER #inc=@assert/inline strlen(%0)=@pemit %#=You must enter a player name!;@assert/inline strlen(%1);@assert/inline isdbref(pmatchreg(%0,%1))=@pemit %#=%0 [if(strmatch(r(%1),#-2*),matches multiple players!,does not match a player!)]
 @@ GET_PLAYER Arguments: %0 = player being checked, %1 = register number to load their data into.
@@ -35,21 +34,25 @@
 
 &VALID_POSINT #inc=@assert/inline u(valnum,%0)=@pemit %#={'[strfirstof(%1,%0)]' must be a whole number 1 or greater.};th setq(!,%0,value);th setq(!,%q<value>,valueformat)
 
-&VALID_POSNUM #inc=@assert/inline gt(u(setr,value,%0),0)=@pemit %#='%0' must be a positive number.;th setq(!,%q<value>,valueformat)
+&VALID_POSNUM #inc=@assert/inline gt(setr(!,%0,value),0)=@pemit %#='%0' must be a positive number.;th setq(!,%q<value>,valueformat)
 
-&VALID_NUMBER #inc=@assert/inline isnum(u(setr,value,%0))=@pemit %#='%0' must be a number.;th setq(!,%q<value>,valueformat)
+&VALID_NUMBER #inc=@assert/inline isnum(setr(!,%0,value))=@pemit %#='%0' must be a number.;th setq(!,%q<value>,valueformat)
 
-&VALID_INT #inc=@assert/inline isint(%0)=@pemit %#={'%0' must be a whole number 0 or greater.};th setq(!,%0,value);th setq(!,%q<value>,valueformat)
+&VALID_INT #inc=@assert/inline isint(%0)=@pemit %#={'%0' must be a whole number 0 or greater.};th setq(!,setr(!,%0,value),valueformat)
 
-&VALID_LOCK #inc=@assert/inline valid(lockkey,%0)=@pemit %#={'%0' was not accepted by the @lock system.};th setq(!,%0,value);th setq(!,%q<value>,valueformat)
+&VALID_LOCK #inc=@assert/inline valid(lockkey,%0)=@pemit %#={'%0' was not accepted by the @lock system.};th setq(!,setr(!,%0,value),valueformat)
 
-&VALID_TIME #inc=@assert/inline strlen(%0)=@attach %!/INC`MSG=You didn't enter a date!;@assert/inline gt(u(setr,time,convtime(%0,u(gettz,%#))),0)=@attach %!/INC`MSG=The entered date was not recognized. Did you typo? Dates should be in abbreviated 24-hour <month> <day> <hour>:<minute> format using YOUR timezone\, such as Jun 26 7:00 or Oct 31 13:00.;th u(setq,valueformat,convsecs(%q<value>,UTC))
+&VALID_TIME #inc=@assert/inline strlen(%0)=@attach %!/INC`MSG=You didn't enter a date!;@assert/inline gt(setr(!,setr(!,runintz(gettz(%#),convtime(%0)),value),time),0)=@attach %!/INC`MSG=The entered date was not recognized. Did you typo? Dates should be in abbreviated 24-hour <month> <day> <hour>:<minute> format using YOUR timezone\, such as Jun 26 7:00 or Oct 31 13:00. Check [ansi(hw,@list options convtime)] for more information.;th setq(!,runintz(UTC,convsecs(%q<value>)),valueformat)
 
 &VALID_FUTURE #inc=@attach %!/VALID_TIME;@assert/inline gt(%q<time>,secs())=@attach %!/INC`MSG=That would be in the past!
 
 &REGISTER_FUNCTIONS #inc=@dolist/inline lattr(%!/GPFUN_*)={@function/protect/notrace/privilege [after(%d0,_)]=%!/%d0};@dolist/inline lattr(%!/GFUN_*)={@function/notrace/protect [after(%d0,_)]=%!/%d0}
 
-&PARTIAL #inc=@if or(not(strlen(%0)),setr(!,match(%1,setr(!,%0,strfirstof(%3,choice)),strfirstof(%2,%b)),matched))={@if cand(t(strlen(%0)),t(%q<matched>))={th setq(!,elementsmux(%1,%q<matched>,strfirstof(%2,%b)),strfirstof(%3,choice))}},{@check words(setr(!,graball(%1,%0*,strfirstof(%2,%b),strfirstof(%2,%b)),strfirstof(%3,choice)))=@pemit %#={Invalid %4! Valid choices are: [itemize(%1,strfirstof(%2,%b),and,\,)]};@break/inline gt(words(r(strfirstof(%3,choice)),strfirstof(%2,%b)),1)=@pemit %#={ERROR: %0 matched [itemize(r(strfirstof(%3,choice)),strfirstof(%2,%b),and,\,)]. Please be more specific.}}
+&PARTIAL #inc=@if or(not(strlen(%0)),setr(!,match(%1,setr(!,%0,strfirstof(%3,choice)),strfirstof(%2,%b)),matched))={@if cand(t(strlen(%0)),t(%q<matched>))={th setq(!,elementsmux(%1,%q<matched>,strfirstof(%2,%b)),strfirstof(%3,choice))}},{@assert/inline words(setr(!,graball(%1,%0*,strfirstof(%2,%b),strfirstof(%2,%b)),strfirstof(%3,choice)))=@pemit %#={Invalid %4! Valid choices are: [itemize(%1,strfirstof(%2,%b),and,\,)]};@break/inline gt(words(r(strfirstof(%3,choice)),strfirstof(%2,%b)),1)=@pemit %#={ERROR: %0 matched [itemize(r(strfirstof(%3,choice)),strfirstof(%2,%b),and,\,)]. Please be more specific.}}
 @@ PARTIAL %0 = entry, %1 = choices, %2 = delimiter, %3 = register name, %4 = topic name
 
 &GET_SWITCH #inc=@if strlen(%0)={@attach #inc/PARTIAL=%0,get_switches(%!,%#),|,switch,switch}
+
+&DISPLAY_HELP #inc=th setq(!,iter(setr(!,get(%!/HELP_FILES),hdata),before(%i0,~),|,|),hfiles);@if strlen(%0)={@attach #inc/PARTIAL=%0,%q<hfiles>,|,file,helpfile;@pemit %#=header(Help for: %1 - %q<file>);@pemit %#=u(%!/[get_kv(%q<hdata>,%q<file>)]);@pemit %#=footer()},{@pemit %#=header(Help for %1);@if hasattr(%!/HELP_INDEX)={@pemit %#=u(%!/HELP_INDEX);@pemit %#=separator()};@pemit %#=columns(%q<hfiles>,26,3,l,1,1,,%b,,1,|,,);@pemit %#=footer()}
+@@ %0 - file to display? %1 - Help System Name
+

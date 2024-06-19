@@ -1,9 +1,9 @@
 @skip isdbref(tag(setr(1,conf)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master_room set!;@assert/inline isdbref(setr(0,create(Config System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=SAFE SIDEFX INHERIT !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom()}
 
-&CMD_+GLOBALCONFIG #conf=$^(?s)(?\:\+)?(globalconfig)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@assert/inline gtebittype(%#,5)=@pemit %#=error();@attach #inc/GET_SWITCHES=%2;@attach %!/SW_[strfirstof(%q<switch>,MAIN)]
-@set #config/CMD_+GLOBALCONFIG=regexp
+&CMD_+GLOBALCONFIG #conf=$^(?s)(?\:\+)?(globalconfig)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@assert/inline gtebittype(%#,5)=@pemit %#=error();@attach #inc/GET_SWITCHES=%2;@attach %!/SW_[strfirstof(%q<switch>,MAIN)]=trim(%3),trim(%4)
+@set #conf/CMD_+GLOBALCONFIG=regexp
 
-&FUN_LIST_CONFIGS #conf=setunion(iter(lattr(%!/CONFIG_*_*),elementsmux(%i0,2,_),%b,|),,|,|)
+&FUN_LIST_CONFIGS #conf=setunion(iter(lattr(%!/CONFIG_*_*),elementsmux(%i0,2,_),%b,|),,|,|,i)
 
 &CONFIG_ALERTLEVEL_DESC #conf=bittype()>=this to hear staff alerts.
 &CONFIG_ALERTLEVEL_DEFAULT #conf=4
@@ -17,6 +17,10 @@
 &CONFIG_HDRSTAR_DEFAULT #conf=hm
 &CONFIG_HDRSTAR_TYPE #conf=COLOR
 
+&CONFIG_HDRTEXT_DESC #conf=Color for header text
+&CONFIG_HDRTEXT_DEFAULT #conf=hw
+&CONFIG_HDRTEXT_TYPE #conf=COLOR
+
 &CONFIG_REQAPPROVAL_DESC #conf=Game requires use of approval system?
 &CONFIG_REQAPPROVAL_DEFAULT #conf=1
 &CONFIG_REQAPPROVAL_TYPE #conf=BOOL
@@ -27,8 +31,16 @@
 
 &SW_MAIN #conf=@if strlen(%0)={@attach %!/SW_SET},{@attach %!/SW_LIST}
 
-&SW_SET #conf=@assert/inline gtebittype(%#,6)=@pemit %#=Permission denied.;@assert/inline strlen(setr(!,partial(u(FUN_LIST_CONFIGS),%0,|),op))
+&SW_LIST #conf=@pemit %#=header(+globalconfig Options);@dolist/inline/delimit | [u(FUN_LIST_CONFIGS)]={@pemit %#=separator(%d0);@pemit %#=v(CONFIG_%d0_DESC);@pemit %#=[ansi(hw,TYPE:)] [v(CONFIG_%d0_TYPE)];@pemit %#=[ansi(hw,DEFAULT:)] [v(CONFIG_%d0_DEFAULT)];@pemit %#=[ansi(hw,CURRENT:)] [globalconf(%d0)]};@pemit %#=footer()
+
+&SW_SET #conf=@assert/inline gtebittype(%#,6)=@pemit %#=Permission denied.;@attach #inc/PARTIAL=%0,u(FUN_LIST_CONFIGS),|,op,option;@attach #inc/VALID_[v(CONFIG_%q<op>_TYPE)]=%1;th setq(!,globalconf(%q<op>),oldvalue);@set %!=CONFIG_%q<op>_VALUE:%q<value>;@attach %!/CONFIG_%q<op>_TRIGGER=%q<oldvalue>,%q<newvalue>;@pemit %#=Globalconf %q<op> is now: %q<valueformat>;@attach #inc/MSG_ALERT=Globalconf %q<op> is now: %q<valueformat>
 
 &GPFUN_GLOBALCONF #conf=default(%!/CONFIG_%0_VALUE,v(CONFIG_%0_DEFAULT))
 
 @startup #conf=@attach #inc/REGISTER_FUNCTIONS
+
+
+@@ Help stuffs.
++shelp/add Configuration/+globalconfig=#conf/SHLP_GAMECONFIG
+
+&SHLP_GAMECONFIG #conf=The Global Configuration affects softcoded config options that affect the whole game.%R%R[ansi(hc,Commands)]%R%R[ansi(hw,+globalconfig)]%R%TDisplay current configuration.%R%R[ansi(hw,+globalconfig <option>=<value>)]%R%TSet an option.%R%R[ansi(hc,Extending)]%RIf you @decompile #conf you'll see the attributes beginning with &CONFIG_<type>. create more of those to add more options. The _TYPE fields must align with VALID_<type> found on #inc.

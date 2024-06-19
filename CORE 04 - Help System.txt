@@ -4,74 +4,77 @@
 
 @skip isdbref(tag(setr(1,help)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No global room set!;@assert/inline isdbref(setr(0,create(Help System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=SAFE SIDEFX INHERIT !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=[globalroom()]}
 
-&CMD_+HELP #help=$^(?s)(?\:\+)?(help)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.+?))?$:@attach %!/START=%1,%2,%3,%4
+&CMD_+HELP #help=$^(?s)(?\:\+)?(help|shelp)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.+?))?$:@attach %!/START=%1,%2,%3,%4
 @set #help/CMD_+HELP=regexp
-&INIT_HELP #help=th setq(!,HELP,root);th setq(!,+help,cmd)
 
 &SWITCHES_0 #help=
-&SWITCHES_5 #help=HELP|ADD|CATEGORY|RENAMECATEGORY|RENAME|DELETE
+&SWITCHES_5 #help=HELP|ADD|CATEGORY|RENAMECATEGORY|RENAME|DELETE|SUMMARY
 &SWITCHES_6 #help=DELETECATEGORY
 
-&START #help=@attach %!/INIT_%0;@attach %!/GET_SWITCH=%1;@attach %!/INC_[strfirstof(%q<switch>,MAIN)]=trim(%2),trim(%3)
+&INIT_HELP #help=th setq(!,HELP,root);th setq(!,+help,cmd)
+&INIT_SHELP #help=@assert/inline gtebittype(%#,4)=@pemit %#=error();th setq(!,SHELP,root);th setq(!,+shelp,cmd);
 
-&INC_MAIN #help=@if strlen(%0)={@attach %!/INC_VIEW_CATEGORIES},{@attach %!/INC_VIEW_FILE}
+&START #help=@attach %!/INIT_%0;@attach #inc/GET_SWITCH=%1;@attach %!/SW_[strfirstof(%q<switch>,MAIN)]=trim(%2),trim(%3)
 
-&INC_VIEW_CATEGORIES #help=@pemit %#=header(mudname() %q<cmd> Categories);@dolist/inline/delimit | [u(FUN_CATEGORIES,%q<root>)]={@pemit %#=subheader(%d0);@pemit %#=columns(u(FUN_FILES,%q<root>,%d0),26,3,l,1,1,,%b,,1,|,,)};@pemit %#=footer(%q<cmd>/help for help)
+&SW_MAIN #help=@if strlen(%0)={@attach %!/INC_VIEW_FILE},{@attach %!/INC_VIEW_CATEGORIES};@pemit %#=footer(%q<cmd>/help for help)
 
-&INC_FIND_FILE #help=@assert/inline words(setr(!,u(FUN_FILES,%q<root>),files),|)=@pemit %#=There are no files!;@attach #inc/PARTIAL=%0,%q<files>,|,%1,file;
+&INC_VIEW_CATEGORIES #help=@pemit %#=header(mudname() %q<cmd> Categories);@dolist/inline/delimit | [u(FUN_CATEGORIES,%q<root>)]={@pemit %#=subheader(%d0);@pemit %#=columns(u(FUN_FILE_NAMES,%q<root>,%d0),26,3,l,1,1,,%b,,1,|,,)};
 
-&INC_VIEW_FILE #help=@attach %!/INC_FIND_FILE=%0,file;th setq(!,get_kv(get(#help_db/%q<root>),%q<file>),path);@pemit %#=header(mudname() %q<cmd>: %q<file>);@pemit %#=u(%q<path>,%#);@pemit %#=footer()
+&INC_FIND_FILE #help=@assert/inline words(setr(!,u(FUN_FILE_NAMES,%q<root>),files),|)=@pemit %#=There are no files!;@attach #inc/PARTIAL=%0,%q<files>,|,%1,file;th setq(!,get(#help_db/[u(FUN_HASH,%q<root>,r(%1))]_CATEGORY),category);
 
-&INC_HELP #help=@pemit %#=header(Staff %q<cmd> Commands);@pemit %#=[ansi(hc,Administrator Commands)]%R[u(HLP_INTERNAL))];@pemit %#=footer()
+&INC_VIEW_FILE #help=@attach %!/INC_FIND_FILE=%0,file;@pemit %#=header(mudname() %q<cmd>: %q<file>);th setq(!,get(#help_db/[u(FUN_HASH,%q<root>,%q<file>)]_ENTRY),data);@pemit %#=if(hasattr(%q<data>),ulocal(%q<data>,%#),%q<data>);
 
-&HLP_INTERNAL #help=[ansi(h,%q<cmd>/add <category>/<filename>=<#dbref/attribute>)]%RCreates or update a helpfile AND the respective category if it does not exist. The given attribute will be u()'d for retrieval.%R[ansi(h,%q<cmd>/category <filename>=<category>)]%RRe-Assign a helpfile to a different category.%R[ansi(h,%q<cmd>/renamecategory <category>=<new name>)]%RRe-assign all helpfiles of a given category to a new or existing one.%R[ansi(h,%q<cmd>/rename <filename>)]=<newname>%RRename a file.%R[ansi(h,%q<cmd>/deletecategory <category>)]%RDelete a category and all associated files.%R[ansi(h,%q<cmd>/delete <filename>)]%RDelete a helpfile.
+&SW_HELP #help=@pemit %#=header(Staff %q<cmd> Commands);@pemit %#=u(HLP_INTERNAL);@pemit %#=footer()
 
-&INC_ADD #help=@assert/inline strlen(setr(!,capnames(trim(before(%0,/))),category))=@pemit %#=Category field is empty.;@assert/inline setr(!,u(FUN_VALID_CATEGORY,%q<category>),result)=@pemit %#=%q<result>;@assert/inline strlen(setr(!,trim(after(%0,/)),filename))=@pemit %#=Filename field is empty.;@assert/inline setr(!,u(FUN_VALID_FILENAME,%q<filename>))=@pemit %#=%q<result>;@assert/inline strlen(%2)=@pemit %#=Entry field empty.;@attach/localize %!/ADD_FILE=%q<root>,%q<category>,%q<filename>,%2
+&HLP_INTERNAL #help=[ansi(hc,Administrator Commands)]%R%R[ansi(h,%q<cmd>/add <category>/<filename>=<#dbref/attribute>|<text>)]%R%TCreates or update a helpfile AND the respective category if it does not exist. The given attribute will be ulocal(<path>,%%#)'d for retrieval. If that fails, it's displayed as raw text.%R%R[ansi(h,%q<cmd>/category <filename>=<category>)]%R%TRe-Assign a helpfile to a different category.%R%R[ansi(h,%q<cmd>/renamecategory <category>=<new name>)]%R%TRe-assign all helpfiles of a given category to a new or existing one.%R%R[ansi(h,%q<cmd>/rename <filename>=<newname>)]%R%TRename a file.%R%R[ansi(h,%q<cmd>/deletecategory <category>)]%R%TDelete a category and all associated files.%R%R[ansi(h,%q<cmd>/delete <filename>)]%R%TDelete a helpfile.
 
-&INC_CATEGORY #help=@attach %!/INC_FIND_FILE=%0,file;
+&INC_ALERT #help=@pemit %#=%0;@attach #inc/MSG_ALERT=%0
 
-&INC_FIND_CATEGORY #help=
+&SW_ADD #help=@assert/inline strlen(setr(!,capnames(trim(before(%0,/))),category))=@pemit %#=Category field is empty.;@assert/inline setr(!,u(FUN_VALID_CATEGORY,%q<category>),result)=@pemit %#=%q<result>;@assert/inline strlen(setr(!,trim(after(%0,/)),filename))=@pemit %#=Filename field is empty.;@assert/inline setr(!,u(FUN_VALID_FILENAME,%q<filename>))=@pemit %#=%q<result>;@assert/inline strlen(%1)=@pemit %#=Entry field empty.;@attach/localize %!/ADD_FILE=%q<root>,%q<category>,%q<filename>,%1;@attach %!/INC_ALERT=The %q<root> %q<category> Helpfile '%q<filename>' has been created.
 
-&INC_RENAMECATEGORY #help=@attach %!/INC_FIND_CATEGORY=%0,cat;
+&SW_CATEGORY #help=@attach %!/INC_FIND_FILE=%0,file;th setq(!,%q<category>,oldcat);@assert/inline strlen(setr(!,capnames(%1),category))=@pemit %#=Category field is empty.;@assert/inline setr(!,u(FUN_VALID_CATEGORY,%q<category>),result)=@pemit %#=%q<result>;@attach %!/SET_CATEGORY=%q<root>,%q<filename>,%q<category>;@attach %!/INC_ALERT=The %q<root> %q<oldcat> Helpfile '%q<filename>' has been recategorized to: %q<category>.
 
-&INC_RENAME #help=@attach %!/INC_FIND_FILE=%0,file;
+&SW_SUMMARY #help=@attach %!/INC_FIND_FILE=%0,file;@assert/inline strlen(%1)=@pemit %#=Summary field is empty.;@attach %!/SET_SUMMARY=%q<root>,%q<file>,%1;@attach %!/INC_ALERT=The %q<root> %q<category> Helpfile '%q<file>' summary was changed to: %1.
 
-&INC_DELETECATEGORY #help=@attach %!/INC_FIND_CATEGORY=%0,cat;
+&INC_FIND_CATEGORY #help=@assert/inline words(setr(!,u(FUN_CATEGORIES,%q<root>),categories),|)=@pemit %#=There are no categories!;@attach #inc/PARTIAL=%0,%q<categories>,|,%1,category;
 
-&INC_DELETE #help=@attach %!/INC_FIND_FILE=%0,file;
+&SW_RENAMECATEGORY #help=@attach %!/INC_FIND_CATEGORY=%0,category;
+
+&SW_RENAME #help=@attach %!/INC_FIND_FILE=%0,file;@assert/inline strlen(setr(!,%1,filename))=@pemit %#=Filename field is empty.;@assert/inline setr(!,u(FUN_VALID_FILENAME,%q<filename>))=@pemit %#=%q<result>;@attach %!/RENAME_FILE=%q<root>,%q<file>,%q<filename>;@attach %!/INC_ALERT=The %q<root> %q<category> Helpfile '%q<file>' was renamed to: %q<filename>
+
+&SW_DELETECATEGORY #help=@attach %!/INC_FIND_CATEGORY=%0,category;@assert/inline strmatch(%q<category>,%1)=@pemit %#=[ansi(hr,WARNING:)] This will delete category '%q<category>' and all sub-files. Are you sure? Enter as [ansi(hr,%q<cmd>/deletecategory %q<category>=%q<category>)] to verify.;@attach %!/DELETE_CATEGORY=%q<root>,%q<category>;@attach %!/INC_ALERT=The %q<root> Helpfile Category '%q<category>' was [ansi(hr,completely deleted.)]
+
+&SW_DELETE #help=@attach %!/INC_FIND_FILE=%0,file;@assert/inline strmatch(%q<file>,%1)=@pemit %#=[ansi(hr,WARNING:)] This will delete file '%q<file>'. Are you sure? Enter as [ansi(hr,%q<cmd>/delete %q<file>=%q<file>)] to verify.;@attach %!/DELETE_FILE=%q<root>,%q<file>;@attach %!/INC_ALERT=%q<root> %q<category> Helpfile '%q<file>' has been [ansi(hr,deleted.)]
 
 &ADD_FILE #help=th setq(!,u(FUN_HASH,%0,%2),hash);@set #help_db=%q<hash>_NAME:%2;@set #help_db=%q<hash>_CATEGORY:%1;@set #help_db=%q<hash>_ENTRY:%3
-%0 - root, %1 - category, %2 - filename, %3 - entry
+@@ %0 - root, %1 - category, %2 - filename, %3 - entry
 
 &SET_SUMMARY #help=th setq(!,u(FUN_HASH,%0,%1),hash);@set #help_db=%q<hash>_SUMMARY:%2
-%0 - root, %1 - filename, %2 - summary
+@@ %0 - root, %1 - filename, %2 - summary
 
 &SET_CATEGORY #help=th setq(!,u(FUN_HASH,%0,%1),hash);@set #help_db=%q<hash>_CATEGORY:%2
-%0 - root, %1 - filename, %2 - new category
+@@ %0 - root, %1 - filename, %2 - new category
 
 &RENAME_CATEGORY #help=th setq(!,u(FUN_CATEGORY_FILES,%0,%1),files);@dolist/inline/delimit | %q<files>={@attach %!/SET_CATEGORY=%0,%d0,%2}
-%0 - root, %1 - category, %2 - new category
+@@ %0 - root, %1 - category, %2 - new category
 
 &DELETE_FILE #help=@set #help_db=!SAFE;@wipe #help_db/[u(FUN_HASH,%0,%1)]_*;@set #help_db=SAFE
-%0 - root, %1 - filename
+@@ %0 - root, %1 - filename
 
 &RENAME_FILE #help=th setq(!,u(FUN_HASH,%0,%1),hash);th setq(!,u(FUN_HASH,%0,%2),newhash);@dolist/inline lattr(#help_db/%q<hash>_*)={@mvattr #help_db=%d0,edit(%d0,%q<hash>,%q<newhash>)}
-%0 - root, %1 - filename, %2 - new filename
+@@ %0 - root, %1 - filename, %2 - new filename
 
 &FUN_CATEGORIES #help=setunion(capnames(iter(lattr(#help_db/%0_*_CATEGORY),get(#help_db/%i0),%b,|)),,|,|,i)
 @@ %0 - root
 
-&FUN_FILES #help=sort(if(strlen(%1),get(#help_db/%0_%1),iter(get(#help_db/%0),before(%i0,~),|,|)),i,|,|)
-@@ %0 - root, %1 - optional category
-
 &FUN_ALL_FILES #help=iter(lattr(#help_db/%0_*_NAME),elementsmux(%i0,2,_),%b,|)
-%0 - root
+@@ %0 - root
 
 &FUN_CATEGORY_FILES #help=iter(grep(#help_db,%0_*_CATEGORY,%1),elementsmux(%i0,2,_),%b,|)
-%0 - root, %1 - category
+@@ %0 - root, %1 - category
 
-&FUN_FILE_NAMES #help=sort(iter(if(%1,u(FUN_CATEGORY_FILES,%0,%1),u(FUN_ALL_FILES,%0)),get(#help_db/%0_%i0_NAME),|,|),i,|,|)
-%0 - root, %1 - optional category.
+&FUN_FILE_NAMES #help=sort(iter(if(strlen(%1),u(FUN_CATEGORY_FILES,%0,%1),u(FUN_ALL_FILES,%0)),get(#help_db/%0_%i0_NAME),|,|),i,|,|)
+@@ %0 - root, %1 - optional category.
 
 &BADCHARS #help=| ~ %R %T
 

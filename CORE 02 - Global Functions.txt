@@ -41,6 +41,8 @@
 
 &GFUN_NUMTH #gfun=%0[switch(%0,11,th,12,th,13,th,switch(right(%0,1),1,st,2,nd,3,rd,th))]
 
+&GFUN_ISAPPROVED #gfun=cor(gtebittype(%0,2),if(globalconf(REQAPPROVAL),default(%0/APPROVED,0))
+
 &REG_CAPNAMES #gfun=(?:^|(?<=[_\/\-\|\s()\+]))([a-z]+)
 &REG_CAPNAMES2 #gfun=(^|(?<=[(]))(of|the|a|and)
 &REG_CAPNAMES3 #gfun=\b(of|the|a|and)\b
@@ -73,7 +75,7 @@
 
 &GFUN_FILTEROBJID #gfun=filter(#lambda/[lit(isobjid(%0))],%0)
 
-&GFUN_FANCYTIME #gfun=if(%0,timefmt(switch(%1,2,$a $b $02D $02I:$02M$p $Z,3,$b $02D $02I:$02M$p $Y $Z,day,$b $02D $Y,date,$m/$d/$Y,$b $02D $02H:$02T$P $i),%0,if(strlen(%2),if(isdbref(%2),gettz(%2),%2),gettz(%#))),<invalid date>)
+&GFUN_FANCYTIME #gfun=if(%0,timefmt(switch(%1,2,$a $b $02D $02I:$02M$p $Z,3,$b $02D $02I:$02M$p $Y $Z,day,$b $02D $Y,date,$m/$d/$Y,strfirstof($b $02D $02H:$02T$P $i,%3)),%0,if(strlen(%2),if(isdbref(%2),gettz(%2),%2),gettz(%#))),<invalid date>)
 
 &GFUN_BASECONV #gfun=pack(unpack(%0,%1),%2)
 
@@ -107,7 +109,7 @@
 
 &GPFUN_FOOTER #gfun=localize(u(HEADER_PREP,%1,FOOTER,%2,=)[setq(!,if(strlen(%0),[ansi(%q<bordercolor>,<)]%B[if(has_markup(%0),%0,ansi(%q<htextcolor>,%0))]%B[ansi(%q<bordercolor>,>)]),headertext)][u(HEADER_RENDER,FOOTER,%0)])
 
-&HEADER_PREP #gfun=setq(!,owner(strfirstof(%0,%#)),target)[setq(!,m,bordercolor)][setq(!,%1,bordermode)][setq(!,hw,htextcolor)][setq(!,hm,hstarcolor)][setq(!,sub(width(%q<target>),2),width)][setq(!,%2,lwidth)][setq(!,%3,fill)][switch(%q<bordermode>,2,switch(%2,HEADER,setq(!,ansi(%q<bordercolor>,/),start)[setq(!,ansi(%q<bordercolor>,chr(92)),end)],FOOTER,setq(!,ansi(%q<bordercolor>,chr(92)),start)[setq(!,ansi(%q<bordercolor>,/),end)]),1,setq(!,setr(!,ansi(%q<bordercolor>,+),end),start),setq(!,setr(!,ansi(%q<bordercolor>,%q<fill>),end),start))]
+&HEADER_PREP #gfun=setq(!,owner(strfirstof(%0,%#)),target)[setq(!,globalconf(BORDER),bordercolor)][setq(!,%1,bordermode)][setq(!,globalconf(HDRTEXT),htextcolor)][setq(!,globalconf(HDRSTAR),hstarcolor)][setq(!,sub(width(%q<target>),2),width)][setq(!,%2,lwidth)][setq(!,%3,fill)][switch(%q<bordermode>,2,switch(%2,HEADER,setq(!,ansi(%q<bordercolor>,/),start)[setq(!,ansi(%q<bordercolor>,chr(92)),end)],FOOTER,setq(!,ansi(%q<bordercolor>,chr(92)),start)[setq(!,ansi(%q<bordercolor>,/),end)]),1,setq(!,setr(!,ansi(%q<bordercolor>,+),end),start),setq(!,setr(!,ansi(%q<bordercolor>,%q<fill>),end),start))]
 
 &HEADER_RENDER #gfun=if(%q<screenreader>,if(strlen(%1),%1),%q<start>[if(%q<lwidth>,[repeat(ansi(%q<bordercolor>,%q<fill>),%q<lwidth>,1)]%q<headertext>[repeat(ansi(%q<bordercolor>,%q<fill>),sub(%q<width>,%q<lwidth>,strlen(%q<headertext>)),1)],center(%q<headertext>,%q<width>,ansi(%q<bordercolor>,%q<fill>)))]%q<end>)
 
