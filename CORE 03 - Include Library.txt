@@ -28,7 +28,7 @@
 
 &VALID_DBREF #inc=@assert/inline isdbref(%0)=@pemit %#={ERROR: DBREF not found.};th setq(!,objid(%0),value);th setq(!,name(%q<value>),valueformat)
 
-&VALID_TIMEZONE #inc=@attach #inc/VALID_BASE=%0;@assert/inline valid(timezone,%q<value>)=@pemit %#={That is not a valid timezone. Check help timezone};th setq(!,%q<value>,valueformat)
+&VALID_TIMEZONE #inc=@attach #inc/VALID_BASE=%0;@assert/inline valid(timezone,%q<value>)=@pemit %#={That is not a valid timezone. Check +help timezones};th setq(!,%q<value>,valueformat)
 
 &VALID_DURATION #inc=@attach #inc/VALID_BASE=%0;@assert/inline setr(!,stringsecs(%0),value)=@pemit %#={'%0' did not resolve into a time. Example input: 30d 5h 3m for 30 days 5 hours and 3 minutes.};th setq(!,u(etime,%q<value>),valueformat)
 

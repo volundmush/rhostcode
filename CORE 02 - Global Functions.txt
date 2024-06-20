@@ -69,7 +69,7 @@
 
 &GFUN_CTIME #gfun=createtime(%0)
 
-&GFUN_GETTZ #gfun=UTC
+&GFUN_GETTZ #gfun=strfirstof(accoption(%0,TIMEZONE),get(%0/TIMEZONE))
 
 &GFUN_LWHOID #gfun=setunion(lwho(,,1),)
 
@@ -77,7 +77,7 @@
 
 &GFUN_FILTEROBJID #gfun=filter(#lambda/[lit(isobjid(%0))],%0)
 
-&GFUN_FANCYTIME #gfun=if(%0,timefmt(switch(%1,2,$a $b $02D $02I:$02M$p $Z,3,$b $02D $02I:$02M$p $Y $Z,day,$b $02D $Y,date,$m/$d/$Y,strfirstof($b $02D $02H:$02T$P $i,%3)),%0,if(strlen(%2),if(isdbref(%2),gettz(%2),%2),gettz(%#))),<invalid date>)
+&GFUN_FANCYTIME #gfun=if(cor(!strlen(%0),isint(%0)),timefmt(switch(%1,2,$a $b $02D $02I:$02M$p $Z,3,$b $02D $02I:$02M$p $Y $Z,day,$b $02D $Y,date,$m/$d/$Y,strfirstof($b $02D $02H:$02T$P $i,%3)),strfirstof(%0,secs()),if(strlen(%2),if(isdbref(%2),gettz(%2),%2),gettz(%#))),<invalid date>)
 
 &GFUN_BASECONV #gfun=pack(unpack(%0,%1),%2)
 
@@ -116,7 +116,7 @@
 &GFUN_ACCOUNT #gfun=privatize(1,if(hastotem(%0,ACCOUNT),objid(%0),if(isdbref(setr(!,get(%0/ACCOUNT),acc)),account(%q<acc>))))
 @@ %0 - dbref of player or account.
 
-&GPFUN_ACCOPTION #gfun=privatize(1,if(isdbref(setr(!,account(%0),acc)),default(%0/OP_%1_VALUE,get(#acc/OP_%1_DEFAULT)),get(#acc/OP_%1_DEFAULT)))
+&GPFUN_ACCOPTION #gfun=privatize(1,if(isdbref(setr(!,account(%0),acc)),default(%q<acc>/OP_%1_VALUE,get(#acc/OP_%1_DEFAULT)),get(#acc/OP_%1_DEFAULT)))
 @@ %0 - Dbref of player or account. %1 - Option.
 
 &GPFUN_LASTIDLE #gfun=switch(objeval(%#,conn(%0)),-1,ansi(hx,elementsmux(get(%0/last),2 3)),hideidle(%0))
