@@ -1,0 +1,7 @@
+@@ ZONEMASTER SCHEMA?
+
+@@ 'UP THE CHAIN': Starts from loc(%#) and moves to ZONE, then ZONE's location, then ZONE's location's ZONE, ad infinitum. Need to prevent infinite recursion.
+@@ ENVIRONMENT: function targets the location of an object. loc(%#) etc.
+@@ &ENV_<type> db=u()'d up the chain. <type> = TEMPERATURE, GRAVITY, etc.
+@@ Environment system should provide sane defaults per <type> as fallback.
+@@ &TYPE db=<REGION|PLANET|DIMENSION|SPACE>

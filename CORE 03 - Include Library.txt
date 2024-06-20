@@ -30,7 +30,7 @@
 
 &VALID_TIMEZONE #inc=@attach #inc/VALID_BASE=%0;@assert/inline valid(timezone,%q<value>)=@pemit %#={That is not a valid timezone. Check help timezone};th setq(!,%q<value>,valueformat)
 
-&VALID_DURATION #inc=@attach #inc/VALID_BASE=%0;@assert/inline setr(!,stringsecs(%0),value)=@pemit %#={'%0' did not resolve into a time. Check help stringsecs()};th setq(!,u(etime,%q<value>),valueformat)
+&VALID_DURATION #inc=@attach #inc/VALID_BASE=%0;@assert/inline setr(!,stringsecs(%0),value)=@pemit %#={'%0' did not resolve into a time. Example input: 30d 5h 3m for 30 days 5 hours and 3 minutes.};th setq(!,u(etime,%q<value>),valueformat)
 
 &VALID_POSINT #inc=@assert/inline u(valnum,%0)=@pemit %#={'[strfirstof(%1,%0)]' must be a whole number 1 or greater.};th setq(!,%0,value);th setq(!,%q<value>,valueformat)
 
@@ -46,7 +46,7 @@
 
 &VALID_FUTURE #inc=@attach %!/VALID_TIME;@assert/inline gt(%q<time>,secs())=@attach %!/INC`MSG=That would be in the past!
 
-&REGISTER_FUNCTIONS #inc=@dolist/inline lattr(%!/GPFUN_*)={@function/protect/notrace/privilege [after(%d0,_)]=%!/%d0};@dolist/inline lattr(%!/GFUN_*)={@function/notrace/protect [after(%d0,_)]=%!/%d0}
+&REGISTER_FUNCTIONS #inc=@dolist/inline lattr(%!/GPFUN_*)={@function/protect/notrace/privilege [after(%d0,_)]=%!/%d0};@dolist/inline lattr(%!/GFUN_*)={@function/notrace/protect [after(%d0,_)]=%!/%d0};@dolist/inline lattr(%!/GMFUN_*)={@function/notrace/protect/privilege [after(%d0,_)]=%!/%d0;@admin function_access=[after(%d0,_)] +guildmaster}
 
 &PARTIAL #inc=@if or(not(strlen(%0)),setr(!,match(%1,setr(!,%0,strfirstof(%3,choice)),strfirstof(%2,%b)),matched))={@if cand(t(strlen(%0)),t(%q<matched>))={th setq(!,elementsmux(%1,%q<matched>,strfirstof(%2,%b)),strfirstof(%3,choice))}},{@assert/inline words(setr(!,graball(%1,%0*,strfirstof(%2,%b),strfirstof(%2,%b)),strfirstof(%3,choice)))=@pemit %#={Invalid %4! Valid choices are: [itemize(%1,strfirstof(%2,%b),and,\,)]};@break/inline gt(words(r(strfirstof(%3,choice)),strfirstof(%2,%b)),1)=@pemit %#={ERROR: %0 matched [itemize(r(strfirstof(%3,choice)),strfirstof(%2,%b),and,\,)]. Please be more specific.}}
 @@ PARTIAL %0 = entry, %1 = choices, %2 = delimiter, %3 = register name, %4 = topic name
@@ -56,3 +56,8 @@
 &DISPLAY_HELP #inc=th setq(!,iter(setr(!,get(%!/HELP_FILES),hdata),before(%i0,~),|,|),hfiles);@if strlen(%0)={@attach #inc/PARTIAL=%0,%q<hfiles>,|,file,helpfile;@pemit %#=header(Help for: %1 - %q<file>);@pemit %#=u(%!/[get_kv(%q<hdata>,%q<file>)]);@pemit %#=footer()},{@pemit %#=header(Help for %1);@if hasattr(%!/HELP_INDEX)={@pemit %#=u(%!/HELP_INDEX);@pemit %#=separator()};@pemit %#=columns(%q<hfiles>,26,3,l,1,1,,%b,,1,|,,);@pemit %#=footer()}
 @@ %0 - file to display? %1 - Help System Name
 
+&CONFIG #inc=@if strlen(%0)={@attach #inc/CONF_SET},{@attach #inc/CONF_LIST}
+
+&CONF_LIST #inc=@pemit %#=header(cname(%!) Options);@dolist/inline/delimit | [u(#conf/FUN_LIST_CONFIGS,%!)]={@pemit %#=separator(%d0);@pemit %#=v(CONFIG_%d0_DESC);@pemit %#=[ansi(hw,TYPE:)] [v(CONFIG_%d0_TYPE)];@pemit %#=[ansi(hw,DEFAULT:)] [v(CONFIG_%d0_DEFAULT)];@pemit %#=[ansi(hw,CURRENT:)] [getconf(%!,%d0)]};@pemit %#=footer()
+
+&CONF_SET #inc=@assert/inline gtebittype(%#,6)=@pemit %#=Permission denied.;@attach #inc/PARTIAL=%0,u(#conf/FUN_LIST_CONFIGS,%!),|,op,option;@attach #inc/VALID_[v(CONFIG_%q<op>_TYPE)]=%1;th setq(!,getconf(%!,%q<op>),oldvalue);@set %!=CONFIG_%q<op>_VALUE:%q<value>;@attach %!/CONFIG_%q<op>_TRIGGER=%q<oldvalue>,%q<newvalue>;@pemit %#=[cname(%!)] %q<op> is now: %q<valueformat>;@attach #inc/MSG_ALERT=[cname(%!)] %q<op> is now: %q<valueformat>

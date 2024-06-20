@@ -28,10 +28,12 @@
 &GFUN_GETALIAS #gfun=switch(type(%0),EXIT,if(strfirstof(%1,1),elementsmux(fullname(%0),2,;),after(fullalias(%0)),chr(59)),get(%0/ALIAS))
 @@ %0 - dbref, %1 - full alias if exit.
 
+&GFUN_RANDWORD #gfun=first(shuffle(%0,strfirstof(%1,%b),strfirstof(%1,%b)),strfirstof(%1,%b))
+
 &GFUN_NAMEMATCH #gfun=t(match(setunion([name(%0)]|[num(%0)]|[objid(%0)],if(%2,getalias(%0)),|,|),%1,|))
 &GFUN_GRABNAME #gfun=strmatch(name(%0),%1*)
 
-&GFUN_NAMEFIND #gfun=trim(localize(iter(sortname(%0),if(namematch(%i0,%1,%2),%i0[ibreak()]),%b,|)))
+&GFUN_NAMEFIND #gfun=trim(localize(iter(sortname(%0),if(namematch(%i0,%1,%2),%i0[ibreak()]))))
 &GFUN_NAMEGRAB #gfun=trim(localize(ofparse(1,iter(setr(0,sortname(%0)),if(namematch(%i0,%1,%2),%i0[ibreak()])),iter(%q0,if(grabname(%i0,%1),%i0[ibreak()])))))
 &GFUN_NAMEGRABALL #gfun=trim(localize(ofparse(1,iter(setr(0,sortname(%0)),if(namematch(%i0,%1,%2),%i0[ibreak()])),iter(%q0,if(grabname(%i0,%1),%i0),))))
 @@ %0 - dbrefs. %1 - name. %2 - check aliases.
@@ -97,7 +99,33 @@
 
 &GFUN_PARTIAL #gfun=localize(if(setr(0,match(%0,%1,%2)),elementsmux(%0,%q0,%2),grab(%0,%1*,%2)))
 
+&GFUN_UPZONE #gfun=switch(type(%0),THING,if(hasflag(%0,ZONEMASTER),if(isdbref(loc(%0)),if(hasflag(loc(%0),ZONEMASTER),loc(%0),upzone(loc(%0)))),upzone(room(%0))),ROOM,first(lzone(%0)),upzone(room(%0)))
+@@ %0 - an object to find the next zone 'up' for. This strives to deal with searching up through locations and zone relationships. For example a ZONEMASTER could be in another ZONEMASTER's inventory, or it could be in a ROOM that belongs to the zone.
+
+&GFUN_UPZONES #gfun=privatize(1,if(cand(isdbref(setr(!,upzone(%0),newzone)),if(words(%1),!match(%1,%q<newzone>),1)),upzones(%q<newzone>,%1 %q<newzone>),trim(%1)))
+@@ %0 - start location object for upzone(). %1 - current chain.
+
 &GFUN_SECS_REMAIN #gfun=max(0,sub(%0,secs()))
+
+&GFUN_UMAIL #gfun=elementsmux(mailquick(%0,,1),2)
+
+&GPFUN_GETCONF #conf=default(%0/CONFIG_%1_VALUE,get(%0/CONFIG_%1_DEFAULT))
+
+&GPFUN_GLOBALCONF #conf=getconf(#conf,%0)
+
+&GFUN_ACCOUNT #gfun=privatize(1,if(hastotem(%0,ACCOUNT),objid(%0),if(isdbref(setr(!,get(%0/ACCOUNT),acc)),account(%q<acc>))))
+@@ %0 - dbref of player or account.
+
+&GPFUN_ACCOPTION #gfun=privatize(1,if(isdbref(setr(!,account(%0),acc)),default(%0/OP_%1_VALUE,get(#acc/OP_%1_DEFAULT)),get(#acc/OP_%1_DEFAULT)))
+@@ %0 - Dbref of player or account. %1 - Option.
+
+&GPFUN_LASTIDLE #gfun=switch(objeval(%#,conn(%0)),-1,ansi(hx,elementsmux(get(%0/last),2 3)),hideidle(%0))
+
+&GPFUN_HIDECONN #gfun=switch(objeval(%#,conn(%0)),-1,ansi(hx,Off),ansi(if(ishidden(%0),hx,hg),smalltime(conn(%0),3)))
+
+&GPFUN_HIDEIDLE #gfun=switch(objeval(%#,idle(%0)),-1,ansi(hx,Off),ansi(if(ishidden(%0),hx,ryg(round(mul(fdiv(bound(idle(%0),0,3600),3600),100),0))),smalltime(idle(%0),3)))
+
+&GPFUN_LASTCONN #gfun=switch(objeval(%#,conn(%0)),-1,ansi(hx,elementsmux(get(%0/last),2 3)),hideconn(%0))
 
 &GFUN_NAMELIST #gfun=localize(iter(%0,if(!match(setr(0,pmatch(%i0)),#-1*),%q0,#-1[objeval(%#,u(%1,%i0,#-1))])))
 
@@ -109,7 +137,7 @@
 
 &GPFUN_FOOTER #gfun=localize(u(HEADER_PREP,%1,FOOTER,%2,=)[setq(!,if(strlen(%0),[ansi(%q<bordercolor>,<)]%B[if(has_markup(%0),%0,ansi(%q<htextcolor>,%0))]%B[ansi(%q<bordercolor>,>)]),headertext)][u(HEADER_RENDER,FOOTER,%0)])
 
-&HEADER_PREP #gfun=setq(!,owner(strfirstof(%0,%#)),target)[setq(!,globalconf(BORDER),bordercolor)][setq(!,%1,bordermode)][setq(!,globalconf(HDRTEXT),htextcolor)][setq(!,globalconf(HDRSTAR),hstarcolor)][setq(!,sub(width(%q<target>),2),width)][setq(!,%2,lwidth)][setq(!,%3,fill)][switch(%q<bordermode>,2,switch(%2,HEADER,setq(!,ansi(%q<bordercolor>,/),start)[setq(!,ansi(%q<bordercolor>,chr(92)),end)],FOOTER,setq(!,ansi(%q<bordercolor>,chr(92)),start)[setq(!,ansi(%q<bordercolor>,/),end)]),1,setq(!,setr(!,ansi(%q<bordercolor>,+),end),start),setq(!,setr(!,ansi(%q<bordercolor>,%q<fill>),end),start))]
+&HEADER_PREP #gfun=setq(!,owner(strfirstof(%0,%#)),target)[setq(!,strfirstof(accoption(%q<target>,BORDER),globalconf(BORDER)),bordercolor)][setq(!,%1,bordermode)][setq(!,strfirstof(accoption(%q<target>,HDRTEXT),globalconf(HDRTEXT)),htextcolor)][setq(!,strfirstof(accoption(%q<target>,HDRSTAR),globalconf(HDRSTAR)),hstarcolor)][setq(!,sub(width(%q<target>),2),width)][setq(!,%2,lwidth)][setq(!,%3,fill)][switch(%q<bordermode>,2,switch(%2,HEADER,setq(!,ansi(%q<bordercolor>,/),start)[setq(!,ansi(%q<bordercolor>,chr(92)),end)],FOOTER,setq(!,ansi(%q<bordercolor>,chr(92)),start)[setq(!,ansi(%q<bordercolor>,/),end)]),1,setq(!,setr(!,ansi(%q<bordercolor>,+),end),start),setq(!,setr(!,ansi(%q<bordercolor>,%q<fill>),end),start))]
 
 &HEADER_RENDER #gfun=if(%q<screenreader>,if(strlen(%1),%1),%q<start>[if(%q<lwidth>,[repeat(ansi(%q<bordercolor>,%q<fill>),%q<lwidth>,1)]%q<headertext>[repeat(ansi(%q<bordercolor>,%q<fill>),sub(%q<width>,%q<lwidth>,strlen(%q<headertext>)),1)],center(%q<headertext>,%q<width>,ansi(%q<bordercolor>,%q<fill>)))]%q<end>)
 
