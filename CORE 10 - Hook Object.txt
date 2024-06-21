@@ -1,0 +1,12 @@
+
+
+
+
+&HOOK_PERMIT #hobj=@dolist/inline @dig @create=@hook/permit %d0
+
+&P_@DIG #hobj=[u(FUN_ZONETO,@dig)]
+&P_@OPEN #hobj=[u(FUN_ZONETO,@open)]
+
+&FUN_ZONETO #hobj=if(hastoggle(%#,ZONE_AUTOADDALL),0[pemit(%3,Sorry but the ZONE_AUTOADDALL @toggle is not supported.)],if(hastoggle(%#,ZONE_AUTOADD),switch(words(lzone(%#)),0,0[pemit(%#,Sorry but you must @zone/add yourself to the zone you wish to build in.)],1,if(elock(lzone(%#)/ZoneToLock,%#),1,0[pemit(%#,You don't pass [cname(lzone(%#))]'s ZoneToLock!)]),0[pemit(%#,You belong to more than one zone! Use @zone/purge me to clear them.)]),if(gtebittype(%#,4),1,0[pemit(%#,Sorry but using %0 without the ZONE_AUTOADD @toggle is not supported.)])))
+
+@startup #hobj=@dolist/inline lattr(%!/HOOK_*)=@attach %!/%d0

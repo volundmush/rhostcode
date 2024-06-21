@@ -1,0 +1,4 @@
+@dolist/inline/delimit | globthing~Thing|globexit~Exit|globplayer~Player|globobj~Obj|globroom~Room=@skip isdbref(tag(setr(1,before(%d0,~))))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object installed!;@assert/inline isdbref(setr(0,create(Global Parent [after(%d0,~)],,t)))=@pemit %#=ERROR: Could not create code object: %q0;@set %q0=SAFE SIDEFX INHERIT NO_COMMAND;@tag/add %q1=%q0;@tel %q1=[tag(stor)]}
+
+&LOCK_ZONEWIZLOCK #globthing=cor(gtebittype(%#,5),t(match()))
+&LOCK_ZONEWIZTOLOCK #globthing=
