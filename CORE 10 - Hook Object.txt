@@ -1,6 +1,5 @@
-
-
-
+@@ Core
+@cmdquota me=99999
 
 &HOOK_PERMIT #hobj=@dolist/inline @dig @create=@hook/permit %d0
 

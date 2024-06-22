@@ -1,4 +1,5 @@
 @@ Core
+@cmdquota me=99999
 
 @skip isdbref(tag(setr(1,help_db)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Help Database,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=SAFE SIDEFX INHERIT NO_COMMAND;@tag/add %q1=%q0;@tel %q0=#stor}
 

@@ -1,4 +1,5 @@
 @@ CORE xx - Include Library
+@cmdquota me=99999
 
 @skip isdbref(tag(setr(1,inc)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Include Library,,t)))=@pemit %#=ERROR: Could not create Include Library: %q0;@set %q0=SAFE NO_COMMAND;@tag/add %q1=%q0;@tel #inc=#stor}
 
@@ -11,7 +12,7 @@
 &MSG_ALERT #inc=@attach/localize #inc/MSG_ALERT_DO=%0,%1
 &MSG_ALERT_DO #inc=th setq(!,%[[strfirstof(%1,cname(%!) - %!)]%]-%[%k%] %0,msg);@log %[[time()]%]-%q<msg>;@dolist/inline filter(#lambda/[lit(default(%0/ALERTS,1))],bitwho(globalconf(ALERTLVL)))={@pemit %d0=%[[runintz(gettz(%d0),time())]%]-%q<msg>}
 
-&GET_PLAYER #inc=@assert/inline strlen(%0)=@pemit %#=You must enter a player name!;@assert/inline strlen(%1);@assert/inline isdbref(pmatchreg(%0,%1))=@pemit %#=%0 [if(strmatch(r(%1),#-2*),matches multiple players!,does not match a player!)]
+&GET_PLAYER #inc=@assert/inline strlen(%0)=@pemit %#=You must enter a player name!;@assert/inline strlen(%1);@assert/inline isdbref(pmatchreg(%0,%1))=@pemit %#=%0 [if(strmatch(r(%1),#-2*),matches multiple players!,does not match a player!)];th setq(!,objid(r(%1)),%1)
 @@ GET_PLAYER Arguments: %0 = player being checked, %1 = register number to load their data into.
 
 &VALID_BASE #inc=@assert/inline strlen(setr(!,trim(%0),value))=@pemit %#=Nothing entered!

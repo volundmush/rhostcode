@@ -1,4 +1,5 @@
-@@ CORE xx - Global Functions
+@@ CORE
+@cmdquota me=99999
 
 @skip isdbref(tag(setr(1,gfun)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object installed!;@assert/inline isdbref(setr(0,create(Global Functions,,t)))=@pemit %#=ERROR: Could not create code object: %q0;@set %q0=SAFE SIDEFX INHERIT NO_COMMAND;@tag/add %q1=%q0;@tel %q1=#stor}
 

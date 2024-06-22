@@ -1,4 +1,42 @@
+@@ Core
+@cmdquota me=99999
+
 @dolist/inline/delimit | globthing~Thing|globexit~Exit|globplayer~Player|globobj~Obj|globroom~Room=@skip isdbref(tag(setr(1,before(%d0,~))))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object installed!;@assert/inline isdbref(setr(0,create(Global Parent [after(%d0,~)],,t)))=@pemit %#=ERROR: Could not create code object: %q0;@set %q0=SAFE SIDEFX INHERIT NO_COMMAND;@tag/add %q1=%q0;@tel %q1=[tag(stor)]}
 
-&LOCK_ZONEWIZLOCK #globthing=cor(gtebittype(%#,5),t(match()))
-&LOCK_ZONEWIZTOLOCK #globthing=
+&LOCK_ZONEWIZLOCK #globthing=[switch(bittype(%#),>1,t(match(v(BUILDERS),%:)),>4,1,0)]
+&LOCK_ZONETOLOCK #globthing=[u(LOCK_ZONEWIZLOCK,%0,%1)]
+
+
+
+@@ General Objects
+&GAME_ALEAVE #globobj=
+&GAME_AENTER #globobj=th setq(!,upzone(%!),upz);th setq(!,get(%#/GAME_CURZONE),oldz)
+
+@@ Players
+@power #globplayer=FORMATTING
+
+@@ Rooms
+@power #globroom=FORMATTING
+
+@aenter #globroom=@attach %!/GAME_AENTER
+@aleave #globroom=@attach %!/GAME_ALEAVE
+
+@@ Things
+@power #globthing=FORMATTING
+@enter #globthing=enter the [cname(%!)].
+@oenter #globthing=enters the [cname(%!)].
+
+@aenter #globthing=@attach %!/GAME_AENTER
+@aleave #globthing=@attach %!/GAME_ALEAVE
+
+@leave #globthing=leave the [cname(%!)].
+@oleave #globthing=leaves the [cname(%!)].
+@oxleave #globthing=emerges from the [cname(%!)].
+
+@@ Exits
+@power #globexit=FORMATTING
+@success #globexit=take the [cname(%!)] exit to [cname(loc(%!))].
+@osuccess #globexit=takes the [cname(%!)] exit to [cname(loc(%!))].
+
+&LOCK_BASIC #globexit=cor(gtebittype(%#,2),lmin(1 [iter(lattrp_full(%!,LOCK_BASIC_*),if(u(%!/%i0,%0,%1,%i0),1,0[ibreak()]))]))
+@lock/basic #globexit=LOCK_BASIC/1

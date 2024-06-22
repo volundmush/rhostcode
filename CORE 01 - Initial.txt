@@ -1,3 +1,4 @@
+@@ Core
 @set me=SIDEFX
 @cmdquota me=99999
 
