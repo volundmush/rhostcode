@@ -10,9 +10,7 @@
 
 @@ General Objects
 &GAME_ALEAVE #globobj=
-&GAME_AENTER #globobj=@break strmatch(setr(!,upzone(%!),upz),setr(!,get(%#/GAME_UPZONE),oldz));
-
-@if !strmatch(%q<upz>,%q<oldz>)={@if isdbref(%q<oldz>)={th gm_upzone_remove(%q<oldz>,%:)};th gm_upzone_add(%q<upz>,%:)}
+&GAME_AENTER #globobj=
 
 @@ Players
 @power #globplayer=FORMATTING
@@ -20,7 +18,7 @@
 @@ Rooms
 @power #globroom=FORMATTING
 
-@aenter #globroom=th setq(!,upzone(%!),upz);th setq(!,get(%#/GAME_UPZONE),oldz);@if !strmatch(%q<upz>,%q<oldz>)={@if isdbref(%q<oldz>)={th gm_upzone_remove(%q<oldz>,%:)};th gm_upzone_add(%q<upz>,%:)}
+@aenter #globroom=@break strmatch(setr(!,upzone(%!),upz),setr(!,get(%#/GAME_UPZONE),oldz));@if isdbref(%q<oldz>)={th gm_upzone_remove(%q<oldz>,%:)};@if isdbref(%q<upz>)={th gm_upzone_add(%q<upz>,%:)}
 @aleave #globroom=
 
 @@ Things
@@ -28,7 +26,7 @@
 @enter #globthing=You enter the [cname(%!)].
 @oenter #globthing=enters the [cname(%!)].
 
-@aenter #globthing=th setq(!,upzone(%!),upz);th setq(!,get(%#/GAME_UPZONE),oldz);@if !strmatch(%q<upz>,%q<oldz>)={@if isdbref(%q<oldz>)={th gm_upzone_remove(%q<oldz>,%:)};th gm_upzone_add(%q<upz>,%:)}
+@aenter #globthing=@break strmatch(setr(!,upzone(%!),upz),setr(!,get(%#/GAME_UPZONE),oldz));@if isdbref(%q<oldz>)={th gm_upzone_remove(%q<oldz>,%:)};@if isdbref(%q<upz>)={th gm_upzone_add(%q<upz>,%:)}
 @aleave #globthing=
 
 @leave #globthing=You leave the [cname(%!)].
