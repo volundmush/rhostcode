@@ -102,7 +102,7 @@
 &FUN_CHARACTERS #acc=sortname(filter(%!/FIL_CHARACTER,filterobjid(get(%0/CHARACTERS))))
 @@ %0 - dbref/objid of account.
 
-&SW_MAIN #acc=@attach %!/INC_ACCPLAYER=if(cand(strlen(%0),gtebittype(%#,4)),trim(%0),%#),acc;@pemit %#=header([ansi(hw,Account:)] [cname(%q<acc>)]);@pemit %#=ansi(g,u(FUN_ACC_COLUMNS));@pemit %#=subheader();@dolist/inline [u(FUN_CHARACTERS,%q<acc>)]=@pemit %#=u(FUN_ACC_ROW,%d0);@pemit %#=footer()
+&SW_MAIN #acc=@attach %!/INC_ACCPLAYER=if(cand(strlen(%0),gtebittype(%#,4)),trim(%0),%#),acc;@pemit %#=header([ansi(hw,Account:)] [cname(%q<acc>)]);@pemit %#=ansi(confoverride(%#,COLUMN),u(FUN_ACC_COLUMNS));@pemit %#=subheader();@dolist/inline [u(FUN_CHARACTERS,%q<acc>)]=@pemit %#=u(FUN_ACC_ROW,%d0);@pemit %#=footer()
 
 &FUN_ACC_COLUMNS #acc=printf($-5s $-3s $-2s $-4s $-s $s,Dbref,Bit,Al,Mail,Name)
 
@@ -147,7 +147,7 @@
 
 &FUN_INACTIVE_ACCOUNTS #acc=filter(%!/FIL_INACTIVE,u(FUN_LIST_ACCOUNTS),%b,%b,sub(secs(),stringsecs(getconf(%!,INACTIVE))))
 
-&SW_INACTIVE #acc=@pemit %#=header(Inactive Accounts);@pemit %#=ansi(g,u(FUN_INACTIVE_COLUMNS));@pemit %#=subheader();@dolist/inline [setr(!,u(FUN_INACTIVE_ACCOUNTS),inactive)]={@pemit %#=u(FUN_INACTIVE_ROW,%d0)};@pemit %#=footer(Inactive Total: [words(%q<inactive>)])
+&SW_INACTIVE #acc=@pemit %#=header(Inactive Accounts);@pemit %#=ansi(confoverride(%#,COLUMN),u(FUN_INACTIVE_COLUMNS));@pemit %#=subheader();@dolist/inline [setr(!,u(FUN_INACTIVE_ACCOUNTS),inactive)]={@pemit %#=u(FUN_INACTIVE_ROW,%d0)};@pemit %#=footer(Inactive Total: [words(%q<inactive>)])
 
 &FUN_INACTIVE_COLUMNS #acc=u(FUN_ACCLIST_COLUMNS)
 &FUN_INACTIVE_ROW #acc=u(FUN_ACCLIST_ROW,%0)

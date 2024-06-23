@@ -17,7 +17,7 @@
 
 &LOGO #fobj=center(Welcome to [mudname()],78)
 
-&COMMAND_COLUMNS #fobj=ansi(g,printf($30-s $45-s,Command,Description))
+&COMMAND_COLUMNS #fobj=ansi(confoverride(%#,COLUMN),printf($30-s $45-s,Command,Description))
 
 &FORMAT_COMMAND #fobj=printf($30-s $|45"-s,ansi(hw,elementsmux(%5,1,~)),elementsmux(%5,2,~))
 
@@ -25,7 +25,7 @@
 
 &CONNECT_NOTAUTH #fobj=[u(LOGO,%0,%1,%2,%3,%4)]%R[u(LOGIN_COMMANDS,%0,%1,%2,%3,%4)]
 
-&FUN_LIST_CHARACTERS_COLUMNS #fobj=ansi(g,printf($-5s $-30s $-4s $-4s,Dbref,Name,Last,Idle))
+&FUN_LIST_CHARACTERS_COLUMNS #fobj=ansi(confoverride(%#,COLUMN),printf($-5s $-30s $-4s $-4s,Dbref,Name,Last,Idle))
 
 &FUN_LIST_CHARACTERS_ROW #fobj=printf($-5s $-30s $-4s $-4s,num(%5),cname(%5),lastconn(%5),hideidle(%5))
 

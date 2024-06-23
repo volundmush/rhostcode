@@ -29,10 +29,10 @@
 
 &INC_LIST #chan_lib=@pemit %#=header(u(FUN_SYS_NAME) Channels);@pemit %#=u(FUN_COLUMNS_%1);@pemit %#=separator();th setq(!,lwhoid(),online);@dolist/inline %0={@attach %!/INC_LIST_%1=%d0};@pemit %#=footer()
 
-&FUN_COLUMNS_MAIN #chan_lib=ansi(g,printf($4-s $3s $-15s $|"-45s $:0:3s/$:0:3s,DBRF,Sta,Name,Description,Cur,Mem))
+&FUN_COLUMNS_MAIN #chan_lib=ansi(confoverride(%#,COLUMN),printf($4-s $3s $-15s $|"-45s $:0:3s/$:0:3s,DBRF,Sta,Name,Description,Cur,Mem))
 &INC_LIST_MAIN #chan_lib=@pemit %#=printf($4-s $3s $-15s $|"-45s $:0:3s/$:0:3s,num(%0),u(FUN_PLAYER_STATUS,%0,%#),cname(%0),default(%0/DESCRIBE,No description.),words(setinter(filterobjid(setr(!,get(%0/MEMBERS),mem)),%q<online>)),words(%q<mem>))
 
-&FUN_NAMES #chan_lib=itemize(iter(filterobjid(%0),cname(%i0),%b,|),|,and,%,%B)
+&FUN_NAMES #chan_lib=elist(iter(filterobjid(%0),cname(%i0),%b,|),|,,|)
 
 &SW_WHO #chan_lib=@attach %!/INC_FIND;@pemit %#=[u(FUN_NAMES,get(%q<chan>/MEMBERS)))]
 
@@ -40,7 +40,7 @@
 
 &SW_DELETE #chan_lib=@attach %!/INC_ADMIN;@attach %!/INC_FIND;
 
-&SW_CREATE #chan_lib=@attach %!/INC_ADMIN;@assert/inline setr(!,u(FUN_VALID_NAME,setr(!,trim(%0),channame)))=@pemit %#=%q<result>;@break/inline cand(isobjid(setr(!,u(FUN_FIND_CHANNEL,%#,%q<channame>),found)),!strmatch(%q<chan>,%q<found>))=@pemit %#=Channel name conflict detected.;@assert/inline isdbref(setr(!,create(%q<channame>,,t),chan))=@pemit %#=Could not create Channel: %q<chan>;@name/ansi %q<chan>=%q<channame>;@tel %q<chan>=%!;@pemit %#=Created a new channel: %q<channame>;@attach #inc/MSG_ALERT=New channel created: %q<channame>
+&SW_CREATE #chan_lib=@attach %!/INC_ADMIN;@assert/inline setr(!,u(FUN_VALID_NAME,setr(!,trim(%0),channame)),result)=@pemit %#=%q<result>;@break/inline cand(isobjid(setr(!,u(FUN_FIND_CHANNEL,%#,%q<channame>),found)),!strmatch(%q<chan>,%q<found>))=@pemit %#=Channel name conflict detected.;@assert/inline isdbref(setr(!,create(%q<channame>,,t),chan))=@pemit %#=Could not create Channel: %q<chan>;@if has_markup(%q<channame>)={@name/ansi %q<chan>=%q<channame>};@tel %q<chan>=%!;@pemit %#=Created a new channel: %q<channame>;@attach #inc/MSG_ALERT=New channel created: %q<channame>
 
 &SW_RENAME #chan_lib=@attach %!/INC_ADMIN;@attach %!/INC_FIND;@assert/inline setr(!,u(FUN_VALID_NAME,setr(!,trim(%0),channame)))=@pemit %#=%q<result>;@break/inline cand(isobjid(setr(!,u(FUN_FIND_CHANNEL,%#,stripansi(%q<channame>),found))),!strmatch(%q<chan>,%q<found>))=@pemit %#=Channel name conflict detected.;th setq(!,cname(%q<chan>),oldname);@name/ansi %q<chan>=%q<channame>;@pemit %#=Channel '%q<oldname>' renamed to '%q<channame>';@attach #inc/MSG_ALERT=Channel '%q<oldname>' renamed to '%q<channame>';th u(FUN_CEMIT,%q<chan>,:renamed '%q<oldname>' to '%q<channame>',%#)
 

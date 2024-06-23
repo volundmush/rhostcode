@@ -26,7 +26,7 @@
 
 &GFUN_SORTNAME #gfun=sortby(#lambda/[lit([comp(lcstr(name(%0)),lcstr(name(%1)))])],%0,if(strlen(%1),%1,%B),if(strlen(%2),%2,%B))
 
-&GFUN_GETALIAS #gfun=switch(type(%0),EXIT,if(strfirstof(%1,1),elementsmux(fullname(%0),2,;),after(fullalias(%0)),chr(59)),get(%0/ALIAS))
+&GFUN_GETALIAS #gfun=switch(type(%0),EXIT,if(strfirstof(%1,1),elementsmux(fullname(%0),2,;),after(fullalias(%0),chr(59))),get(%0/ALIAS))
 @@ %0 - dbref, %1 - full alias if exit.
 
 &GFUN_RANDWORD #gfun=first(shuffle(%0,strfirstof(%1,%b),strfirstof(%1,%b)),strfirstof(%1,%b))
@@ -110,10 +110,10 @@
 
 &GFUN_PARTIAL #gfun=localize(if(setr(0,match(%0,%1,%2)),elementsmux(%0,%q0,%2),grab(%0,%1*,%2)))
 
-&GFUN_UPZONE #gfun=switch(type(%0),THING,if(hasflag(%0,ZONEMASTER),if(isdbref(loc(%0)),if(hasflag(loc(%0),ZONEMASTER),loc(%0),upzone(loc(%0)))),upzone(room(%0))),ROOM,first(lzone(%0)),upzone(room(%0)))
+&GPFUN_UPZONE #gfun=switch(type(%0),ROOM,if(isdbref(lzone(%0)),objid(lzone(%0))),if(isdbref(loc(%0)),if(hasflag(loc(%0),ZONEMASTER),objid(loc(%0)),upzone(loc(%0)))))
 @@ %0 - an object to find the next zone 'up' for. This strives to deal with searching up through locations and zone relationships. For example a ZONEMASTER could be in another ZONEMASTER's inventory, or it could be in a ROOM that belongs to the zone.
 
-&GFUN_UPZONES #gfun=privatize(1,if(cand(isdbref(setr(!,upzone(%0),newzone)),if(words(%1),!match(%1,%q<newzone>),1)),upzones(%q<newzone>,%1 %q<newzone>),trim(%1)))
+&GPFUN_UPZONES #gfun=privatize(1,if(cand(isdbref(setr(!,upzone(%0),newzone)),!match(%1,%q<newzone>)),upzones(%q<newzone>,%1 %q<newzone>),trim(%1)))
 @@ %0 - start location object for upzone(). %1 - current chain.
 
 &GFUN_SECS_REMAIN #gfun=max(0,sub(%0,secs()))
@@ -140,18 +140,37 @@
 
 &GFUN_NAMELIST #gfun=localize(iter(%0,if(!match(setr(0,pmatch(%i0)),#-1*),%q0,#-1[objeval(%#,u(%1,%i0,#-1))])))
 
-&GPFUN_HEADER #gfun=localize(u(HEADER_PREP,%1,HEADER,%2,=)[setq(!,if(strlen(%0),[ansi(%q<bordercolor>,<)][setr(!,ansi(%q<hstarcolor>,*),borderstar)]%B[if(has_markup(%0),%0,ansi(%q<htextcolor>,%0))]%B%q<borderstar>[ansi(%q<bordercolor>,>)]),headertext)][u(HEADER_RENDER,HEADER,%0)])
+@@ Header stuff
+&GPFUN_HEADER #gfun=localize(u(HEADER_PREP,%1,HEADER,%2,=,%3)[setq(!,if(strlen(%0),[ansi(%q<bordercolor>,<<)]%B[if(has_markup(%0),%0,ansi(%q<htextcolor>,%0))]%B[ansi(%q<bordercolor>,>>)]),headertext)][u(HEADER_RENDER,HEADER,%0)])
 
-&GPFUN_SUBHEADER #gfun=localize(u(HEADER_PREP,%1,SUBHEADER,%2,=)[setq(!,if(strlen(%0),[ansi(%q<bordercolor>,<)]%B[if(has_markup(%0),%0,ansi(%q<htextcolor>,%0))]%B[ansi(%q<bordercolor>,>)]),headertext)][u(HEADER_RENDER,SUBHEADER,%0)])
+&GPFUN_SUBHEADER #gfun=localize(u(HEADER_PREP,%1,SUBHEADER,%2,=,%3)[setq(!,if(strlen(%0),[ansi(%q<bordercolor>,<)]%B[if(has_markup(%0),%0,ansi(%q<htextcolor>,%0))]%B[ansi(%q<bordercolor>,>)]),headertext)][u(HEADER_RENDER,SUBHEADER,%0)])
 
-&GPFUN_SEPARATOR #gfun=localize(u(HEADER_PREP,%1,SEPARATOR,%2,-)[setq(!,if(strlen(%0),[ansi(%q<bordercolor>,<)]%B[if(has_markup(%0),%0,ansi(%q<htextcolor>,%0))]%B[ansi(%q<bordercolor>,>)]),headertext)][u(HEADER_RENDER,SEPARATOR,%0)])
+&GPFUN_SEPARATOR #gfun=localize(u(HEADER_PREP,%1,SEPARATOR,%2,-,%3)[setq(!,if(strlen(%0),[ansi(%q<bordercolor>,<)]%B[if(has_markup(%0),%0,ansi(%q<htextcolor>,%0))]%B[ansi(%q<bordercolor>,>)]),headertext)][u(HEADER_RENDER,SEPARATOR,%0)])
 
-&GPFUN_FOOTER #gfun=localize(u(HEADER_PREP,%1,FOOTER,%2,=)[setq(!,if(strlen(%0),[ansi(%q<bordercolor>,<)]%B[if(has_markup(%0),%0,ansi(%q<htextcolor>,%0))]%B[ansi(%q<bordercolor>,>)]),headertext)][u(HEADER_RENDER,FOOTER,%0)])
+&GPFUN_FOOTER #gfun=localize(u(HEADER_PREP,%1,FOOTER,%2,=,%3)[setq(!,if(strlen(%0),[ansi(%q<bordercolor>,<)]%B[if(has_markup(%0),%0,ansi(%q<htextcolor>,%0))]%B[ansi(%q<bordercolor>,>)]),headertext)][u(HEADER_RENDER,FOOTER,%0)])
 
-&HEADER_PREP #gfun=setq(!,owner(strfirstof(%0,%#)),target)[setq(!,strfirstof(accoption(%q<target>,BORDER),globalconf(BORDER)),bordercolor)][setq(!,%1,bordermode)][setq(!,strfirstof(accoption(%q<target>,HDRTEXT),globalconf(HDRTEXT)),htextcolor)][setq(!,strfirstof(accoption(%q<target>,HDRSTAR),globalconf(HDRSTAR)),hstarcolor)][setq(!,sub(width(%q<target>),2),width)][setq(!,%2,lwidth)][setq(!,%3,fill)][switch(%q<bordermode>,2,switch(%2,HEADER,setq(!,ansi(%q<bordercolor>,/),start)[setq(!,ansi(%q<bordercolor>,chr(92)),end)],FOOTER,setq(!,ansi(%q<bordercolor>,chr(92)),start)[setq(!,ansi(%q<bordercolor>,/),end)]),1,setq(!,setr(!,ansi(%q<bordercolor>,+),end),start),setq(!,setr(!,ansi(%q<bordercolor>,%q<fill>),end),start))]
+&GPFUN_CONFOVERRIDE #gfun=strfirstof(accoption(%0,%1),globalconf(%1),%2)
+
+&HEADER_PREP #gfun=setq(!,owner(strfirstof(%0,%#)),target)[setq(!,confoverride(%q<target>,BORDER),bordercolor)][setq(!,%4,bordermode)][setq(!,confoverride(%q<target>,HDRTEXT),htextcolor)][setq(!,sub(width(%q<target>),2),width)][setq(!,%2,lwidth)][setq(!,%3,fill)][switch(%q<bordermode>,2,switch(%2,HEADER,setq(!,ansi(%q<bordercolor>,/),start)[setq(!,ansi(%q<bordercolor>,chr(92)),end)],FOOTER,setq(!,ansi(%q<bordercolor>,chr(92)),start)[setq(!,ansi(%q<bordercolor>,/),end)]),1,setq(!,setr(!,ansi(%q<bordercolor>,+),end),start),setq(!,setr(!,ansi(%q<bordercolor>,%q<fill>),end),start))]
 
 &HEADER_RENDER #gfun=if(%q<screenreader>,if(strlen(%1),%1),%q<start>[if(%q<lwidth>,[repeat(ansi(%q<bordercolor>,%q<fill>),%q<lwidth>,1)]%q<headertext>[repeat(ansi(%q<bordercolor>,%q<fill>),sub(%q<width>,%q<lwidth>,strlen(%q<headertext>)),1)],center(%q<headertext>,%q<width>,ansi(%q<bordercolor>,%q<fill>)))]%q<end>)
 
-@@ HEADER family args: %0 - Title. %1 - Viewer dbref. %2 - left side manual size
+@@ HEADER family args: %0 - Title. %1 - Viewer dbref. %2 - left side manual size, %3 - bordermode.
+
+@@ Game Stuff
+
+&FIL_HASTOTEM #gfun=hastotem(%1,%0)
+
+&DATA_UPZONE_TOTEMS #gfun=CHARACTER NPC PC ITEM STRUCTURE REGION
+
+&FUN_UPZONE_CATEGORIES #gfun=filter(#gfun/FIL_HASTOTEM,v(DATA_UPZONE_TOTEMS),%b,%b,%1)
+
+&GMFUN_UPZONE_ADD #gfun=if(hasflag(%0,ZONEMASTER),privatize(1,[set(%1,GAME_UPZONE:[objid(%0)])][iter(u(FUN_UPZONE_CATEGORIES,%0,%1),[set(%0,GAME_UPZONE_%i0:[setunion(get(%0/GAME_UPZONE_%i0),objid(%1))])][u(FUN_UPZONE_ADD_TRIGGER_%i0,%0,objid(%1))])]))
+@@ %0 - zonemaster, %1 - objid
+
+&GMFUN_UPZONE_REMOVE #gfun=privatize(1,if(hasflag(%0,ZONEMASTER),[set(%1,GAME_UPZONE:)][iter(lattr(%0/GAME_UPZONE_*),if(match(setr(!,get(%0/%i0),data),objid(%1)),[set(%0,%i0:[setdiff(%q<data>,objid(%1))])][u(FUN_UPZONE_REMOVE_TRIGGER_[after(%i0,GAME_UPZONE_)],%0,objid(%1))]))]))
+
+
+@@ %0 - zonemaster, %1 - objid
 
 @startup #gfun=@attach #inc/REGISTER_FUNCTIONS

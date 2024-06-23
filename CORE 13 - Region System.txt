@@ -2,8 +2,6 @@
 
 @skip isdbref(tag(setr(1,reg)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(Region System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=SAFE SIDEFX INHERIT !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom()}
 
-@skip isdbref(tag(setr(1,gm)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(Wizard Doing It,u(#acc/FUN_RANDOM_PASSWORD),p)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE SIDEFX INHERIT GUILDMASTER NO_MODIFY FREE;@power/guild %q0=free_quota;@tag/add %q1=%q0;@tel %q0=[tag(stor)];@limit/dmod %q0=-1}
-
 @@ Commands and stuff.
 &CMD_@REGION #reg=$^(?s)(?\:@|\+)?(reg|region)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2;@attach %!/SW_[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
 @set #reg/CMD_@REGION=regexp
@@ -24,7 +22,7 @@
 &FUN_LIST_COLUMNS #reg=printf($-5s $-20s $-5s $-45s,Dbref,Name,Mcnt,Builders)
 &FUN_LIST_ROW #reg=printf($-5s $-20s $-5s $-45s,num(%0),cname(%0),words(lzone(%0)),iter(filterobjid(get(%0/BUILDERS)),cname(%i0),%b,\,%B))
 
-&INC_LIST #reg=@pemit %#=header(%0);@pemit %#=ansi(g,u(FUN_LIST_COLUMNS));@pemit %#=subheader();@dolist/inline %1={@pemit %#=u(FUN_LIST_ROW,%d0)};@pemit %#=footer(Total: [words(%1)])
+&INC_LIST #reg=@pemit %#=header(%0);@pemit %#=ansi(confoverride(%#,COLUMN),u(FUN_LIST_COLUMNS));@pemit %#=subheader();@dolist/inline %1={@pemit %#=u(FUN_LIST_ROW,%d0)};@pemit %#=footer(Total: [words(%1)])
 
 &INC_FINDREG #reg=@assert/inline strlen(%0)=@pemit %#=Region name field empty.;@assert/inline isdbref(setr(!,u(FUN_FIND_REGION,%0),%1))=@pemit %#=Region '%0' not found.
 
