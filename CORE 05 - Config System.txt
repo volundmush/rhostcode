@@ -6,7 +6,9 @@
 &CMD_+GLOBALCONFIG #conf=$^(?s)(?\:\+)?(globalconfig)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@assert/inline gtebittype(%#,5)=@pemit %#=error();@attach #inc/GET_SWITCHES=%2;@attach %!/SW_[strfirstof(%q<switch>,MAIN)]=trim(%3),trim(%4)
 @set #conf/CMD_+GLOBALCONFIG=regexp
 
-&FUN_LIST_CONFIGS #conf=setunion(iter(lattr(%0/CONFIG_*_*),elementsmux(%i0,2,_),%b,|),,|,|,i)
+&FUN_LIST_CONFIGS #conf=setunion(iter(lattrp(%0/CONFIG_*_*),elementsmux(%i0,2,_),%b,|),,|,|,i)
+
+&CONFIG_PERM #conf=@assert/inline gtebittype(%#,6)=@pemit %#=Permission denied.
 
 &CONFIG_ALERTLEVEL_DESC #conf=bittype()>=this to hear staff alerts.
 &CONFIG_ALERTLEVEL_DEFAULT #conf=4
@@ -36,7 +38,7 @@
 &CONFIG_EMAIL_DEFAULT #conf=
 &CONFIG_EMAIL_TYPE #conf=WORD
 
-&SW_MAIN #conf=@if strlen(%0)={@assert/inline gtebittype(%#,6)=@pemit %#=Permission denied.};@attach #inc/CONFIG=%0,%1
+&SW_MAIN #conf=@if strlen(%0)={@assert/inline gtebittype(%#,6)=@pemit %#=Permission denied.};@attach #inc/CONFIG=%0,%1,%1
 
 @@ Help stuffs.
 +shelp/add Configuration/+globalconfig=#conf/SHLP_GAMECONFIG

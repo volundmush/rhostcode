@@ -3,7 +3,7 @@
 
 @skip isdbref(tag(setr(1,acc)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(Account System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=SAFE SIDEFX INHERIT !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom()}
 
-&FUN_LIST_ACCOUNTS #acc=searchobjid(TOTEMS=A)
+&FUN_LIST_ACCOUNTS #acc=searchngobjid(TOTEMS=A)
 &FUN_FIND_ACCOUNT #acc=if(%1,namegrab(u(FUN_LIST_ACCOUNTS),%0),namefind(u(FUN_LIST_ACCOUNTS),%0))
 
 &FUN_VALID_ACCOUNT_NAME #acc=ofparse(3,if(strlen(%0),1,#-1 ACCOUNT NAMES CANNOT BE EMPTY),if(!strmatch(%0,@*),1,#-1 ACCOUNT NAMES MAY NOT START WITH @),if(lte(strlen(%0),25),1,#-1 ACCOUNT NAMES MUST BE LESS THAN 26 CHARACTERS),if(valid(name,%0),1,#-1 ACCOUNT NAME CONTAINS INVALID FORMATTING),if(words(setdiff(u(FUN_FIND_ACCOUNT,stripansi(%0)),objid(%1))),#-1 ACCOUNT NAME IN USE,1))
@@ -34,7 +34,7 @@
 &SWITCHES_4 #acc=BIND|UNBIND|UNBOUND|CREATE|LIST|INACTIVE
 &SWITCHES_5 #acc=CONFIG
 
-&SW_CONFIG #acc=@attach #inc/CONFIG=%0,trim(%1)
+&SW_CONFIG #acc=@attach #inc/CONFIG=%0,trim(%1),%!
 
 &CONFIG_PLAYERRENAME_DESC #acc=Players can manage rename their own accounts?
 &CONFIG_PLAYERRENAME_DEFAULT #acc=0

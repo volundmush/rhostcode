@@ -2,6 +2,9 @@
 
 @skip isdbref(tag(setr(1,reg)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(Region System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=SAFE SIDEFX INHERIT !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom()}
 
+&LOCK_ZONEWIZLOCK #globthing=[switch(bittype(%#),>1,t(match(v(BUILDERS),%:)),>4,1,0)]
+&LOCK_ZONETOLOCK #globthing=[u(LOCK_ZONEWIZLOCK,%0,%1)]
+
 @@ Commands and stuff.
 &CMD_@REGION #reg=$^(?s)(?\:@|\+)?(reg|region)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2;@attach %!/SW_[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
 @set #reg/CMD_@REGION=regexp

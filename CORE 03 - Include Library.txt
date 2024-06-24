@@ -59,6 +59,6 @@
 
 &CONFIG #inc=@if strlen(%0)={@attach #inc/CONF_SET},{@attach #inc/CONF_LIST}
 
-&CONF_LIST #inc=@pemit %#=header(cname(%!) Options);@dolist/inline/delimit | [u(#conf/FUN_LIST_CONFIGS,%!)]={@pemit %#=separator(%d0);@pemit %#=v(CONFIG_%d0_DESC);@pemit %#=[ansi(hw,TYPE:)] [v(CONFIG_%d0_TYPE)];@pemit %#=[ansi(hw,DEFAULT:)] [v(CONFIG_%d0_DEFAULT)];@pemit %#=[ansi(hw,CURRENT:)] [getconf(%!,%d0)]};@pemit %#=footer()
+&CONF_LIST #inc=@pemit %#=header(cname(%2) Options);@dolist/inline/delimit | [u(#conf/FUN_LIST_CONFIGS,%2)]={@pemit %#=separator(%d0);@pemit %#=get(%2/CONFIG_%d0_DESC);@pemit %#=[ansi(hw,TYPE:)] [get(%2/CONFIG_%d0_TYPE)];@pemit %#=[ansi(hw,DEFAULT:)] [get(%2/CONFIG_%d0_DEFAULT)];@pemit %#=[ansi(hw,CURRENT:)] [getconf(%2,%d0)]};@pemit %#=footer()
 
-&CONF_SET #inc=@assert/inline gtebittype(%#,6)=@pemit %#=Permission denied.;@attach #inc/PARTIAL=%0,u(#conf/FUN_LIST_CONFIGS,%!),|,op,option;@attach #inc/VALID_[v(CONFIG_%q<op>_TYPE)]=%1;th setq(!,getconf(%!,%q<op>),oldvalue);@set %!=CONFIG_%q<op>_VALUE:%q<value>;@attach %!/CONFIG_%q<op>_TRIGGER=%q<oldvalue>,%q<newvalue>;@pemit %#=[cname(%!)] %q<op> is now: %q<valueformat>;@attach #inc/MSG_ALERT=[cname(%!)] %q<op> is now: %q<valueformat>
+&CONF_SET #inc=@attach %2/CONFIG_PERM;@attach #inc/PARTIAL=%0,u(#conf/FUN_LIST_CONFIGS,%2),|,op,option;@attach %2/CONFIG_%q<op>_PERM=%0,%1,%2;@attach #inc/VALID_[get(%2/CONFIG_%q<op>_TYPE)]=%1;th setq(!,getconf(%2,%q<op>),oldvalue);@attach %2/CONFIG_%q<op>_VALID=%q<value>,%q<oldvalue>,%2;@set %2=CONFIG_%q<op>_VALUE:%q<value>;@attach %2/CONFIG_%q<op>_TRIGGER=%q<oldvalue>,%q<newvalue>,%2;@pemit %#=[cname(%2)] %q<op> is now: %q<valueformat>;@attach #inc/MSG_ALERT=[cname(%2)] %q<op> is now: %q<valueformat>
