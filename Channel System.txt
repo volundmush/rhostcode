@@ -9,7 +9,7 @@
 &CHAN_TYPE #chan_lib=CHANNELS
 
 &FUN_SYS_NAME #chan_lib=mudname()
-&FUN_CHANNELS #chan_lib=sortname(lcon(%!/OBJECT,,,,1))
+&FUN_CHANNELS #chan_lib=sortname(children(u(CHAN_PARENT),,1))
 &FUN_VISIBLE_CHANNELS #chan_lib=filter(CHECK,u(FUN_CHANNELS),%b,%b,JOIN,%0)
 
 &FUN_PLAYER_STATUS #chan_lib=if(match(get(%0/GAGGED),objid(%1)),ansi(hx,Gag),if(match(get(%0/MEMBERS),objid(%1)),ansi(hg,On),ansi(hx,Off)))
@@ -40,13 +40,13 @@
 
 &SW_DELETE #chan_lib=@attach %!/INC_ADMIN;@attach %!/INC_FIND;
 
-&SW_CREATE #chan_lib=@attach %!/INC_ADMIN;@assert/inline setr(!,u(FUN_VALID_NAME,setr(!,trim(%0),channame)),result)=@pemit %#=%q<result>;@break/inline cand(isobjid(setr(!,u(FUN_FIND_CHANNEL,%#,%q<channame>),found)),!strmatch(%q<chan>,%q<found>))=@pemit %#=Channel name conflict detected.;@assert/inline isdbref(setr(!,create(%q<channame>,,t),chan))=@pemit %#=Could not create Channel: %q<chan>;@if has_markup(%q<channame>)={@name/ansi %q<chan>=%q<channame>};@tel %q<chan>=%!;@pemit %#=Created a new channel: %q<channame>;@attach #inc/MSG_ALERT=New channel created: %q<channame>
+&SW_CREATE #chan_lib=@attach %!/INC_ADMIN;@assert/inline setr(!,u(FUN_VALID_NAME,setr(!,trim(%0),channame)),result)=@pemit %#=%q<result>;@break/inline cand(isobjid(setr(!,u(FUN_FIND_CHANNEL,%#,%q<channame>),found)),!strmatch(%q<chan>,%q<found>))=@pemit %#=Channel name conflict detected.;@assert/inline isdbref(setr(!,create(%q<channame>,,t),chan))=@pemit %#=Could not create Channel: %q<chan>;@if has_markup(%q<channame>)={@name/ansi %q<chan>=%q<channame>};@tel %q<chan>=%!;@parent %q<chan>=[u(CHAN_PARENT)];@set %q<chan>=INDESTRUCTIBLE SAFE INHERIT;@pemit %#=Created a new channel: %q<channame>;@attach #inc/MSG_ALERT=New channel created: %q<channame>
 
 &SW_RENAME #chan_lib=@attach %!/INC_ADMIN;@attach %!/INC_FIND;@assert/inline setr(!,u(FUN_VALID_NAME,setr(!,trim(%0),channame)))=@pemit %#=%q<result>;@break/inline cand(isobjid(setr(!,u(FUN_FIND_CHANNEL,%#,stripansi(%q<channame>),found))),!strmatch(%q<chan>,%q<found>))=@pemit %#=Channel name conflict detected.;th setq(!,cname(%q<chan>),oldname);@name/ansi %q<chan>=%q<channame>;@pemit %#=Channel '%q<oldname>' renamed to '%q<channame>';@attach #inc/MSG_ALERT=Channel '%q<oldname>' renamed to '%q<channame>';th u(FUN_CEMIT,%q<chan>,:renamed '%q<oldname>' to '%q<channame>',%#)
 
-&SW_LOCK #chan_lib=@attach %!/INC_ADMIN;@attach %!/INC_FIND=before(stripansi(%0),/);@attach #inc/PARTIAL=after(stripansi(%0),/),get(%!/LOCKS),|,lock,locktype;@attach #inc/VALID_LOCKKEY=%1;th lock(%q<chan>/user:%q<lock>,%q<value>,1);@pemit %#=[setr(!,Set Channel '[cname(%q<chan>)]' %q<lock> Lock to: %q<valueformat>,msg)];@attach #inc/MSG_ALERT=%q<msg>
+&SW_LOCK #chan_lib=@attach %!/INC_ADMIN;@attach %!/INC_FIND=before(stripansi(%0),/);@attach #inc/PARTIAL=after(stripansi(%0),/),get(%!/LOCKS),|,lock,locktype;@attach #inc/VALID_LOCKKEY=%1;th lock(%q<chan>/user|%q<lock>,%q<value>,1);@pemit %#=[setr(!,Set Channel '[cname(%q<chan>)]' %q<lock> Lock to: %q<valueformat>,msg)];@attach #inc/MSG_ALERT=%q<msg>
 
-&SW_UNLOCK #chan_lib=@attach %!/INC_ADMIN;@attach %!/INC_FIND=before(stripansi(%0),/);@attach #inc/PARTIAL=after(stripansi(%0),/),get(%!/LOCKS),|,lock,locktype;th lock(%q<chan>/user:%q<lock>,v(DEFAULT_LOCK_%q<lock>),1);@pemit %#=[setr(!,Cleared Channel '[cname(%q<chan>)]' %q<lock> Lock Back to Default: [v(DEFAULT_LOCK_%q<lock>)],msg)];@attach #inc/MSG_ALERT=%q<msg>
+&SW_UNLOCK #chan_lib=@attach %!/INC_ADMIN;@attach %!/INC_FIND=before(stripansi(%0),/);@attach #inc/PARTIAL=after(stripansi(%0),/),get(%!/LOCKS),|,lock,locktype;th lock(%q<chan>/user|%q<lock>,get(u(CHAN_PARENT)/DEFAULT_LOCK_%q<lock>),1);@pemit %#=[setr(!,Cleared Channel '[cname(%q<chan>)]' %q<lock> Lock Back to Default: [get(u(CHAN_PARENT)/DEFAULT_LOCK_%q<lock>)],msg)];@attach #inc/MSG_ALERT=%q<msg>
 
 &SW_ON #chan_lib=@attach %!/SW_JOIN
 &SW_JOIN #chan_lib=@attach %!/INC_FIND;@break/inline match(get(%q<chan>/MEMBERS),%:)=@pemit %#=You are already a member!;@attach %!/JOIN_CHANNEL=%q<chan>,%:;@pemit %#=You have joined [cname(%q<chan>)].
@@ -77,21 +77,8 @@
 
 &LOCKS #chan_lib=JoinLock|LeaveLock|TalkLock|ModerateLock|AdminLock
 
-
-@lock/user #chan_parent:JoinLock=LOCK_TRUE/1
-@lock/user #chan_parent:LeaveLock=LOCK_TRUE/1
-@lock/user #chan_parent:TalkLock=LOCK_TRUE/1
-@lock/user #chan_parent:ModerateLock=LOCK_GTEBITTYPE/4
-@lock/user #chan_parent:AdminLock=LOCK_GTEBITTYPE/4
-
-&DEFAULT_JoinLock #chan_lib=LOCK_TRUE/1
-&DEFAULT_LeaveLock #chan_lib=LOCK_TRUE/1
-&DEFAULT_TalkLock #chan_lib=LOCK_TRUE/1
-&DEFAULT_ModerateLock #chan_lib=LOCK_GTEBITTYPE/4
-&DEFAULT_AdminLock #chan_lib=LOCK_GTEBITTYPE/4
-
-&CHECK_HELPER_EXTRA #chan_lib=switch(%1,JOIN,!match(get(%0/BANNED),objid(%2)),TALK,if(setr(!,secs_remain(get_kv(get(%0/GAGGED),%:)),gag),0[null(pemit(%2,You are gagged from [cname(%0)] for: [etime(%q<gag>)]))]),1)
-&CHECK #chan_lib=localize(if(u(CHANNEL_ADMIN,%2),1,cand(elock(%0/user:%1,%2),u(CHECK_HELPER_EXTRA,%0,%1,%2))))
+&CHECK_HELPER_EXTRA #chan_lib=switch(%1,JoinLock,!match(get(%0/BANNED),objid(%2)),TalkLock,if(setr(!,secs_remain(get_kv(get(%0/GAGGED),%:)),gag),0[null(pemit(%2,You are gagged from [cname(%0)] for: [etime(%q<gag>)]))]),1)
+&CHECK #chan_lib=localize(if(u(CHANNEL_ADMIN,%2),1,cand(elock(%0|user:%1,%2),u(CHECK_HELPER_EXTRA,%0,%1,%2))))
 @@ %0 - channel, %1 - permission, %2 - object
 
 &BASE_FORMAT #chan_lib=<[cname(%1)]> [parsestr(%2,%0,",",,&[cname(%3)])]
@@ -131,8 +118,24 @@
 
 @skip isdbref(tag(setr(1,chan)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No global room set!;@assert/inline isdbref(setr(0,create(Channel System,,t)))=@pemit %#=ERROR: Could not create code object: %q0;@set %q0=SAFE SIDEFX INHERIT !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom();@parent %q0=#chan_lib}
 
+@skip isdbref(tag(setr(1,chan_parent)))={@assert/inline isdbref(tag(chan))=@pemit %#=ERROR: No Channel object set!;@assert/inline isdbref(setr(0,create(Channel System Parent,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=SAFE SIDEFX INHERIT NO_COMMAND;@tag/add %q1=%q0;@tel %q0=[tag(chan)]}
+
+@lock/user #chan_parent|JoinLock=LOCK_TRUE/1
+@lock/user #chan_parent|LeaveLock=LOCK_TRUE/1
+@lock/user #chan_parent|TalkLock=LOCK_TRUE/1
+@lock/user #chan_parent|ModerateLock=LOCK_GTEBITTYPE/4
+@lock/user #chan_parent|AdminLock=LOCK_GTEBITTYPE/4
+
+&DEFAULT_JoinLock #chan_parent=LOCK_TRUE/1
+&DEFAULT_LeaveLock #chan_parent=LOCK_TRUE/1
+&DEFAULT_TalkLock #chan_parent=LOCK_TRUE/1
+&DEFAULT_ModerateLock #chan_parent=LOCK_GTEBITTYPE/4
+&DEFAULT_AdminLock #chan_parent=LOCK_GTEBITTYPE/4
+
 &CMD_@CHANNEL #chan=$^(?s)(?\:@|\+)?(chan|channel)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2;@attach %!/SW_[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
 @set #chan/CMD_@CHANNEL=regexp
+
+&CHAN_PARENT #chan=tag(chan_parent)
 
 &GPFUN_CEMIT #chan=privatize(1,u(FUN_CEMIT,%0,%1))
 

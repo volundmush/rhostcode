@@ -118,8 +118,8 @@ v
 &CMD_@FACTION #fac=$^(?s)(?\:@|\+)?(fac|faction)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2;@attach %!/SW_[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
 @set #fac/CMD_@FACTION=regexp
 
-&SWITCHES_0 #fac=OPTIONS|RENAME|CREATE|SELECT|INVITE|APPLY|ACCEPT|REJECT|TITLE|ASSIGN|MKRANK|RNRANK|RMRANK|GRANT|REVOKE|RANKS
-&SWITCHES_5 #fac=CONFIG|DELETE
+&SWITCHES_0 #fac=OPTIONS|RENAME|CREATE|SELECT|INVITE|RESCIND|APPLY|CANCEL|ACCEPTINVITE|REJECTINVITE|ACCEPTAPP|REJECTAPP|TITLE|ASSIGN|MKRANK|RNRANK|RMRANK|GRANT|REVOKE|RANKS|LEAVE|KICK
+&SWITCHES_5 #fac=CONFIG|DELETE|ADDMEMBER
 
 &CONFIG_PERM #fac=@assert/inline gtebittype(%#,6)=@pemit %#=Permission denied.
 
@@ -157,17 +157,35 @@ v
 
 &SW_MAIN #fac=
 
-&SW_INVITE #fac=
+&INC_LIST_INVITES #fac=
 
-&SW_APPLY #fac=
+&SW_INVITE #fac=@attach %!/CURRENT_FACTION=fac;@assert/inline lte(setr(!,facgetrank(%q<fac>,%:),myrank),setr(!,getconf(%q<fac>,INVITE),needed))=@pemit %#=Permission Denied. You need Rank %q<needed> or better.;@attach #inc/GET_PLAYER=%0,t1;@break/inline match(get(%q<fac>/MEMBERS),%q<t1>)=@pemit %#=They are already a member!;@break/inline match(setr(!,filterobjid(get(%q<fac>/INVITES)),data),%:)=@pemit %#=They already have an outstanding invite to the [cname(%q<fac>)].;@set %q<fac>=INVITES:[setunion(%q<data>,%q<t1>)];@pemit %#=You invite [cname(%q<t1>)] to join the [cname(%q<fac>)].;@attach %!/FACTION_ALERT=Invite [cname(%q<t1>)] to join.;@pemit %q<t1>=You have been invited to join the [cname(%q<fac>)]. Type [ansi(hw,@fac/acceptinvite [name(%q<fac)])] to accept or [ansi(hw,@fac/rejectinvite [name(%q<fac>)])] to reject.
 
-&SW_ACCEPT #fac=
+&SW_RESCIND #fac=@attach %!/CURRENT_FACTION=fac;@assert/inline lte(setr(!,facgetrank(%q<fac>,%:),myrank),setr(!,getconf(%q<fac>,INVITE),needed))=@pemit %#=Permission Denied. You need Rank %q<needed> or better.;@attach #inc/GET_PLAYER=%0,t1;@break/inline match(get(%q<fac>/MEMBERS),%q<t1>)=@pemit %#=They are already a member!;@assert/inline match(setr(!,filterobjid(get(%q<fac>/INVITES)),data),%:)=@pemit %#=They don't have an outstanding invite to the [cname(%q<fac>)].;@set %q<fac>=INVITES:[setdiff(%q<data>,%q<t1>)];@pemit %#=You rescind [cname(%q<t1>)]'s invitation to join the [cname(%q<fac>)].;@attach %!/FACTION_ALERT=Rescinded [cname(%q<t1>)]'s invite.;@pemit %q<t1>=Your invitation to join the [cname(%q<fac>)] was rescinded.
 
-&SW_REJECT #fac=
+&SW_ACCEPTINVITE #fac=@attach %!/FIND_FACTION=%0,fac,0;@break/inline match(get(%q<fac>/MEMBERS),%:)=@pemit %#=You're already a member!;@assert/inline match(setr(!,filterobjid(get(%q<fac>/INVITES)),data),%:)=@pemit %#=You haven't been invited!;@assert/inline hasattrp(%q<fac>/RANK_[setr(!,getconf(%q<fac>,STARTRANK),start)]_NAME)=@pemit %#=ERROR: The faction's STARTRANK is not configured properly. Contact leadership or staff.;@attach %!/ADD_MEMBER=%q<fac>,%:,%q<start>;@set %q<fac>=INVITES:[setdiff(%q<data>,%:)];@pemit %#=You have joined the [cname(%q<fac>)]! Welcome!;@attach %!/FACTION_ALERT=Joined at Rank %q<start>.
 
-&SW_TITLE #fac=@attach %!/CURRENT_FACTION=fac;@if strlen(%1)={@attach %!/GET_PLAYER=%0,t1;th setq(!,%1,title)},{th setq(!,%0,title);th setq(!,%:,t1)};@assert/inline cor(lte(setr(!,facgetrank(%q<fac>,%:),myrank),1),setr(!,getconf(%q<fac>,TITLESELF),titleself),lt(%q<myrank>,getconf(%q<fac>,INVITE)))=@pemit %#=Permission denied. You must meet the INVITE rank or be a Leader to set titles.;@assert/inline lte(facgetrank(%q<fac>,%:),setr(!,getconf(%q<fac>,INVITE),needed))=@pemit %#=Permission Denied. You need Rank %q<needed> or better.;@assert/inline facismember(%q<fac>,%q<t1>)=@pemit %#=[cname(%q<t1>)] is not a member of [cname(%q<fac>)]!;@assert cor(cand(%q<titleself>,strmatch(%:,%q<t1>)),lte(%q<myrank>,1),lt(facgetrank(%q<fac>,%q<t1>),%q<myrank>))=@pemit %#=You have no Factional authority over [cname(%q<t1>)].;th setq(!,default(%q<t1>/FAC_[edit(objid(%q<fac>),:,_)].TITLE,empty!),oldtitle);@if strlen(%q<title>)={@set %q<t1>=FAC_[edit(objid(%q<fac>),:,_)].TITLE:%q<title>;@if strmatch(%:,%q<t1>)={@pemit %#=You set your [cname(%q<fac>)] Title to: '%q<title>'. It was: %q<oldtitle>;@attach %!/FACTION_ALERT=Set own Title to '%q<title>'. Old Title was: %q<oldtitle>},{@pemit %#=Set [cname(%q<t1>)]'s Faction '[cname(%q<fac>)]' Title to: '%q<title>'. It was: %q<oldtitle>;@pemit %q<t1>=Your Faction '[cname(%q<fac>)]' Title was set to: '%q<title>'. It was: %q<oldtitle>;@attach %!/FACTION_ALERT=[cname(%q<t1>)]'s Title was set to: '%q<title>'. It was: %q<oldtitle>}},{@set %q<t1>=FAC_[edit(objid(%q<fac>),:,_)].TITLE:;@if strmatch(%:,%q<t1>)={@pemit %#=You clear your [cname(%q<fac>)] Title. It was: %q<oldtitle>;@attach %!/FACTION_ALERT=Cleared own Title. It was: %q<oldtitle>},{@pemit %#=Cleared [cname(%q<t1>)]'s Faction '[cname(%q<fac>)]' Title. It was: %q<oldtitle>;@pemit %q<t1>=Your Faction '[cname(%q<fac>)]' Title was cleared. It was: %q<oldtitle>;@attach %!/FACTION_ALERT=[cname(%q<t1>)]'s Title was cleared. It was: %q<oldtitle>}}
+&SW_REJECTINVITE #fac=@attach %!/FIND_FACTION=%0,fac,0;@break/inline match(get(%q<fac>/MEMBERS),%:)=@pemit %#=You're already a member!;@assert/inline match(setr(!,filterobjid(get(%q<fac>/INVITES)),data),%:)=@pemit %#=You haven't been invited!;@set %q<fac>=INVITES:[setdiff(%q<data>,%:)];@pemit %#=You decline the [cname(%q<fac>)]'s invite! Welcome!;@attach %!/FACTION_ALERT=Declined joining.
 
-&SW_ASSIGN #fac=
+&SW_APPLY #fac=@attach %!/FIND_FACTION=%0,fac,0;@assert/inline getconf(%q<fac>,OPEN)=@pemit %#=Sorry, the [cname(%q<fac>)] are not accepting applications right now. You'll need to obtain an invite.;@break/inline match(get(%q<fac>/MEMBERS),%:)=@pemit %#=You're already a member!;@break/inline match(setr(!,filterobjid(get(%q<fac>/APPLICATIONS)),data),%:)=@pemit %#=You have already applied to the [cname(%q<fac>)].;@set %q<fac>=APPLICATIONS:[setunion(%q<data>,%:)];@pemit %#=You apply to join the [cname(%q<fac>)]. A ranking member will have to review.;@attach %!/FACTION_ALERT=Applied to join.
+
+&SW_CANCEL #fac=@attach %!/FIND_FACTION=%0,fac,0;@assert/inline match(setr(!,filterobjid(get(%q<fac>/APPLICATIONS)),data),%:)=@pemit %#=You have not applied to the [cname(%q<fac>)].;@set %q<fac>=APPLICATIONS:[setdiff(%q<data>,%:)];@pemit %#=You withdraw your application to the [cname(%q<fac>)].;@attach %!/FACTION_ALERT=Withdrew application.
+
+&INC_LIST_APPS #fac=
+
+&SW_ACCEPTAPP #fac=@attach %!/CURRENT_FACTION=fac;@assert/inline lte(setr(!,facgetrank(%q<fac>,%:),myrank),setr(!,getconf(%q<fac>,INVITE),needed))=@pemit %#=Permission Denied. You need Rank %q<needed> or better.;@if strlen(%0)={},{@attach %!/INC_LIST_APPS}
+
+&SW_REJECTAPP #fac=@attach %!/CURRENT_FACTION=fac;@assert/inline lte(setr(!,facgetrank(%q<fac>,%:),myrank),setr(!,getconf(%q<fac>,INVITE),needed))=@pemit %#=Permission Denied. You need Rank %q<needed> or better.;@if strlen(%0)={},{@attach %!/INC_LIST_APPS}
+
+&SW_LEAVE #fac=
+
+&SW_KICK #fac=
+
+&SW_ADDMEMBER #fac=
+
+&SW_TITLE #fac=@attach %!/CURRENT_FACTION=fac;@if strlen(%1)={@attach %!/GET_PLAYER=%0,t1;th setq(!,%1,title)},{th setq(!,%0,title);th setq(!,%:,t1)};@assert/inline cor(lte(setr(!,facgetrank(%q<fac>,%:),myrank),1),setr(!,getconf(%q<fac>,TITLESELF),titleself),lt(%q<myrank>,getconf(%q<fac>,INVITE)))=@pemit %#=Permission denied. You must meet the INVITE rank or be a Leader to set titles.;@assert/inline lte(facgetrank(%q<fac>,%:),setr(!,getconf(%q<fac>,INVITE),needed))=@pemit %#=Permission Denied. You need Rank %q<needed> or better.;@assert/inline facismember(%q<fac>,%q<t1>)=@pemit %#=[cname(%q<t1>)] is not a member of [cname(%q<fac>)]!;@assert/inline cor(cand(%q<titleself>,strmatch(%:,%q<t1>)),lte(%q<myrank>,1),lt(facgetrank(%q<fac>,%q<t1>),%q<myrank>))=@pemit %#=You have no Factional authority over [cname(%q<t1>)].;th setq(!,default(%q<t1>/FAC_[edit(objid(%q<fac>),:,_)].TITLE,empty!),oldtitle);@if strlen(%q<title>)={@set %q<t1>=FAC_[edit(objid(%q<fac>),:,_)].TITLE:%q<title>;@if strmatch(%:,%q<t1>)={@pemit %#=You set your [cname(%q<fac>)] Title to: '%q<title>'. It was: %q<oldtitle>;@attach %!/FACTION_ALERT=Set own Title to '%q<title>'. Old Title was: %q<oldtitle>},{@pemit %#=Set [cname(%q<t1>)]'s Faction '[cname(%q<fac>)]' Title to: '%q<title>'. It was: %q<oldtitle>;@pemit %q<t1>=Your Faction '[cname(%q<fac>)]' Title was set to: '%q<title>'. It was: %q<oldtitle>;@attach %!/FACTION_ALERT=[cname(%q<t1>)]'s Title was set to: '%q<title>'. It was: %q<oldtitle>}},{@set %q<t1>=FAC_[edit(objid(%q<fac>),:,_)].TITLE:;@if strmatch(%:,%q<t1>)={@pemit %#=You clear your [cname(%q<fac>)] Title. It was: %q<oldtitle>;@attach %!/FACTION_ALERT=Cleared own Title. It was: %q<oldtitle>},{@pemit %#=Cleared [cname(%q<t1>)]'s Faction '[cname(%q<fac>)]' Title. It was: %q<oldtitle>;@pemit %q<t1>=Your Faction '[cname(%q<fac>)]' Title was cleared. It was: %q<oldtitle>;@attach %!/FACTION_ALERT=[cname(%q<t1>)]'s Title was cleared. It was: %q<oldtitle>}}
+
+&SW_ASSIGN #fac=@attach %!/CURRENT_FACTION=fac;@assert/inline lte(setr(!,facgetrank(%q<fac>,%:),myrank),2)=@pemit %#=Permission denied. Requires Rank 2 or better.;@attach %!/GET_PLAYER=%0,t1;@break/inline strmatch(%q<t1>,%:)=Yeah that's not happening.;@assert/inline facismember(%q<fac>,%q<t1>)=@pemit %#=[cname(%q<t1>)] is not a member of [cname(%q<fac>)]!;@assert/inline lt(setr(!,facgetrank(%q<fac>,%q<t1>),oldrank),%q<myrank>)=@pemit %#=You have no Factional authority over [cname(%q<t1>)].;@attach %!/VALID_POSINT=%1,Rank;@assert/inline gt(%q<myrank>,%q<value>)=@pemit %#=Can only assign ranks lesser than your own.;@set %q<fac>=MEMBERS_%q<oldrank>:[setdiff(filterobjid(get(%q<fac>/MEMBERS_%q<oldrank>)),%q<t1>)];@set %q<fac>=MEMBERS_%q<value>:[setunion(filterobjid(get(%q<fac>/MEMBERS_%q<value>)),%q<t1>)];@set %q<t1>=FAC_[edit(objid(%q<fac>),:,_)]:[set_kv(get(%q<t1>/FAC_[edit(objid(%q<fac>),:,_)]),Rank,%q<value>)];@pemit %#=You change [cname(%q<t1>)]'s Faction '[cname(%q<fac>)]' Rank to: %q<value>. Was: %q<oldrank>;@pemit %q<t1>=Your Faction '[cname(%q<fac>)]' Rank is now: %q<value>.;@attach %!/FACTION_ALERT=Changed [cname(%q<t1>)]'s Rank to: %q<value>. Was: %q<oldrank>
 
 &SW_MKRANK #fac=@attach %!/CURRENT_FACTION=fac;@assert/inline lte(facgetrank(%q<fac>,%:),1)=@pemit %#=Permission denied. Leader-only.;@assert/inline isint(%0)=@pemit %#=Must enter a rank #.;@break/inline hasattrp(%q<fac>/RANK_%0_%NAME)=@pemit %#=Rank already exists. Use /rnrank to rename it instead.;@assert/inline strlen(%1)=@pemit %#=What will you call the rank?;@set %q<fac>=RANK_%0_NAME:%1;@pemit %#=Rank %0: '%1' created for the [cname(%q<fac>)];@attach %!/FACTION_ALERT=Created Rank %0: %1
 

@@ -44,7 +44,7 @@
 
 &GFUN_NUMTH #gfun=%0[switch(%0,11,th,12,th,13,th,switch(right(%0,1),1,st,2,nd,3,rd,th))]
 
-&GPFUN_ISAPPROVED #gfun=cor(gtebittype(%0,2),if(globalconf(REQAPPROVAL),default(%0/APPROVED,0))
+&GPFUN_ISAPPROVED #gfun=cor(gtebittype(%0,2),if(globalconf(REQAPPROVAL),default(%0/APPROVED,0)))
 
 &FIL_INHERITABLE_ATTR #gfun=!hasflag(%1/%0,NO_INHERIT)
 
