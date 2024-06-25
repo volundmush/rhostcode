@@ -2,7 +2,7 @@
 @@ The info_lib object is used for storing all major API functionality used by every system that works like +info.
 @@ Simply @parent your new thing to #info_lib, and define a simple INFO_* set of INFO_NAME, INFO_PLURAL, INFO_ATTR, etc.
 
-@skip isdbref(tag(setr(1,info_lib)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Info System Library,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=SAFE SIDEFX INHERIT;@tag/add %q1=%q0;@tel %q0=#stor}
+@skip isdbref(tag(setr(1,info_lib)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Info System Library,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE;@tag/add %q1=%q0;@tel %q0=#stor}
 
 &SWITCHES_1 #info_lib=GET|RENAME|DELETE|SUMMARY
 &SWITCHES_4 #info_lib=LOCK|UNLOCK|LSET
@@ -87,7 +87,7 @@
 
 @@ After this is the actual default +info system.
 
-@skip isdbref(tag(info))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No global room set!;@assert/inline isdbref(setr(0,create(Info Files,,t)))=@pemit %#=ERROR: Could not create code object: %q0;@set %q0=SAFE SIDEFX INHERIT;@tag/add info=%q0;@tel #info=globalroom();@parent #info=#info_lib}
+@skip isdbref(tag(info))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No global room set!;@assert/inline isdbref(setr(0,create(Info Files,,t)))=@pemit %#=ERROR: Could not create code object: %q0;@set %q0=INDESTRUCTIBLE;@tag/add info=%q0;@tel #info=globalroom();@parent #info=#info_lib}
 
 &CMD_+INFO #info=$^(?s)(?\:\+)?(info|inf)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?))?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2;@attach %!/INC_[strfirstof(%q<switch>,MAIN)]=trim(%3),trim(%4),%5
 @set #info/CMD_+INFO=regexp

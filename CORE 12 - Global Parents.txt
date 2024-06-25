@@ -1,36 +1,39 @@
 @@ Core
 @cmdquota me=99999
 
-@skip isdbref(tag(setr(1,gm)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(Wizard Doing It,u(#acc/FUN_RANDOM_PASSWORD),p)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE SIDEFX INHERIT GUILDMASTER NO_MODIFY FREE;@power/guild %q0=free_quota;@tag/add %q1=%q0;@tel %q0=[tag(stor)];@limit/dmod %q0=-1}
+@skip isdbref(tag(setr(1,gm)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(Wizard Doing It,u(#acc/FUN_RANDOM_PASSWORD),p)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE GUILDMASTER NO_MODIFY FREE;@power/guild %q0=free_quota tel_anything tel_anywhere;@tag/add %q1=%q0;@tel %q0=[tag(stor)];@limit/dmod %q0=-1}
 
-@dolist/inline/delimit | globthing~Thing|globexit~Exit|globplayer~Player|globroom~Room=@skip isdbref(tag(setr(1,before(%d0,~))))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object installed!;@assert/inline isdbref(setr(0,create(Global Parent [after(%d0,~)],,t)))=@pemit %#=ERROR: Could not create code object: %q0;@set %q0=SAFE SIDEFX INHERIT VISUAL INDESTRUCTIBLE NO_MODIFY NO_COMMAND;@tag/add %q1=%q0;@tel %q1=[tag(stor)];@chown/preserve %q0=[tag(gm)]}
+@dolist/inline/delimit | globobj~Object|globthing~Thing|globexit~Exit|globplayer~Player|globroom~Room=@skip isdbref(tag(setr(1,before(%d0,~))))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object installed!;@assert/inline isdbref(setr(0,create(Global Parent [after(%d0,~)],,t)))=@pemit %#=ERROR: Could not create code object: %q0;@set %q0=VISUAL INDESTRUCTIBLE NO_MODIFY NO_COMMAND;@tag/add %q1=%q0;@tel %q1=[tag(stor)];@chown/preserve %q0=[tag(gm)];@power/guild %q0=FORMATTING;@if !strmatch(%d0,globobj~*)=@parent %q0=[tag(globobj)]}
 
 
 @@ General Objects
 &GAME_ALEAVE #globobj=@if cand(isdbref(setr(!,if(hasflag(%!,ZONEMASTER),%!,upzone(%!)),oldzone)),!strmatch(%q<oldzone>,setr(!,upzone(%#),newzone)))={th gm_upzone_remove(%q<oldzone>,%:)}
 &GAME_AENTER #globobj=@if cand(isdbref(setr(!,if(hasflag(%!,ZONEMASTER),%!,upzone(%!)),upzone)),!strmatch(%q<upzone>,setr(!,get(%#/GAME_UPZONE),oldz)))={th gm_upzone_add(%q<upzone>,%:)}
 
-&LOCK_TRUE #globobj=[t(%1)]
-&LOCK_GTEBITTYPE #globobj=[if(gtebittype(%#,%1),%1)]
-&LOCK_ISAPPROVED #globobj=[isapproved(%#)]
+&HANDLE_UPZONES_AENTER #globobj=@select/inline/first [type(%!)]=ROOM,{},THING,{}
+
+&MANY_TRIGGER #globobj=@dolist/inline/nobreak [lattrp_full(%!/%0_*)={@attach %!/%d0}
+
+@aenter #globobj
+@aleave #globobj
+
+&EVAL_TRUE #globobj=[t(%1)]
+&EVAL_GTEBITTYPE #globobj=[if(gtebittype(%#,%1),%1)]
+&EVAL_ISAPPROVED #globobj=[isapproved(%#)]
 
 @@ Players
-@parent #globplayer=#globobj
-@power/guild #globplayer=FORMATTING
+
 
 @@ Rooms
-@parent #globroom=#globobj
-@power/guild #globroom=FORMATTING
-
 @aenter #globroom=@attach %!/GAME_AENTER
-@aleave #globroom=@attach %1/GAME_ALEAVE
+@aleave #globroom=@attach %!/GAME_ALEAVE
 
 &FUN_LOCATION #globroom=iter(revwords(upzones(%!)),cname(%i0)[if(gtebittype(%#,2),%B\([num(%i0)]\))],%b,%b=>%b)
 
 &FUN_INFOBOX #globroom=[wrap([ansi(hw,Location:)]%b[u(FUN_LOCATION,%!)],sub(width(%#),2),left,setr(!,ansi(confoverride(%#,BORDER),|),bord),%q<bord>,,)]
 
 @nameformat #globroom=[header(cname(%!)[if(gtebittype(%#,2),%B\(%!\))],%#,,1)][if(strlen(setr(!,u(FUN_INFOBOX),infobox)),%R%q<infobox>)]
-&formatdesc #globroom=[separator(Description,%#,,1)]%R[wrap(%0,sub(width(%#),2),left,setr(!,ansi(confoverride(%#,BORDER),|),bord),%q<bord>,,)]
+&formatdesc #globroom=[if(strlen(%0),[separator(Description,%#,,1)]%R[wrap(%0,sub(width(%#),2),left,setr(!,ansi(confoverride(%#,BORDER),|),bord),%q<bord>,,)])]
 
 &FIL_TOTEM #globroom=hastotem(%0,%1)
 
@@ -60,22 +63,21 @@
 
 
 @@ Things
-@parent #globthing=#globobj
-
-@power/guild #globthing=FORMATTING
 @enter #globthing=You enter the [cname(%!)].
 @oenter #globthing=enters the [cname(%!)].
 
-@aenter #globthing=@attach %!/GAME_AENTER
-@aleave #globthing=@attach %!/GAME_ALEAVE
+@@ Whoah nelly, things should never be ending up inside of a Zonemaster! If this happens, let's punt them to the inventory.
+
+&GAME_ENSURE_INVENTORY #globthing=@skip isobjid(setr(!,get(%!/INVENTORY),inv))={@assert/inline isdbref(setr(!,create(name(%!)'s Inventory,,r),inv))={@attach #inc/MSG_ALERT=[ansi(hr,ERROR:)] [cname(%!)] (%!) cannot move [cname(%#)] (%#) to inventory: cannot create: %q<inv>};@set %!=INVENTORY:[objid(%q<inv>)];@zone/add %q<inv>=%!};@tel %#=%q<inv>;@if strmatch(loc(%#),%!)={@pemit %#=[ansi(hr,ERROR:)] [if(gtebittype(%#,2),You have ended up in a ZONEMASTER's inventory. This is BAD. You should go somewhere else. Quickly.,You shouldn't be here! Contact staff immediately!)]}
+
+@aenter #globthing=@if cand(hasflag(%!,ZONEMASTER),ortotems(%#,CHARACTER ITEM STRUCTURE REGION))={@attach %!/GAME_ENSURE_INVENTORY},{@attach %!/GAME_AENTER;@attach %!/MANY_TRIGGER=AENTER}
+@aleave #globthing=@if !hasflag(%!,ZONEMASTER)={@attach %!/MANY_TRIGGER=ALEAVE}
 
 @leave #globthing=You leave the [cname(%!)].
 @oleave #globthing=leaves the [cname(%!)].
 @oxleave #globthing=emerges from the [cname(%!)].
 
 @@ Exits
-@parent #globexit=#globobj
-@power/guild #globexit=FORMATTING
 @success #globexit=You take the [cname(%!)] exit to [cname(loc(%!))].
 @osuccess #globexit=takes the [cname(%!)] exit to [cname(loc(%!))].
 

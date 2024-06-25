@@ -1,7 +1,7 @@
 @@ CORE
 @cmdquota me=99999
 
-@skip isdbref(tag(setr(1,gfun)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object installed!;@assert/inline isdbref(setr(0,create(Global Functions,,t)))=@pemit %#=ERROR: Could not create code object: %q0;@set %q0=SAFE SIDEFX INHERIT NO_COMMAND;@tag/add %q1=%q0;@tel %q1=#stor}
+@skip isdbref(tag(setr(1,gfun)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object installed!;@assert/inline isdbref(setr(0,create(Global Functions,,t)))=@pemit %#=ERROR: Could not create code object: %q0;@set %q0=INDESTRUCTIBLE NO_COMMAND;@tag/add %q1=%q0;@tel %q1=#stor}
 
 &GFUN_STRINGSECS #gfun=ladd(iter(secure(regeditall(%0,(h|m|s),$1%b)),switch(%i0,*ML,mul(%i0,31536000000),*y,mul(%i0,31471200),*C,mul(%i0,3153600000),*Mo,mul(%i0,2628000),*w,mul(%i0,604800),*d,mul(%i0,86400),*h,mul(%i0,3600),*m,mul(%i0,60),*s,add(%i0,0))) 0)
 
@@ -48,11 +48,11 @@
 
 &FIL_INHERITABLE_ATTR #gfun=!hasflag(%1/%0,NO_INHERIT)
 
-&FUN_INHERITABLE #gfun=filter(#gfun/FIL_INHERITABLE_ATTR,lattr(%0/%1,%2,%3,%4,%5,%6),%b,%b,%0)
+&FUN_INHERITABLE #gfun=filter(#gfun/FIL_INHERITABLE_ATTR,lattrp(%0/%1,%2,%3,%4,%5,%6),%b,%b,%0)
 
 &FUN_LATTR_ANCESTOR #gfun=if(isdbref(#[config(%0)]),u(#gfun/FUN_INHERITABLE,#[config(%0)],%1,%2,%3,%4,%5,%6))
 
-&GPFUN_LATTRP_FULL #gfun=setunion(lattrp(%0/%1,%@,%2,%3,%4,%5),if(!hasflag(%0,NO_GOBJ),setunion(u(#gfun/FUN_LATTR_ANCESTOR,global_parent_[type(%0)],%1,%@,%2,%3,%4,%5),u(#gfun/FUN_LATTR_ANCESTOR,global_parent_obj,%1,%@,%2,%3,%4,%5))))
+&GPFUN_LATTRP_FULL #gfun=setunion(lattrp(%0/%1,%@,%2,%3,%4,%5),if(!hasflag(%0,NO_GOBJ),u(#gfun/FUN_LATTR_ANCESTOR,global_parent_[type(%0)],%1,%@,%2,%3,%4,%5)))
 
 &GFUN_AWHO #gfun=sortname(setunion(iter(account_who(),objid(#[account_owner(%i0)])),))
 
@@ -110,7 +110,7 @@
 
 &GFUN_PARTIAL #gfun=localize(if(setr(0,match(%0,%1,%2)),elementsmux(%0,%q0,%2),grab(%0,%1*,%2)))
 
-&GPFUN_UPZONE #gfun=switch(type(%0),ROOM,if(isdbref(lzone(%0)),objid(lzone(%0))),if(isdbref(loc(%0)),if(hasflag(loc(%0),ZONEMASTER),objid(loc(%0)),upzone(loc(%0)))))
+&GPFUN_UPZONE #gfun=switch(type(%0),ROOM,if(isdbref(lzone(%0)),objid(lzone(%0))),if(isdbref(loc(%0)),upzone(room(%0))))
 @@ %0 - an object to find the next zone 'up' for. This strives to deal with searching up through locations and zone relationships. For example a ZONEMASTER could be in another ZONEMASTER's inventory, or it could be in a ROOM that belongs to the zone.
 
 &GPFUN_UPZONES #gfun=privatize(1,if(cand(isdbref(setr(!,upzone(%0),newzone)),!match(%1,%q<newzone>)),upzones(%q<newzone>,%1 %q<newzone>),trim(%1)))

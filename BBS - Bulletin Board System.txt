@@ -1,2 +1,2 @@
 @@ the bbs_lib is the parent of all channel-like systems.
-@skip isdbref(tag(setr(1,bbs_lib)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(BBS Library,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=SAFE SIDEFX INHERIT NO_COMMAND;@tag/add %q1=%q0;@tel %q0=#stor}
+@skip isdbref(tag(setr(1,bbs_lib)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(BBS Library,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE NO_COMMAND;@tag/add %q1=%q0;@tel %q0=#stor}

@@ -2,7 +2,7 @@
 @cmdquota me=99999
 
 @@ the chan_lib is the parent of all channel-like systems.
-@skip isdbref(tag(setr(1,chan_lib)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Channel System Library,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=SAFE SIDEFX INHERIT NO_COMMAND;@tag/add %q1=%q0;@tel %q0=#stor}
+@skip isdbref(tag(setr(1,chan_lib)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Channel System Library,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE NO_COMMAND;@tag/add %q1=%q0;@tel %q0=#stor}
 
 &SWITCHES #chan_lib=setunion(LIST|WHO|ON|OFF|GAG|UNGAG|JOIN|LEAVE|RESTRICT|UNRESTRICT,if(u(CHANNEL_ADMIN,%0),CREATE|RENAME|DELETE|EXAMINE|LOCK|UNLOCK),|,|)
 
@@ -40,7 +40,7 @@
 
 &SW_DELETE #chan_lib=@attach %!/INC_ADMIN;@attach %!/INC_FIND;
 
-&SW_CREATE #chan_lib=@attach %!/INC_ADMIN;@assert/inline setr(!,u(FUN_VALID_NAME,setr(!,trim(%0),channame)),result)=@pemit %#=%q<result>;@break/inline cand(isobjid(setr(!,u(FUN_FIND_CHANNEL,%#,%q<channame>),found)),!strmatch(%q<chan>,%q<found>))=@pemit %#=Channel name conflict detected.;@assert/inline isdbref(setr(!,create(%q<channame>,,t),chan))=@pemit %#=Could not create Channel: %q<chan>;@if has_markup(%q<channame>)={@name/ansi %q<chan>=%q<channame>};@tel %q<chan>=%!;@parent %q<chan>=[u(CHAN_PARENT)];@set %q<chan>=INDESTRUCTIBLE SAFE INHERIT;@pemit %#=Created a new channel: %q<channame>;@attach #inc/MSG_ALERT=New channel created: %q<channame>
+&SW_CREATE #chan_lib=@attach %!/INC_ADMIN;@assert/inline setr(!,u(FUN_VALID_NAME,setr(!,trim(%0),channame)),result)=@pemit %#=%q<result>;@break/inline cand(isobjid(setr(!,u(FUN_FIND_CHANNEL,%#,%q<channame>),found)),!strmatch(%q<chan>,%q<found>))=@pemit %#=Channel name conflict detected.;@assert/inline isdbref(setr(!,create(%q<channame>,,t),chan))=@pemit %#=Could not create Channel: %q<chan>;@if has_markup(%q<channame>)={@name/ansi %q<chan>=%q<channame>};@tel %q<chan>=%!;@parent %q<chan>=[u(CHAN_PARENT)];@set %q<chan>=INDESTRUCTIBLE SAFE;@pemit %#=Created a new channel: %q<channame>;@attach #inc/MSG_ALERT=New channel created: %q<channame>
 
 &SW_RENAME #chan_lib=@attach %!/INC_ADMIN;@attach %!/INC_FIND;@assert/inline setr(!,u(FUN_VALID_NAME,setr(!,trim(%0),channame)))=@pemit %#=%q<result>;@break/inline cand(isobjid(setr(!,u(FUN_FIND_CHANNEL,%#,stripansi(%q<channame>),found))),!strmatch(%q<chan>,%q<found>))=@pemit %#=Channel name conflict detected.;th setq(!,cname(%q<chan>),oldname);@name/ansi %q<chan>=%q<channame>;@pemit %#=Channel '%q<oldname>' renamed to '%q<channame>';@attach #inc/MSG_ALERT=Channel '%q<oldname>' renamed to '%q<channame>';th u(FUN_CEMIT,%q<chan>,:renamed '%q<oldname>' to '%q<channame>',%#)
 
@@ -116,9 +116,9 @@
 
 @@ After this is the actual default +channel system.
 
-@skip isdbref(tag(setr(1,chan)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No global room set!;@assert/inline isdbref(setr(0,create(Channel System,,t)))=@pemit %#=ERROR: Could not create code object: %q0;@set %q0=SAFE SIDEFX INHERIT !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom();@parent %q0=#chan_lib}
+@skip isdbref(tag(setr(1,chan)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No global room set!;@assert/inline isdbref(setr(0,create(Channel System,,t)))=@pemit %#=ERROR: Could not create code object: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom();@parent %q0=#chan_lib}
 
-@skip isdbref(tag(setr(1,chan_parent)))={@assert/inline isdbref(tag(chan))=@pemit %#=ERROR: No Channel object set!;@assert/inline isdbref(setr(0,create(Channel System Parent,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=SAFE SIDEFX INHERIT NO_COMMAND;@tag/add %q1=%q0;@tel %q0=[tag(chan)]}
+@skip isdbref(tag(setr(1,chan_parent)))={@assert/inline isdbref(tag(chan))=@pemit %#=ERROR: No Channel object set!;@assert/inline isdbref(setr(0,create(Channel System Parent,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE NO_COMMAND;@tag/add %q1=%q0;@tel %q0=[tag(chan)]}
 
 @lock/user #chan_parent|JoinLock=LOCK_TRUE/1
 @lock/user #chan_parent|LeaveLock=LOCK_TRUE/1
