@@ -7,12 +7,18 @@
 
 
 @@ General Objects
-&GAME_ALEAVE #globobj=@if cand(isdbref(setr(!,if(hasflag(%!,ZONEMASTER),%!,upzone(%!)),oldzone)),!strmatch(%q<oldzone>,setr(!,upzone(%#),newzone)))={th gm_upzone_remove(%q<oldzone>,%:)}
-&GAME_AENTER #globobj=@if cand(isdbref(setr(!,if(hasflag(%!,ZONEMASTER),%!,upzone(%!)),upzone)),!strmatch(%q<upzone>,setr(!,get(%#/GAME_UPZONE),oldz)))={th gm_upzone_add(%q<upzone>,%:)}
+&GAME_AENTER #globobj=th setq(!,gm_get_upzones(%#),oldupzones);th setq(!,upzones(%#),newupzones);@skip strmatch(%q<oldupzones>,%q<newupzones>)=@attach %!/HANDLE_ZONECHANGE=%#,revwords(listdiff(%q<oldupzones>,%q<newupzones>)),revwords(listdiff(%q<newupzones>,%q<oldupzones>)),msecs(),crc32(%:,objid(%!),%q<oldupzones>,%q<newupzones>)
 
-&HANDLE_UPZONES_AENTER #globobj=@select/inline/first [type(%!)]=ROOM,{},THING,{}
+&HANDLE_ZONECHANGE #globobj=th gm_set_upzones(%0,upzones(%0),%3,%4);th setq(!,filter(#lambda/[lit(hastotem(%1,%0))],CHARACTER ITEM STRUCTURE REGION,%b,%b,%#),totems);@if words(%1)={@dolist/inline/nobreak %1={@trigger/inline %d0/HANDLE_ZONELEAVE=%0,%q<totems>}};@if words(%2)={@dolist/inline/nobreak %2={@trigger/inline %d0/HANDLE_ZONEENTER=%0,%q<totems>}};th setq(!,setunion(lcon(%0),if(hasflag(%0,ZONEMASTER),zlcon(%0))),contents);@if words(%q<contents>)={@dolist %q<contents>={@skip strlen(grab(gm_get_upzones_hash(##),%4~*))=@attach %!/HANDLE_ZONECHANGE=##,%1,%2,%3,%4}}
+@@ %0 - Target. %1 - Zones to leave. %2 - Zones to add. %3 - msecs, %4 - anti-circular-recursion hash
 
-&MANY_TRIGGER #globobj=@dolist/inline/nobreak [lattrp_full(%!/%0_*)={@attach %!/%d0}
+&HANDLE_ZONEENTER #globobj=@dolist/inline %1={@if hasattr(%!/HANDLE_ZONEENTER_%d0)={@attach %!/HANDLE_ZONEENTER_%d0=%0,%1}}
+@@ %0 - target, %1 - totem list
+
+&HANDLE_ZONELEAVE #globobj=@dolist/inline %1={@if hasattr(%!/HANDLE_ZONELEAVE_%d0)={@attach %!/HANDLE_ZONELEAVE_%d0=%0,%1}}
+@@ %0 - target, %1 - totem list
+
+&MANY_TRIGGER #globobj=@if words(setr(!,lattrp_full(%!/%0_*),attrs))=@dolist/inline/nobreak %q<attrs>={@attach %!/%d0}
 
 @aenter #globobj
 @aleave #globobj
@@ -26,7 +32,7 @@
 
 @@ Rooms
 @aenter #globroom=@attach %!/GAME_AENTER
-@aleave #globroom=@attach %!/GAME_ALEAVE
+@aleave #globroom
 
 &FUN_LOCATION #globroom=iter(revwords(upzones(%!)),cname(%i0)[if(gtebittype(%#,2),%B\([num(%i0)]\))],%b,%b=>%b)
 
@@ -70,8 +76,8 @@
 
 &GAME_ENSURE_INVENTORY #globthing=@skip isobjid(setr(!,get(%!/INVENTORY),inv))={@assert/inline isdbref(setr(!,create(name(%!)'s Inventory,,r),inv))={@attach #inc/MSG_ALERT=[ansi(hr,ERROR:)] [cname(%!)] (%!) cannot move [cname(%#)] (%#) to inventory: cannot create: %q<inv>};@set %!=INVENTORY:[objid(%q<inv>)];@zone/add %q<inv>=%!};@tel %#=%q<inv>;@if strmatch(loc(%#),%!)={@pemit %#=[ansi(hr,ERROR:)] [if(gtebittype(%#,2),You have ended up in a ZONEMASTER's inventory. This is BAD. You should go somewhere else. Quickly.,You shouldn't be here! Contact staff immediately!)]}
 
-@aenter #globthing=@if cand(hasflag(%!,ZONEMASTER),ortotems(%#,CHARACTER ITEM STRUCTURE REGION))={@attach %!/GAME_ENSURE_INVENTORY},{@attach %!/GAME_AENTER;@attach %!/MANY_TRIGGER=AENTER}
-@aleave #globthing=@if !hasflag(%!,ZONEMASTER)={@attach %!/MANY_TRIGGER=ALEAVE}
+@aenter #globthing=@attach %!/GAME_AENTER;@attach %!/MANY_TRIGGER=AENTER
+@aleave #globthing=@attach %!/MANY_TRIGGER=ALEAVE
 
 @leave #globthing=You leave the [cname(%!)].
 @oleave #globthing=leaves the [cname(%!)].

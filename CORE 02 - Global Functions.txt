@@ -110,7 +110,7 @@
 
 &GFUN_PARTIAL #gfun=localize(if(setr(0,match(%0,%1,%2)),elementsmux(%0,%q0,%2),grab(%0,%1*,%2)))
 
-&GPFUN_UPZONE #gfun=switch(type(%0),ROOM,if(isdbref(lzone(%0)),objid(lzone(%0))),if(isdbref(loc(%0)),upzone(room(%0))))
+&GPFUN_UPZONE #gfun=if(hastype(%0,ROOM),if(isdbref(lzone(%0)),objid(lzone(%0))),if(isdbref(loc(%0)),if(hasflag(loc(%0),ZONEMASTER),objid(loc(%0)),upzone(loc(%0)))))
 @@ %0 - an object to find the next zone 'up' for. This strives to deal with searching up through locations and zone relationships. For example a ZONEMASTER could be in another ZONEMASTER's inventory, or it could be in a ROOM that belongs to the zone.
 
 &GPFUN_UPZONES #gfun=privatize(1,if(cand(isdbref(setr(!,upzone(%0),newzone)),!match(%1,%q<newzone>)),upzones(%q<newzone>,%1 %q<newzone>),trim(%1)))
@@ -169,6 +169,15 @@
 @@ %0 - zonemaster, %1 - objid
 
 &GMFUN_UPZONE_REMOVE #gfun=privatize(1,if(hasflag(%0,ZONEMASTER),[set(%1,GAME_UPZONE:)][iter(lattr(%0/GAME_UPZONE_*),if(match(setr(!,get(%0/%i0),data),objid(%1)),[set(%0,%i0:[setdiff(%q<data>,objid(%1))])][u(FUN_UPZONE_REMOVE_TRIGGER_[after(%i0,GAME_UPZONE_)],%0,objid(%1))]))]))
+
+&FUN_HASHRETAIN #gfun=lte(sub(%1,after(%0,~)),10)
+
+&GMFUN_SET_UPZONES #gfun=null(privatize(1,[set(%0,GAME_UPZONES:%1)][set(%0,GAME_UPZONES_HASH:[setunion(filter(#gfun/FUN_HASHRETAIN,get(%0/GAME_UPZONES_HASH),|,|,%2),%3~%2)])]))
+@@ %0 - target, %1 - zones to set. %2 - msecs, %3 - hash to set.
+
+&GMFUN_GET_UPZONES #gfun=filterobjid(get(%0/GAME_UPZONES))
+
+&GMFUN_GET_UPZONES_HASH #gfun=get(%0/GAME_UPZONES_HASH)
 
 
 @@ %0 - zonemaster, %1 - objid
