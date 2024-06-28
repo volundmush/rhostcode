@@ -1,2 +1,86 @@
 @@ the bbs_lib is the parent of all channel-like systems.
-@skip isdbref(tag(setr(1,bbs_lib)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(BBS Library,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE NO_COMMAND;@tag/add %q1=%q0;@tel %q0=#stor}
+@skip isdbref(tag(setr(1,bbs_parent)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(BBS Parent,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE NO_COMMAND;@tag/add %q1=%q0;@tel %q0=#stor}
+
+@lock/user #bbs_parent|ReadLock=EVAL_TRUE/1
+@lock/user #bbs_parent|PostLock=EVAL_TRUE/1
+@lock/user #bbs_parent|AdminLock=EVAL_GTEBITTYPE/5
+
+&GETID #bbs_parent=u(ORDER)
+
+@skip isdbref(tag(setr(1,bbs_fparent)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(BBS Faction Parent,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE NO_COMMAND;@tag/add %q1=%q0;@tel %q0=#stor}
+
+&GETID #bbs_fparent=[getconf(loc(%!),ABBREVIATION)][u(ORDER)]
+
+&EVAL_MYFACMEMBERS #bbs_parent=[facismember(loc(%!),%:)]
+&EVAL_MYFACLEADERS #bbs_parent=[lte(facgetrank(loc(%!,%:)),2)]
+
+0lock/user #bbs_fparent|ReadLock=EVAL_MYFACMEMBERS/1
+@lock/user #bbs_fparent|PostLock=EVAL_MYFACMEMBERS/1
+@lock/user #bbs_fparent|AdminLock=EVAL_MYFACLEADERS/1
+
+@skip isdbref(tag(setr(1,bbs)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No glogbal room set!;@assert/inline isdbref(setr(0,create(Public Bulletin Boards,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=[globalroom()]}
+
+&REG_BOARD_ID #bbs=([A-Za-z]+)?(\d+)
+
+&FUN_SORTBOARDS #bbs=sortby(#lambda/[lit(comp(get(%0/ORDER),get(%1/ORDER)))],%0)
+
+&FUN_GETBOARDS #bbs=u(FUN_SORTBOARDS,filter(#lambda/[lit(hasattr(%0/ORDER))],lcon(%0,OBJECT,,,1)))
+
+&FUN_BOARDS #bbs=squish(iter(#bbs[if(isdbref(tag(fac)),%B[sortname(u(#fac/FUN_FACTIONS,1))])],u(FUN_GETBOARDS,%i0)))
+
+&FIL_CANREAD #bbs=cor(elock(%0/user:ReadLock,%1),if(%2,,u(FIL_CANPOST,%0,%1)))
+&FIL_CANPOST #bbs=cor(elock(%0/user:PostLock,%1),if(%2,,u(FIL_CANADMIN,%0,%1)))
+&FIL_CANADMIN #bbs=elock(%0/user:AdminLock,%1)
+
+&FUN_FILTER_BOARDS #bbs=filter(%!/FIL_CAN%1,u(FUN_BOARDS),%b,%b,%0)
+
+&CMD_@BBS #bbs=$^(?s)(?\:@|\+)?bb(create|rename|order|delete|options|config|list|read|post|reply|edit|remove|write|proof|toss|move|leave|join|next|new|scan|catchup|lock|unlock|examine)?(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach %!/SW_[strfirstof(%1,WRITE)]=trim(%3),%4,rest(%0)
+@set #bbs/CMD_@BBS=regexp
+
+&SW_CREATE #bbs=
+
+&SW_RENAME #bbs=
+
+&SW_ORDER #bbs=
+
+&SW_DELETE #bbs=
+
+&SW_OPTIONS #bbs=
+
+&SW_CONFIG #bbs=
+
+&SW_LIST #bbs=
+
+&SW_READ #bbs=
+
+&SW_POST #bbs=
+
+&SW_REPLY #bbs=
+
+&SW_EDIT #bbs=
+
+&SW_REMOVE #bbs=
+
+&SW_WRITE #bbs=
+
+&SW_TOSS #bbs=
+
+&SW_MOVE #bbs=
+
+&SW_JOIN #bbs=
+
+&SW_LEAVE #bbs=
+
+&SW_NEXT #bbs=
+
+&SW_NEW #bbs=@attach %!/SW_NEXT
+
+&SW_SCAN #bbs=
+
+&SW_CATCHUP #bbs=
+
+&SW_LOCK #bbs=
+
+&SW_UNLOCK #bbs=
+
+&SW_EXAMINE #bbs=

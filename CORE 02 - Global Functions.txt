@@ -31,13 +31,13 @@
 
 &GFUN_RANDWORD #gfun=first(shuffle(%0,strfirstof(%1,%b),strfirstof(%1,%b)),strfirstof(%1,%b))
 
-&GFUN_NAMEMATCH #gfun=t(match(setunion([name(%0)]|[num(%0)]|[objid(%0)],if(%2,getalias(%0)),|,|),%1,|))
+&GFUN_NAMEMATCH #gfun=t(match([name(%0)]|[num(%0)]|[objid(%0)][if(%2,|[getalias(%0)])][if(%3,|[u(%0/%3)])],%1,|))
 &GFUN_GRABNAME #gfun=strmatch(name(%0),%1*)
 
-&GFUN_NAMEFIND #gfun=trim(localize(iter(sortname(%0),if(namematch(%i0,%1,%2),%i0[ibreak()]))))
-&GFUN_NAMEGRAB #gfun=trim(localize(ofparse(1,iter(setr(0,sortname(%0)),if(namematch(%i0,%1,%2),%i0[ibreak()])),iter(%q0,if(grabname(%i0,%1),%i0[ibreak()])))))
-&GFUN_NAMEGRABALL #gfun=trim(localize(ofparse(1,iter(setr(0,sortname(%0)),if(namematch(%i0,%1,%2),%i0[ibreak()])),iter(%q0,if(grabname(%i0,%1),%i0),))))
-@@ %0 - dbrefs. %1 - name. %2 - check aliases.
+&GFUN_NAMEFIND #gfun=trim(localize(iter(sortname(%0),if(namematch(%i0,%1,%2,%3),%i0[ibreak()]))))
+&GFUN_NAMEGRAB #gfun=trim(localize(ofparse(1,iter(setr(0,sortname(%0)),if(namematch(%i0,%1,%2,%3),%i0[ibreak()])),iter(%q0,if(grabname(%i0,%1),%i0[ibreak()])))))
+&GFUN_NAMEGRABALL #gfun=trim(localize(ofparse(1,iter(setr(0,sortname(%0)),if(namematch(%i0,%1,%2,%3),%i0[ibreak()])),iter(%q0,if(grabname(%i0,%1),%i0),))))
+@@ %0 - dbrefs. %1 - name. %2 - check aliases. %3 - match against results of this function call
 
 &GFUN_OBJIDS #gfun=squish(iter(%0,if(isdbref(%i0),objid(%i0))))
 @@ %0 dbref list.
@@ -178,8 +178,11 @@
 &GMFUN_GET_UPZONES #gfun=filterobjid(get(%0/GAME_UPZONES))
 
 &GMFUN_GET_UPZONES_HASH #gfun=get(%0/GAME_UPZONES_HASH)
-
-
 @@ %0 - zonemaster, %1 - objid
+
+&GFUN_GETPARTIAL #gfun=if(!strlen(%0),#-1 MUST ENTER A [strfirstof(%4,%3)],if(setr(!,match(%1,%0,%2),%3),1[setq(!,elementsmux(%1,r(%3),%2),%3)],if(eq(words(setr(!,graball(%1,%0*,%2,%2),%3),%2),1),1,if(gt(words(r(%3),%2),1),#-2 AMBIGUOUS MATCH FOR A [strfirstof(%4,%3)]: [elist(r(%3),,%2)],#-1 NO MATCHED [strfirstof(%4,%3)]. CHOICES ARE: [elist(%1,,%2)]))))
+@@ %0 - input, %1 - choices, %2 - delimiter, %3 register to load, %4 name of thing to display
+@@ Function returns 0 or 1 for if partial match successful, else returns helpful formatted error.
+
 
 @startup #gfun=@attach #inc/REGISTER_FUNCTIONS
