@@ -78,7 +78,7 @@
 &FIL_VISIBLE #fac=if(!getconf(%0,HIDDEN),1,facismember(%0,%1))
 &FIL_SELECTABLE #fac=facismember(%0,%1)
 
-&FUN_GETABBR #fac=after(grab(iter(u(FUN_VISIBLE,%:,1),%i0~[getconf(%i0,ABBREVIATION)],%b,|),%0~*,|),~)
+&FUN_GETABBR #fac=after(grab(iter(u(FUN_VISIBLE,%:,1),[getconf(%i0,ABBREVIATION)]~%i0,%b,|),%0~*,|),~)
 
 &GPFUN_FACISMEMBER #fac=if(hastotem(%0,FACTION),cor(if(%2,,gtebittype(%1,2)),if(cor(gtebittype(%:,2),!getconf(%0,PRIVATE),match(get(%0/MEMBERS),%:)),cor(t(match(get(%0/MEMBERS),objid(%1))),cand(ortotems(%1,N I),match(get(%1/GAME_FACTIONS),objid(%0)))),0)),0)
 @@ %0 - faction object, %1 - member being checked. %2 - don't check for staff.

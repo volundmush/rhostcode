@@ -7,14 +7,41 @@
 
 &GETID #bbs_parent=u(ORDER)
 
-@skip isdbref(tag(setr(1,bbs_fparent)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(BBS Faction Parent,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE NO_COMMAND;@tag/add %q1=%q0;@tel %q0=#stor}
+&CONFIG_PERM #bbs_parent=@assert/inline elock(%2/user|AdminLock,%#)=@pemit %#=Permission denied.
+
+&CONFIG_ISANONYMOUS_DESC #bbs_parent=Non-Board Admin see the ANONYMOUS name instead of normal poster?
+&CONFIG_ISANONYMOUS_DEFAULT #bbs_parent=0
+&CONFIG_ISANONYMOUS_TYPE #bbs_parent=BOOL
+
+&CONFIG_ANONYMOUS_DESC #bbs_parent=The name to use in Anonymous mode.
+&CONFIG_ANONYMOUS_DEFAULT #bbs_parent=Anonymous
+&CONFIG_ANONYMOUS_TYPE #bbs_parent=WORD
+
+&CONFIG_MANDATORY_DESC #bbs_parent=Whether a Board is mandatory reading for those who can see it. A Mandatory board is immune to +bbcatchup and nags users.
+&CONFIG_MANDATORY_DEFAULT #bbs_parent=0
+&CONFIG_MANDATORY_TYPE #bbs_parent=BOOL
+&CONFIG_MANDATORY_PERM #bbs_parent=@assert/inline gtebittype(%#,5)=@pemit %#=Permission denied. Only Admin may set a board Mandatory.
+
+&CONFIG_REPLIES_DESC #bbs_parent=Allow +bbreply on the board? Disabling this will not clear existing threads.
+&CONFIG_REPLIES_DEFAULT #bbs_parent=1
+&CONFIG_REPLIES_TYPE #bbs_parent=BOOL
+
+&CONFIG_TIMEOUT_DESC #bbs_parent=The amount of seconds a post can exist before it will be auto-cleaned.
+&CONFIG_TIMEOUT_DEFAULT #bbs_parent=7776000
+&CONFIG_TIMEOUT_TYPE #bbs_parent=DURATION
+
+&CONFIG_USETIMEOUT_DESC #bbs_parent=Enable the timeout system for this board?
+&CONFIG_USETIMEOUT_DEFAULT #bbs_parent=1
+&CONFIG_USETIMEOUT_TYPE #bbs_parent=BOOL
+
+@skip isdbref(tag(setr(1,bbs_fparent)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(BBS Faction Parent,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE NO_COMMAND;@tag/add %q1=%q0;@tel %q0=#stor;@parent %q0=[tag(bbs_parent)]}
 
 &GETID #bbs_fparent=[getconf(loc(%!),ABBREVIATION)][u(ORDER)]
 
-&EVAL_MYFACMEMBERS #bbs_parent=[facismember(loc(%!),%:)]
-&EVAL_MYFACLEADERS #bbs_parent=[lte(facgetrank(loc(%!,%:)),2)]
+&EVAL_MYFACMEMBERS #bbs_fparent=[facismember(loc(%!),%:)]
+&EVAL_MYFACLEADERS #bbs_fparent=[lte(facgetrank(loc(%!,%:)),2)]
 
-0lock/user #bbs_fparent|ReadLock=EVAL_MYFACMEMBERS/1
+@lock/user #bbs_fparent|ReadLock=EVAL_MYFACMEMBERS/1
 @lock/user #bbs_fparent|PostLock=EVAL_MYFACMEMBERS/1
 @lock/user #bbs_fparent|AdminLock=EVAL_MYFACLEADERS/1
 
@@ -32,22 +59,50 @@
 &FIL_CANPOST #bbs=cor(elock(%0/user:PostLock,%1),if(%2,,u(FIL_CANADMIN,%0,%1)))
 &FIL_CANADMIN #bbs=elock(%0/user:AdminLock,%1)
 
-&FUN_FILTER_BOARDS #bbs=filter(%!/FIL_CAN%1,u(FUN_BOARDS),%b,%b,%0)
+&FUN_FILTER_BOARDS #bbs=filter(%!/FIL_CAN%1,if(strlen(%2),%2,u(FUN_BOARDS)),%b,%b,%0)
 
-&CMD_@BBS #bbs=$^(?s)(?\:@|\+)?bb(create|rename|order|delete|options|config|list|read|post|reply|edit|remove|write|proof|toss|move|leave|join|next|new|scan|catchup|lock|unlock|examine)?(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach %!/SW_[strfirstof(%1,WRITE)]=trim(%3),%4,rest(%0)
+&FUN_BOARD_IDS #bbs=iter(if(strlen(%0),%0,u(FUN_BOARDS)),[u(%i0/GETID)]~%i0,%b,|)
+
+&FUN_GETBOARD #bbs=after(grab(%0,%1~*,|),~)
+
+&CMD_@BBS #bbs=$^(?s)(?\:@|\+)?bb(create|rename|order|delete|options|config|list|read|post|reply|edit|remove|write|proof|toss|move|leave|join|next|new|scan|catchup|lock|unlock|examine|timeout)?(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:th setq(!,u(FUN_BOARDS),boards);th setq(!,u(FUN_FILTER_BOARDS,%:,READ,%q<boards>),visiboards);th setq(!,u(FUN_BOARD_IDS,%q<visiboards>),visiboardids);@attach %!/SW_[strfirstof(%1,WRITE)]=trim(%3),%4,rest(%0)
 @set #bbs/CMD_@BBS=regexp
 
-&SW_CREATE #bbs=
+&CONFIG_PERM #bbs=@assert/inline gtebittype(%#,5)=@pemit %#=Permission denied.
 
-&SW_RENAME #bbs=
+&CONFIG_TIMEOUTS_DESC #bbs=Enable/disable the Timeout system for all boards.
+&CONFIG_TIMEOUTS_DEFAULT #bbs=1
+&CONFIG_TIMEOUTS_TYPE #bbs=BOOL
 
-&SW_ORDER #bbs=
+&CONFIG_MANINTERVAL_DESC #bbs=Interval between Mandatory checks?
+&CONFIG_MANINTERVAL_DEFAULT #bbs=7200
+&CONFIG_MANINTERVAL_TYPE #bbs=DURATION
 
-&SW_DELETE #bbs=
+&SW_CONFIG #bbs=@attach #inc/CONFIG=%0,%1,%!
 
-&SW_OPTIONS #bbs=
+&SW_CREATE #bbs=@assert/inline strlen(%0)=@pemit %#=No board id entered!;th setq(!,,abbr);th setq(!,,ord);@assert/inline regmatchi(%0,v(REG_BOARD_ID),-1 abbr ord);@if strlen(%q<abbr>)={@assert/inline isobjid(setr(!,u(#fac/FUN_GETABBR,%q<abbr>),fac))=@pemit %#=Sorry but '%q<abbr>' did not match an abbreviated Faction.;@assert/inline lte(facgetrank(%q<fac>,%:),2)=@pemit %#=Permission denied. Only Leaders and Seconds can create Faction boards.},{@assert/inline gtebittype(%#,5)=@pemit %#=Permission denied. Only Wizards may create public boards.};@attach #inc/VALID_POSINT=%q<ord>,Board Order;@break/inline isobjid(u(FUN_GETBOARD,u(FUN_BOARD_IDS,%q<boards>),%0))=@pemit %#=ERROR: BoardID conflict detected.;@assert/inline strlen(%1)=@pemit %#=No board name entered!;@assert/inline valid(name,trim(stripansi(%1)))=@pemit %#=That's not a good name for a Board.;@assert/inline isdbref(setr(!,create(trim(stripansi(%1)),,t),board))=@pemit %#=Error Creating Board: %q<board>;@set %q<board>=INDESTRUCTIBLE;@parent %q<board>=[tag(if(isdbref(%q<fac>),bbs_fparent,bbs_parent))];@set %q<board>=ORDER:%q<ord>;@tel %q<board>=[if(isdbref(%q<fac>),%q<fac>,tag(bbs))];@if has_markup(%1)={@name/ansi %q<board>=[trim(%1)]};@pemit %#=Board '%0: %1' Created.;@attach #inc/MSG_ALERT=Board '%0: %1' Created.
 
-&SW_CONFIG #bbs=
+&FINDBOARD #bbs=@assert/inline strlen(%0)=@pemit %#=Must enter a board!;@assert/inline isobjid(setr(!,u(FUN_GETBOARD,%q<visiboardids>,%0),%1))=@pemit %#=That didn't match a board!;@if hastotem(loc(r(%1)),FACTION)={th setq(!,objid(loc(r(%1))),%1fac)}
+
+&FUN_ADMIN #bbs=if(isobjid(%2),lte(facgetrank(%2,%0),2),gtebittype(%0,5))
+
+&BOARD_ADMIN #bbs=@attach %!/FINDBOARD=%0,board;@assert/inline u(FUN_ADMIN,%#,%q<board>,%q<boardfac>)=@pemit %#=Permission denied.
+
+&SW_RENAME #bbs=@attach %!/BOARD_ADMIN;@assert/inline strlen(%1)=@pemit %#=Must enter a new board name!;@assert/inline valid(name,stripansi(trim(%1)))=@pemit %#=That's not a good name for a board.;th setq(!,cname(%q<board>),oldname);@name/ansi %q<board>=%1;@pemit %#=Renamed Board '[u(%q<board>/GETID)]: %q<oldname>' to: [cname(%q<board>)];@attach #inc/MSG_ALERT=Renamed Board '[u(%q<board>/GETID)]: %q<oldname>' to: [cname(%q<board>)]
+
+&SW_ORDER #bbs=@attach %!/BOARD_ADMIN;@attach #inc/VALID_POSINT=%1,Board Order;@assert/inline lmax(iter(u(FUN_GETBOARDS,strfirstof(%q<boardfac>,%!)),eq(get(%i0/ORDER),%q<value>)))=@pemit %#=There is a Board with a conflicting Order in the [if(isdbref(%q<boardfac>),cname(%q<boardfac>),cname(%!))].;th setq(!,get(%q<board>/ORDER),old);@pemit %#=Order of Board '[u(%q<board>/GETID)]: [cname(%q<board>)]' changed to: %q<value>;@attach #inc/MSG_ALERT=Order of Board '[u(%q<board>/GETID)]: [cname(%q<board>)]' changed to: %q<value>;@set %q<board>=ORDER:%q<value>
+
+&SW_DELETE #bbs=@attach %!/BOARD_ADMIN;@assert/inline strmatch(%1,setr(!,cname(%q<board>),oldname))=@pemit %#=You must verify this by entering the name exactly as the second argument.;th setq(!,u(%q<board>/GETID),bid);@attach %!/DO_DELETE=objid(%q<board>),num(%q<board>);@pemit %#=Board '%q<bid>: %q<oldname>' deleted.;@attach #inc/MSG_ALERT=Board '%q<bid>: %q<oldname>' deleted.
+
+&DO_DELETE #bbs=@set %0=!INDESTRUCTIBLE;@destroy/override %0;@dolist/inline searchngobjid(EVAL=\[attrcnt(##/BBS_%1_*)\])={@wipe %d0/BBS_%1_*}
+
+&SW_OPTIONS #bbs=@attach %!/BOARD_ADMIN=trim(before(%0,/));@attach #inc/CONFIG=trim(after(%0,/)),%1,%q<board>
+
+&SW_LOCK #bbs=@attach %!/BOARD_ADMIN=trim(before(%0,/)),board;@attach #inc/PARTIAL=after(%0,/),ReadLock|PostLock|AdminLock,|,lock;@attach #inc/VALID_LOCKKEY=%1;@lock/user %q<board>|%q<lock>=%q<value>;@pemit %#=Changed %q<lock> on Board '%q<bid>: %q<oldname>' to: %q<value>;@attach #inc/MSG_ALERT=Changed %q<lock> on Board '%q<bid>: %q<oldname>' to: %q<value>
+
+&SW_UNLOCK #bbs=@attach %!/BOARD_ADMIN=trim(before(%0,/)),board;@attach #inc/PARTIAL=after(%0,/),ReadLock|PostLock|AdminLock,|,lock;@unlock/user %q<board>|%q<lock>;@pemit %#=Restored Default Lock on Board '%q<bid>: %q<oldname>';@attach #inc/MSG_ALERT=Restored Default Lock on Board '%q<bid>: %q<oldname>'
+
+&SW_EXAMINE #bbs=@attach %!/BOARD_ADMIN;
 
 &SW_LIST #bbs=
 
@@ -79,8 +134,3 @@
 
 &SW_CATCHUP #bbs=
 
-&SW_LOCK #bbs=
-
-&SW_UNLOCK #bbs=
-
-&SW_EXAMINE #bbs=
