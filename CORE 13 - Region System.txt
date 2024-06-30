@@ -31,7 +31,7 @@
 
 &SW_SELECT #reg=@attach %!/INC_FINDREG=%0,reg;@assert/inline elock(%q<reg>/ZoneWizLock,%#)=@pemit %#=ERROR: You do not have build rights to that Region. Request them from staff first.
 
-&FUN_SEARCH_BUILDER #reg=searchngobjid([tag(gm)] ETHING=\[cand(hastotem(##,REGION),elock(##/ZoneWizLock,%0))\])
+&FUN_SEARCH_BUILDER #reg=searchngobjid([tag(gm)] ETHING=\[cand(hastotem(##,REGION),elock(##/ZoneWizLock,num(%0)))\])
 
 &SW_LIST #reg=@attach %!/INC_LIST=Your Buildable Regions,u(FUN_SEARCH_BUILDER,%#)
 

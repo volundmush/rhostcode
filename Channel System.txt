@@ -78,7 +78,7 @@
 &LOCKS #chan_lib=JoinLock|LeaveLock|TalkLock|ModerateLock|AdminLock
 
 &CHECK_HELPER_EXTRA #chan_lib=switch(%1,JoinLock,!match(get(%0/BANNED),objid(%2)),TalkLock,if(setr(!,secs_remain(get_kv(get(%0/GAGGED),%:)),gag),0[null(pemit(%2,You are gagged from [cname(%0)] for: [etime(%q<gag>)]))]),1)
-&CHECK #chan_lib=localize(if(u(CHANNEL_ADMIN,%2),1,cand(elock(%0|user:%1,%2),u(CHECK_HELPER_EXTRA,%0,%1,%2))))
+&CHECK #chan_lib=localize(if(u(CHANNEL_ADMIN,%2),1,cand(elock(%0/user|%1,num(%2)),u(CHECK_HELPER_EXTRA,%0,%1,%2))))
 @@ %0 - channel, %1 - permission, %2 - object
 
 &BASE_FORMAT #chan_lib=<[cname(%1)]> [parsestr(%2,%0,",",,&[cname(%3)])]

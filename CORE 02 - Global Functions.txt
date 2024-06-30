@@ -80,7 +80,7 @@
 
 &GFUN_CTIME #gfun=createtime(%0)
 
-&GFUN_GETTZ #gfun=strfirstof(accoption(%0,TIMEZONE),get(%0/TIMEZONE))
+&GFUN_GETTZ #gfun=strfirstof(accoption(%0,TIMEZONE),get(%0/TIMEZONE),UTC)
 
 &GFUN_LWHOID #gfun=setunion(lwho(,,1),)
 
@@ -88,7 +88,7 @@
 
 &GFUN_FILTEROBJID #gfun=filter(#lambda/[lit(isobjid(%0))],%0)
 
-&GFUN_FANCYTIME #gfun=if(cor(!strlen(%0),isint(%0)),timefmt(switch(%1,2,$a $b $02D $02I:$02M$p $Z,3,$b $02D $02I:$02M$p $Y $Z,day,$b $02D $Y,date,$m/$d/$Y,strfirstof($b $02D $02H:$02T$P $i,%3)),strfirstof(%0,secs()),if(strlen(%2),if(isdbref(%2),gettz(%2),%2),gettz(%#))),<invalid date>)
+&GFUN_FANCYTIME #gfun=if(cor(!strlen(%0),isint(%0)),runintz(if(strlen(%2),if(isdbref(%2),gettz(%2),%2),gettz(%#)),timefmt(switch(%1,2,$a $b $02D $02I:$02M$p $Z,3,$b $02D $02I:$02M$p $Y $Z,day,$b $02D $Y,date,$m/$d/$Y,strfirstof(%3,$b $02D $02H:$02T$P $i)),strfirstof(%0,secs()))),<invalid date>)
 
 &GFUN_BASECONV #gfun=pack(unpack(%0,%1),%2)
 
