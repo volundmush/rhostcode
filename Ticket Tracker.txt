@@ -1,0 +1,96 @@
+@skip isdbref(tag(setr(1,bucket_parent)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Ticket Bucket Parent,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE NO_COMMAND;@tag/add %q1=%q0;@tel %q0=#stor}
+
+@lock/user #bucket_parent|AdminLock=EVAL_GTEBITTYPE/5
+@lock/user #bucket_parent|PostLock=EVAL_TRUE/1
+
+&CONFIG_PERM #bucket_parent=@assert/inline elock(%2/user|AdminLock,%#)=@pemit %#=Permission denied.
+
+&CONFIG_DUE_DESC #bucket_parent=Default due date on a Ticket for this bucket.
+&CONFIG_DUE_DEFAULT #bucket_parent=1209600
+&CONFIG_DUE_TYPE #bucket_parent=DURATION
+
+@skip isdbref(tag(setr(1,tick)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No glogbal room set!;@assert/inline isdbref(setr(0,create(Ticket Tracker,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=[globalroom()]}
+
+&CMD_@TICKET #tick=$^(?s)(?\:@|\+)?(job|myjob|myjobs|jobs|ticket|bucket)?(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:th setq(!,switch(%1,job,ticket,jobs,ticket,ticket,ticket,myjobs,myjob,myjob,myjob,bucket,bucket),family);@attach #inc/GET_SWITCH=%2,%q<family>;@attach %!/SW_%q<family>_[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
+@set #tick/CMD_@TICKET=regexp
+
+@@ families: ticket, myjob, bucket
+
+@@ Bucket Family
+&SWITCHES_BUCKET_6 #tick=CREATE|RENAME|LOCK|UNLOCK|DELETE|DESCRIBE|GRANT|REVOKE|SHORT|OPTIONS
+
+&FIL_BUCKET_CANADMIN #tick=cor(elock(%0/user|AdminLock,num(%1)),gtebittype(%1,5),match(get(%0/STAFF)),objid(%1))
+&FIL_BUCKET_CANPOST #tick=cor(elock(%0/user|PostLock,num(%1)),gtebittype(%1,5))
+
+&INC_BUCKET_CREATE #tick=
+
+&INC_BUCKET_LIST #tick=
+
+&SW_BUCKET_MAIN #tick=@if strlen(%0)={@attach %!/INC_BUCKET_DISPLAY},{@attach %!/INC_BUCKET_LIST}
+
+&SW_BUCKET_CREATE #tick=
+
+&SW_BUCKET_RENAME #tick=
+
+&SW_BUCKET_LOCK #tick=
+
+&SW_BUCKET_UNLOCK #tick=
+
+&SW_BUCKET_DESCRIBE #tick=
+
+&SW_BUCKET_SHORT #tick=
+
+&SW_BUCKET_GRANT #tick=
+
+&SW_BUCKET_REVOKE #tick=
+
+&SW_BUCKET_OPTIONS #tick=
+
+@@ Ticket Family
+&SWITCHES_TICKET_0 #tick=CREATE|NEW|REPLY|STAFFCOMMENT|CLAIM|UNCLAIM|ASSIGN|UNASSIGN|ADDHELPER|REMHELPER|COMPLETE|APPROVE|DENY|CANCEL|REOPEN|DUE|SCAN|NEXT|PENDING
+&SWITCHES_TICKET_5 #tick=ARCHIVE
+
+&SW_TICKET_CREATE #tick=
+&SW_TICKET_NEW #tick=@attach %!/SW_TICKET_CREATE
+
+&SW_TICKET_REPLY #tick=
+
+&SW_TICKET_STAFFCOMENT #tick=
+
+&SW_TICKET_CLAIM #tick=
+
+&SW_TICKET_UNCLAIM #tick=
+
+&SW_TICKET_ASSIGN #tick=
+
+&SW_TICKET_UNASSIGN #tick=
+
+&SW_TICKET_ADDHELPER #tick=
+
+&SW_TICKET_REMHELPER #tick=
+
+&SW_TICKET_COMPLETE #tick=
+
+&SW_TICKET_APPROVE #tick=
+
+&SW_TICKET_DENY #tick=
+
+&SW_TICKET_CANCEL #tick=
+
+&SW_TICKET_REOPEN #tick=
+
+&SW_TICKET_DUE #tick=
+
+&SW_TICKET_SCAN #tick=
+
+&SW_TICKET_NEXT #tick=
+
+&SW_TICKET_PENDING #tick=
+
+&SW_TICKET_UNCLAIM #tick=
+
+&SW_TICKET_ARCHIVE #tick=
+
+@@ Myjob family
+&SWITCHES_MYJOB_0 #tick=
+

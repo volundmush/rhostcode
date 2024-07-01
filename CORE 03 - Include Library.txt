@@ -52,7 +52,7 @@
 &PARTIAL #inc=@if or(not(strlen(%0)),setr(!,match(%1,setr(!,%0,strfirstof(%3,choice)),strfirstof(%2,%b)),matched))={@if cand(t(strlen(%0)),t(%q<matched>))={th setq(!,elementsmux(%1,%q<matched>,strfirstof(%2,%b)),strfirstof(%3,choice))}},{@assert/inline words(setr(!,graball(%1,%0*,strfirstof(%2,%b),strfirstof(%2,%b)),strfirstof(%3,choice)))=@pemit %#={Invalid %4! Valid choices are: [elist(%1,,strfirstof(%2,%b))]};@break/inline gt(words(r(strfirstof(%3,choice)),strfirstof(%2,%b)),1)=@pemit %#={ERROR: %0 matched [elist(r(strfirstof(%3,choice)),strfirstof(%2,%b),,|)]. Please be more specific.}}
 @@ PARTIAL %0 = entry, %1 = choices, %2 = delimiter, %3 = register name, %4 = topic name
 
-&GET_SWITCH #inc=@if strlen(%0)={@attach #inc/PARTIAL=%0,get_switches(%!,%#),|,switch,switch}
+&GET_SWITCH #inc=@if strlen(%0)={@attach #inc/PARTIAL=%0,get_switches(%!,%#,%1),|,switch,switch}
 
 &DISPLAY_HELP #inc=th setq(!,iter(setr(!,get(%!/HELP_FILES),hdata),before(%i0,~),|,|),hfiles);@if strlen(%0)={@attach #inc/PARTIAL=%0,%q<hfiles>,|,file,helpfile;@pemit %#=header(Help for: %1 - %q<file>);@pemit %#=u(%!/[get_kv(%q<hdata>,%q<file>)]);@pemit %#=footer()},{@pemit %#=header(Help for %1);@if hasattr(%!/HELP_INDEX)={@pemit %#=u(%!/HELP_INDEX);@pemit %#=separator()};@pemit %#=columns(%q<hfiles>,26,3,l,1,1,,%b,,1,|,,);@pemit %#=footer()}
 @@ %0 - file to display? %1 - Help System Name

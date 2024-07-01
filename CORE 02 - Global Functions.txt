@@ -8,7 +8,7 @@
 &GFUN_GTBITTYPE #gfun=gt(bittype(%0),%1)
 &GFUN_GTEBITTYPE #gfun=gte(bittype(%0),%1)
 
-&GFUN_GET_SWITCHES #gfun=setunion(iter(lnum(7),if(gtebittype(%1,%i0),u(%0/SWITCHES_%i0)),%b,|),u(%0/SWITCHES,%1),|,|)
+&GFUN_GET_SWITCHES #gfun=setunion(iter(lnum(7),if(gtebittype(%1,%i0),u(%0/SWITCHES_[if(strlen(%2),%2_)]%i0)),%b,|),u(%0/SWITCHES[if(strlen(%2),%2_)],%1),|,|)
 
 &GFUN_SET_KV #gfun=setunion(del_kv(%0,%1),%1~%2,|,|)
 &GFUN_DEL_KV #gfun=setdiff(%0,grab(%0,%1~*,|),|,|)
