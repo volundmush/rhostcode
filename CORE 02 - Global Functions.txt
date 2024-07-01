@@ -76,7 +76,7 @@
 
 &GFUN_NCHILDREN #gfun=last(children(%0,l))
 
-&GFUN_CSECS #gfun=convtime(createtime(%0))
+&GFUN_CSECS #gfun=runintz(UTC,convtime(createtime(%0)))
 
 &GFUN_CTIME #gfun=createtime(%0)
 
