@@ -22,29 +22,35 @@
 &FIL_BUCKET_CANADMIN #tick=cor(elock(%0/user|AdminLock,num(%1)),gtebittype(%1,5),match(get(%0/STAFF)),objid(%1))
 &FIL_BUCKET_CANPOST #tick=cor(elock(%0/user|PostLock,num(%1)),gtebittype(%1,5))
 
-&INC_BUCKET_CREATE #tick=
+&REG_BUCKET_NAME #tick=[A-Za-z0-9]{2,12}
+
+&FUN_BUCKETS #tick=lcon(#bucket_parent,OBJECT,,,1)
+
+&INC_BUCKET_DISPLAY #tick=
 
 &INC_BUCKET_LIST #tick=
 
 &SW_BUCKET_MAIN #tick=@if strlen(%0)={@attach %!/INC_BUCKET_DISPLAY},{@attach %!/INC_BUCKET_LIST}
 
-&SW_BUCKET_CREATE #tick=
+&SW_BUCKET_CREATE #tick=@assert/inline strlen(%0)=@pemit %#=No name entered!;@assert/inline regmatchi(%0,v(REG_BUCKET_NAME))=@pemit %#=Buckets must be single words of 2-12 alphanumeric characters.;@break/inline isdbref(locate(#bucket_parent,%0,i))=@pemit %#=That name is already in use!;@assert/inline isdbref(setr(!,create(%0,,t),res))=@pemit %#=Couldn't create Bucket: %q<res>;@parent %q<res>=#bucket_parent;@tel %q<res>=#bucket_parent;@if has_markup(%0)={@name/ansi %q<res>=%0};@pemit %#=Bucket '[cname(%q<res>)]' created.;@attach #inc/MSG_ALERT=Bucket '[cname(%q<res>)]' created.
 
-&SW_BUCKET_RENAME #tick=
+&FINDBUCKET #tick=@assert/inline strlen(%0)=@pemit %#=Must enter a bucket name!;@assert/inline words(setr(!,filter(FIL_BUCKET_CAN%2,u(FUN_BUCKETS),%b,%b,%#),buckets))=@pemit %#=You can't see any buckets to select! Can you %2 it?;@assert/inline isobjid(setr(!,namegrab(%q<buckets>,%0),%1))=@pemit %#=No bucket by that name!
 
-&SW_BUCKET_LOCK #tick=
+&SW_BUCKET_RENAME #tick=@attach %!/FINDBUCKET=%0,bucket,ADMIN;
 
-&SW_BUCKET_UNLOCK #tick=
+&SW_BUCKET_LOCK #tick=@attach %!/FINDBUCKET=trim(before(%0,/)),bucket,ADMIN;@attach #inc/PARTIAL=after(%0,/),PostLock|AdminLock,|,lock;@attach #inc/VALID_LOCKKEY=%1;@lock/user %q<bucket>|%q<lock>=%q<value>;@pemit %#=Changed %q<lock> on Bucket '[cname(%q<bucket>)]' to: %q<value>;@attach #inc/MSG_ALERT=Changed %q<lock> on Bucket '[cname(%q<bucket>)]' to: %q<value>
 
-&SW_BUCKET_DESCRIBE #tick=
+&SW_BUCKET_UNLOCK #tick=@attach %!/FINDBUCKET=trim(before(%0,/)),bucket,ADMIN;@attach #inc/PARTIAL=after(%0,/),PostLock|AdminLock,|,lock;@unlock/user %q<bucket>|%q<lock>;@pemit %#=Restored Default Lock on Bucket '[cname(%q<bucket>)]';@attach #inc/MSG_ALERT=Restored Default Lock on Bucket '[cname(%q<bucket>)]'
 
-&SW_BUCKET_SHORT #tick=
+&SW_BUCKET_DESCRIBE #tick=@attach %!/FINDBUCKET=%0,bucket,ADMIN;@assert/inline strlen(%1)=@pemit %#=Describe it as what?;@describe %q<bucket>=%1;@pemit %#=New description set for Bucket '[cname(%q<bucket>)]';@attach #inc/MSG_ALERT=New description set for Bucket '[cname(%q<bucket>)]'
 
-&SW_BUCKET_GRANT #tick=
+&SW_BUCKET_SHORT #tick=@attach %!/FINDBUCKET=%0,bucket,ADMIN;@assert/inline strlen(%1)=@pemit %#=Describe it as what?;&SHORTDESC %q<bucket>=%1;@pemit %#=New shortdesc set for Bucket '[cname(%q<bucket>)]';@attach #inc/MSG_ALERT=New shortdesc set for Bucket '[cname(%q<bucket>)]'
 
-&SW_BUCKET_REVOKE #tick=
+&SW_BUCKET_GRANT #tick=@attach %!/FINDBUCKET=%0,bucket,ADMIN;@attach #inc/GET_PLAYER=%1,t1;@break/inline match(setr(!,filterobjid(get(%q<bucket>/STAFF)),staff),%q<t1>)=@pemit %#=[cname(%q<t1>)] is already a member of that Bucket's staff!;@set %q<bucket>=STAFF:[setunion(%q<staff>,%q<t1>)];@pemit %#=Added [cname(%q<t1>)] as Bucket '[cname(%q<bucket>)]' Staff.;@attach #inc/MSG_ALERT=Added [cname(%q<t1>)] as Bucket '[cname(%q<bucket>)]' Staff.;@pemit %q<t1>=You've been added as Staff to Bucket '[cname(%q<bucket>)]'
 
-&SW_BUCKET_OPTIONS #tick=
+&SW_BUCKET_REVOKE #tick=@attach %!/FINDBUCKET=%0,bucket,ADMIN;@attach #inc/GET_PLAYER=%1,t1;@assert/inline match(setr(!,filterobjid(get(%q<bucket>/STAFF)),staff),%q<t1>)=@pemit %#=[cname(%q<t1>)] is not a member of that Bucket's staff!;@set %q<bucket>=STAFF:[setdiff(%q<staff>,%q<t1>)];@pemit %#=Removed [cname(%q<t1>)] from Bucket '[cname(%q<bucket>)]' Staff.;@attach #inc/MSG_ALERT=Removed [cname(%q<t1>)] from Bucket '[cname(%q<bucket>)]' Staff.;@pemit %q<t1>=You're no longer Staff for Bucket '[cname(%q<bucket>)]'
+
+&SW_BUCKET_OPTIONS #tick=@attach %!/FINDBUCKET=before(%0,/),bucket,ADMIN;@attach #inc/CONFIG=trim(after(%0,/)),%1,%q<bucket>
 
 @@ Ticket Family
 &SWITCHES_TICKET_0 #tick=CREATE|NEW|REPLY|STAFFCOMMENT|CLAIM|UNCLAIM|ASSIGN|UNASSIGN|ADDHELPER|REMHELPER|COMPLETE|APPROVE|DENY|CANCEL|REOPEN|DUE|SCAN|NEXT|PENDING

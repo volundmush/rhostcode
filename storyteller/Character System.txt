@@ -1,0 +1,47 @@
+@skip isdbref(tag(setr(1,stdata)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No glogbal room set!;@assert/inline isdbref(setr(0,create(Storyteller Character System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=[globalroom()]}
+
+@@ Config Section
+
+&CONFIG_TEMPLATES_DESC #stdata=The Templates available for play as a pipe-delimited list.
+&CONFIG_TEMPLATES_DEFAULT #stdata=MORTAL
+&CONFIG_TEMPLATES_TYPE #stdata=LIST
+
+&TEMPLATES #stdata=getconf(%!,TEMPLATES)
+
+&REPORT_SET #stdata=@if strmatch(%#,num(%0))={},{}
+
+&REPORT_ADD #stdata=@if strmatch(%#,num(%0))={},{}
+
+&REPORT_REMOVE #stdata=@if strmatch(%#,num(%0))={},{}
+
+&SET_TEMPLATE #stdata=@assert/inline strlen(%2)=@pemit %#=Must enter a Template name!;@attach #inc/PARTIAL=%2,u(TEMPLATES),|,template;@break/inline strmatch(get(%0/ST_TEMPLATE),%q<template>)=@pemit %#=That is already the case!;@set %0=ST_TEMPLATE:%q<template>;@attach %!/REPORT_SET=%0,Template,%q<template>
+@@ %0 - target character, %1 - unused, %2 - template name
+
+&DO_SPLAT #stdata=@assert/inline setr(!,get(%0/ST_TEMPLATE),template)=@pemit %#=Must set a template first!;@assert/inline words(setr(!,u(SPLAT_%3_%q<template>),choices),|)=@pemit %#=No choices available!;@assert/inline strlen(%2)=@pemit %#=Must enter a %4 name!;@attach #inc/PARTIAL=%2,%q<choices>,|,splat;@set %0=ST_SPLAT_%3:%q<splat>;@attach %!/REPORT_SET=%0,%4,%q<splat>
+@@ %0 - target character, %1 - unused, %2 - splat choice, %3 - splat letter, %4 - splat label
+
+&FUN_VALID_STATNAME #stdata=
+
+&DO_STATLIKE #stdata=@assert/inline strlen(before(%1,:))=@pemit %#=%5 name wasn't provided!;@if [t(%8)]={@assert/inline setr(!,u(FUN_VALID_STATNAME,setr(!,trim(before(%1,:)),stat)),res)=@pemit %#=That's not a good name for a %5: %q<res>},{@attach #inc/PARTIAL=before(%1,:),u(%3,%0),|,stat};th setq(!,udefault(%3_CONTEXT,0,%q<stat>),needctx);th setq(!,trim(after(%1,:)),context);@switch/first/inline %q<needctx>=0,{@break/inline strlen(%q<context>)=@pemit %#=This %5 cannot have a context.},1,{},2,{@assert/inline strlen(%q<context>)=@pemit %#=This %5 must have a context!};@attach #inc/VALID_INT=%2,%5;th setq(!,get(%0/ST_%4),olddata);th setq(!,capnames(%q<stat>[if(strlen(%q<context>),: %q<context>)]),fullstat);@if cor(lt(%q<value>,0),cand(%7,lte(%q<value>,0)))={@assert/inline strlen(get_kv(%q<olddata>,%q<fullstat>))=@pemit %#=That won't have any affect. Nothing to remove.;th setq(!,del_kv(%q<olddata>,%q<fullstat>),newdata);@set %0=ST_%4:%q<newdata>;@attach %!/REPORT_REMOVE=%0,%5,%q<fullstat>},{@break/inline cand(setr(!,get_kv(%q<olddata>,%q<fullstat>),curstat),eq(%q<curstat>,%q<value>))=@pemit %#=That won't have any affect. It's the same rank.;th setq(!,set_kv(%q<olddata>,%q<fullstat>,%q<value>),newdata);@set %0=ST_%4:%q<newdata>;@attach %!/REPORT_SET=%0,%5,%q<fullstat>,%q<value>}
+
+@@ %0 - target character, %1 - stat name, %2 - value, %3 - category to u(), %4 attr to save on. Always prefixed with ST_ %5 - Singular name, %6 - plural name, %7 - if true, 0 or lower deletes. Lower than 0 ALWAYS deletes., %8 - if true, allows any name instead of doing a partial match.
+
+&FIL_HASVAL #stdata=gt(after(%0,~),0)
+
+&HANDLE_WORDPOWER #stdata=th setq(!,get(%0/%3),olddata);th setq(!,add(setr(!,get_kv(%q<olddata>,%1),oldvalue),%2),newvalue);@set %0=%3:[capnames(filter(FIL_HASVAL,set_kv(%q<olddata>,%1,%q<newvalue>),|,|))]
+@@ %0 - target character, %1 - stat name, %2 - value to modify by. negative subtracts. %3 - attribute to modify.
+
+&SET_ATTRIBUTES #stdata=@attach %!/DO_STATLIKE=%0,%1,%2,ATTRIBUTES,ATTRIBUTES,Attribute,Attributes,0
+
+&FUN_QUICK_BASE #stdata=Template~TEMPLATE
+
+&FUN_QUICK_STATS #stdata=iter(u(ATTRIBUTES,%0),%i0~ATTRIBUTES,|,|)
+
+&FUN_QUICK #stdata=[u(FUN_QUICK_BASE,%0)]|[u(FUN_QUICK_STATS,%0)]
+
+&QUICKSET #stdata=@assert/inline strlen(%1)=@pemit %#=Nothing entered to set!;th setq(!,u(FUN_QUICK,%0),full);@attach #inc/PARTIAL=%1,iter(%q<full>,before(%i0,~),|,|),|,choice;@attach %!/SET_[get_kv(%q<full>,%q<choice>)]=%0,%1,%2
+@@ %0 - target character, %1 - stat name, %2 - value to modify by.
+@@ Executes a 'quick set'
+
+&CMD_+SET #stdata=$^(?s)(?\:\+)?(set)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach %!/QUICKSET=%#,trim(%3),trim(%4)
+@set #stdata/CMD_+SET=regexp
