@@ -1,0 +1,171 @@
+&CONFIG_TEMPLATES_DEFAULT #stdata=Mortal|Solar|Abyssal|Infernal|Dragon-Blooded|Lunar|Sidereal|Liminal|Getimian|Alchemical|Spirit|Architect|Sovereign|Dream-Souled|Hearteater|Umbral
+
+&CONFIG_MERITSCATEGORIES_DESC #stdata=The categories for Merits.
+&CONFIG_MERITSCATEGORIES_DEFAULT #stdata=Normal|Supernatural|Sorcerous|Artifacts
+&CONFIG_MERITSCATEGORIES_TYPE #stdata=LIST
+
+&CONFIG_FLAWSCATEGORIES_DESC #stdata=The categories for Flaws.
+&CONFIG_FLAWSCATEGORIES_DEFAULT #stdata=Normal
+&CONFIG_FLAWSCATEGORIES_TYPE #stdata=LIST
+
+&CONFIG_STYLES_DESC #stdata=The available Martial Arts styles.
+&CONFIG_STYLES_DEFAULT #stdata=Snake|Tiger|Single Point Shining Into the Void|White Reaper|Ebon Shadow|Crane|Silver-Voiced Nightingale|Righteous Devil|Black Claw|Dreaming Pearl Courtesan|Steel Devil|Air Dragon|Earth Dragon|Fire Dragon|Water Dragon|Wood Dragon|Golden Janissary|Mantis|White Veil|Centipede|Falcon|Laughing Monster|Swaying Grass Dance|Throne Shadow|Violet Bier of Sorrows|Charcoal March of Spiders|Citrine Poxes of Contagion|Emerald Gyre of Aeons|Obsidian Shards of Infinity|Prismatic Arrangement of Creation|Thousand Blades|Hungry Ghost|Albicant Sepulcher of Extinction|Bear|Monkey|Rat|Toad
+&CONFIG_STYLES_TYPE #stdata=LIST
+
+&ATTRIBUTES_TAGREVERSE #stdata=switch(get(%0/ST_TEMPLATE),Lunar,Favored~1|Caste~2,Alchemical,Favored~1|Caste~2)
+
+&ATTRIBUTES_MAXTAG #stdata=switch(get(%0/ST_TEMPLATE),Lunar,2,Alchemical,2,Exigent,2,Architect,1,0)
+&ATTRIBUTES_TAGNAME #stdata=switch(get(%0/ST_TEMPLATE),Lunar,switch(%2,1,Favored,2,Caste),Alchemical,switch(%2,1,Favored,2,Caste),switch(%2,1,Favored,2,Caste))
+@@ %0 - target character, %1 - specific attribute, %2 - tag value.
+
+&ABILITIES #stdata=Archery|Athletics|Awareness|Brawl|Bureaucracy|Craft|Dodge|Integrity|Investigation|Larceny|Linguistics|Lore|Martial Arts|Medicine|Melee|Occult|Performance|Presence|Resistance|Ride|Sail|Socialize|Stealth|Survival|Thrown|War
+
+&ABILITIES_MAX #stdata=switch(%1,Martial Arts,0,Craft,if(strlen(%2),10,0),10)
+&ABILITIES_CONTEXT #stdata=switch(%1,Craft,2,0)
+
+&ABILITIES_MAXTAG #stdata=switch(get(%0/ST_TEMPLATE),Solar,3,Abyssal,3,Infernal,3,Sidereal,switch(%2,Martial Arts,0,2),Dragon-Blooded,2,Exigent,2,0)
+&ABILITIES_TAGNAME #stdata=switch(get(%0/ST_TEMPLATE),Solar,switch(%2,1,Favored,2,Caste,3,Supernal),Abyssal,switch(%2,1,Favored,2,Caste,3,Apocalyptic),Infernal,switch(%2,1,Favored,2,Caste,3,Profane),Dragon-Blooded,switch(%2,1,Favored,2,Aspect),switch(%2,1,Favored,2,Caste))
+
+&ABILITIES_TAGREVERSE #stdata=switch(get(%0/ST_TEMPLATE),Solar,Favored~1|Caste~2|Supernal~3,Abyssal,Favored~1|Caste~2|Apocalyptic~3,Infernal,Favored~1|Caste~2|Profane~3,Sidereal,Favored~1|Caste~2,Dragon-Blooded,Favored~1|Aspect~2)
+
+&ABILITIES_RAW_GETTAG #stdata=get_kv(get(%0/ST_ABILITIES.TAGGED),%1,0)
+&ABILITIES_GETTAG #stdata=switch(before(%1,:),Martial Arts,switch(get(%0/ST_TEMPLATE),Sidereal,2,max(u(ABILITIES_RAW_GETTAG,%0,Martial Arts),min(u(ABILITIES_RAW_GETTAG,%0,Brawl),2))),Brawl,max(u(ABILITIES_RAW_GETTAG,%0,Brawl),min(u(ABILITIES_RAW_GETTAG,%0,Martial Arts),2)),u(ABILITIES_RAW_GETTAG,%0,before(%1,:)))
+
+&FIELDS_ABYSSAL #stdata=Deathlord
+
+&SPLAT_X_INFERNAL #stdata=Azimuth|Ascendant|Horizon|Nadir|Penumbra
+
+&FIELDS_DRAGON-BLOODED #stdata=House
+
+&FIELDS_LUNAR #stdata=Spirit Shape
+
+&SPLAT_X_LIMINAL #stdata=Blood|Breath|Flesh|Marrow|Soil
+&SPLAT_X_LIMINAL_NAME #stdata=Aspect
+
+&SPLAT_X_GETIMIAN #stdata=Spring|Summer|Autumn|Winter
+
+&SPLAT_X_EXIGENT #stdata=Terrestrial|Celestial
+
+&EXCHARM #stdata=Offense|Defense|Social|Mobility
+
+&CHARMS_SOLAR #stdata=[u(ABILITIES)]|Eclipse|Submodules
+
+&CHARMS_ABYSSAL #stdata=u(CHARMS_SOLAR)
+
+&CHARMS_INFERNAL #stdata=u(CHARMS_SOLAR)
+
+&CHARMS_DRAGON-BLOODED #stdata=u(CHARMS_SOLAR)
+
+&CHARMS_LUNAR #stdata=[u(ATTRIBUTES)]|Universal|Eclipse
+
+&CHARMS_SIDEREAL #stdata=[u(ABILITIES)]|[u(SPLAT_X_SIDEREAL)]
+
+&CHARMS_SOVEREIGN #stdata=Universal|Craft|Sorcery|Integrity|Performance|Socialize|War
+
+&CHARMS_ARCHITECT #stdata=[u(ATTRIBUTES)]|Sorcery|Eclipse
+
+&CHARMS_DREAM-SOULED #stdata=Excellencies|Illusion|[u(EXCHARM)]|Mobility|Eclipse
+
+&CHARMS_HEARTEATER #stdata=Pawn|[u(EXCHARM)]|Mysticism|Eclipse
+
+&CHARMS_UMBRAL #stdata=Penumbra|Darkness|[u(EXCHARM)]
+
+&CHARMS_EXIGENT #stdata=[u(ATTRIBUTES)]|[u(ABILITIES)]|Eclipse|Universal|Essence|Excellencies|[u(EXCHARM)]|Mysticism
+
+&NATIVE_TYPE #stdata=get(%0/ST_TEMPLATE)
+
+&DO_EVOCATIONS #stdata=@attach %!/DO_EVOSTYLE=%0,%1,%2,%3,EVOCATIONS,Artifact;th setq(!,[ansi(hc,capnames(%q<category> Evocation:))] [ansi(hw,capnames(%2))],tname);@if lte(%q<newvalue>,0)={@attach %!/REPORT=%0,Removed all counts of %q<tname>},{@attach %!/REPORT=%0,Now counting [ansi(hg,%q<newvalue> purchase[if(gt(%q<newvalue>,1),s)])] of %q<tname>}
+@@ %0 - target character, %1 - artifact name, %2 - charm name, %3 - value to modify by.
+
+&ADD_EVOCATION #stdata=@attach %!/DO_EVOCATIONS=%0,elementsmux(%1,1,|),before(%2,~),mul(if(%3,-1,1),strfirstof(after(%2,~),1))
+&REM_EVOCATION #stdata=@attach %!/ADD_EVOCATION=%0,%1,%2,1
+
+&NECROMANCY_CIRCLES #stdata=Ivory|Shadow|Void
+
+&FUN_QUICK_STATS #stdata=iter(ATTRIBUTES~ATTRIBUTES|ABILITIES~ABILITIES|STYLES~STYLES|ADVANTAGES~ADVANTAGES,iter(u(before(%i0,~)),%i0~[after(%i1,~)],|,|),|,|)
+
+&MERITS_MAX #stdata=6
+&MERITS_CONTEXT #stdata=1
+&FLAWS_CONTEXT #stdata=1
+
+&SET_MERITS #stdata=@attach %!/DO_MERITLIKE=%0,%1,%2,MERITS,MERITS,Merit,Merits,0,1
+&SET_FLAWS #stdata=@attach %!/DO_MERITLIKE=%0,%1,%2,FLAWS,FLAWS,Flaw,Flaws,0,1
+
+@@ Sheet rendering
+
+&FUN_TEMPINFO_ARCHITECT #stdata=u(FUN_TEMPINFO_MAIN,%0,%1,%2,NAME~Name|SEX~Sex,ADVANTAGES_ESSENCE~Essence~1|FIELD_140~City~None)
+&FUN_TEMPINFO_DREAM-SOULED #stdata=u(FUN_TEMPINFO_MAIN,%0,%1,%2,NAME~Name|SEX~Sex,ADVANTAGES_ESSENCE~Essence~1)
+&FUN_TEMPINFO_EXIGENT #stdata=u(FUN_TEMPINFO_MAIN,%0,%1,%2,NAME~Name|SEX~Sex|SPLAT_X~Tier~N/A|SPLAT_Y~Type~N/A,ADVANTAGES_ESSENCE~Essence~1|FIELD_80~Patron~None|FIELD_81~Purview~None)
+&FUN_TEMPINFO_GETIMIAN #stdata=u(FUN_TEMPINFO_MAIN,%0,%1,%2,NAME~Name|SEX~Sex,ADVANTAGES_ESSENCE~Essence~1)
+&FUN_TEMPINFO_HEARTEATER #stdata=u(FUN_TEMPINFO_MAIN,%0,%1,%2,NAME~Name|SEX~Sex,ADVANTAGES_ESSENCE~Essence~1)
+&FUN_TEMPINFO_INFERNAL #stdata=u(FUN_TEMPINFO_MAIN,%0,%1,%2,NAME~Name|SEX~Sex,ADVANTAGES_ESSENCE~Essence~1|SPLAT_X~Caste~N/A)
+&FUN_TEMPINFO_SOVEREIGN #stdata=u(FUN_TEMPINFO_MAIN,%0,%1,%2,NAME~Name|SEX~Sex,ADVANTAGES_ESSENCE~Essence~1)
+&FUN_TEMPINFO_UMBRAL #stdata=u(FUN_TEMPINFO_MAIN,%0,%1,%2,NAME~Name|SEX~Sex,ADVANTAGES_ESSENCE~Essence~1)
+
+&SHEET_RENDER #stdata=@dolist/inline HEADER ATTRIBUTES ABILITIES SPECIALTIES MERITS FLAWS CHARMS SORCERY NECROMANCY EVOCATIONS STYLECHARMS HEALTH POOLTRACKXP FOOTER={@attach %!/SHEET_%d0}
+
+&SHEET_EVOCATIONS #stdata=@attach %!/SHEET_MAGIC=%0,%1,%2,Evocations
+
+@@ Resources
+&RESOURCES #stdata=Personal|Peripheral|Willpower|Limit|Initiative|SwordInit
+
+&PERSONAL_PERIPHERAL #stdata=match(Solar|Abyssal|Infernal|Dragon-Blooded|Lunar|Sidereal|Liminal|Alchemical|Architect|Sovereign|Dream-Souled|Hearteater|Umbral,get(%0/ST_TEMPLATE),|)
+
+&RES_PERSONAL.MAX #stdata=u(PERSONAL.[get(%0/ST_TEMPLATE)])
+
+&RES_PERIPHERAL.MAX #stdata=u(PERIPHERAL.[get(%0/ST_TEMPLATE)])
+
+&RES_INITIATIVE.TYPE #stdata=Track
+&RES_INITIATIVE.UNIT_NAME #stdata=Point
+&RES_INITIATIVE.UNIT_NAME_PLURAL #stdata=Points
+&RES_INITIATIVE.UNIT_TYPE #stdata=Initiative
+&RES_INITIATIVE.MAX #stdata=999
+&RES_INITIATIVE.INIT #stdata=0
+&RES_INITIATIVE.OPTIONS #stdata=SPEND GAIN
+
+&RES_SWORDINIT.TYPE #stdata=Track
+&RES_SWORDINIT.UNIT_NAME #stdata=Point
+&RES_SWORDINIT.UNIT_NAME_PLURAL #stdata=Points
+&RES_SWORDINIT.UNIT_TYPE #stdata=Sword Initiative
+&RES_SWORDINIT.MAX #stdata=if(get_kv(get(%0/ST_STYLECHARMS.SINGLE_POINT_SHINING_INTO_THE_VOID),Single Point Shining Into the Void Form,0),999,0)
+&RES_SWORDINIT.INIT #stdata=0
+&RES_SWORDINIT.OPTIONS #stdata=SPEND GAIN
+
+&PERSONAL.SOLAR #stdata=add(mul(3,u(GET_ESSENCE,%0)),10)
+&PERIPHERAL.SOLAR #stdata=add(mul(7,u(GET_ESSENCE,%0)),26)
+
+&PERSONAL.DRAGON-BLOODED #stdata=add(mul(1,u(GET_ESSENCE,%0)),11)
+&PERIPHERAL.DRAGON-BLOODED #stdata=add(mul(4,u(GET_ESSENCE,%0)),23)
+
+&PERSONAL.ARCHITECT #stdata=u(PERSONAL.EX_TERRESTRIAL,%0)
+&PERIPHERAL.ARCHITECT #stdata=u(PERIPHERAL.EX_TERRESTRIAL,%0)
+
+&PERSONAL.DREAM-SOULED #stdata=u(PERSONAL.EX_TERRESTRIAL,%0)
+&PERIPHERAL.DREAM-SOULED #stdata=u(PERIPHERAL.EX_TERRESTRIAL,%0)
+
+&PERSONAL.EXIGENT #stdata=switch(get(%0/ST_SPLAT_X),Terrestrial,u(PERSONAL.EX_TERRESTRIAL,%0),Celestial,u(PERSONAL.EX_CELESTIAL,%0),0)
+&PERIPHERAL.EXIGENT #stdata=switch(get(%0/ST_SPLAT_X),Terrestrial,u(PERIPHERAL.EX_TERRESTRIAL,%0),Celestial,u(PERIPHERAL.EX_CELESTIAL,%0),0)
+
+&PERSONAL.EX_CELESTIAL #stdata=add(mul(2,u(GET_ESSENCE,%0)),11)
+&PERIPHERAL.EX_CELESTIAL #stdata=add(mul(6,u(GET_ESSENCE,%0)),27)
+
+&PERSONAL.EX_TERRESTRIAL #stdata=add(mul(1,u(GET_ESSENCE,%0)),11)
+&PERIPHERAL.EX_TERRESTRIAL #stdata=add(mul(4,u(GET_ESSENCE,%0)),23)
+
+&PERSONAL.HEARTEATER #stdata=u(PERSONAL.EX_CELESTIAL,%0)
+&PERIPHERAL.HEARTEATER #stdata=u(PERIPHERAL.EX_CELESTIAL,%0)
+
+&PERSONAL.LIMINAL #stdata=add(mul(3,u(GET_ESSENCE,%0)),10)
+&PERIPHERAL.LIMINAL #stdata=add(mul(4,u(GET_ESSENCE,%0)),23)
+
+&PERSONAL.LUNAR #stdata=add(mul(1,u(GET_ESSENCE,%0)),15)
+&PERIPHERAL.LUNAR #stdata=add(mul(4,u(GET_ESSENCE,%0)),34)
+
+&PERSONAL.SIDEREAL #stdata=add(mul(2,u(GET_ESSENCE,%0)),9)
+&PERIPHERAL.SIDEREAL #stdata=add(mul(6,u(GET_ESSENCE,%0)),25)
+
+&PERSONAL.SOVEREIGN #stdata=u(PERSONAL.EX_TERRESTRIAL,%0)
+&PERIPHERAL.SOVEREIGN #stdata=u(PERIPHERAL.EX_TERRESTRIAL,%0)
+
+&PERSONAL.UMBRAL #stdata=u(PERSONAL.EX_CELESTIAL,%0)
+&PERIPHERAL.UMBRAL #stdata=u(PERIPHERAL.EX_CELESTIAL,%0)
