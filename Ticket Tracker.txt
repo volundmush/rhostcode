@@ -17,18 +17,29 @@
 @@ families: ticket, myjob, bucket
 
 @@ Bucket Family
-&SWITCHES_BUCKET_6 #tick=CREATE|RENAME|LOCK|UNLOCK|DELETE|DESCRIBE|GRANT|REVOKE|SHORT|OPTIONS
+&SWITCHES_BUCKET_6 #tick=CREATE|RENAME|LOCK|UNLOCK|DELETE|DESCRIBE|GRANT|REVOKE|OPTIONS
 
-&FIL_BUCKET_CANADMIN #tick=cor(elock(%0/user|AdminLock,num(%1)),gtebittype(%1,5),match(get(%0/STAFF)),objid(%1))
+&FIL_BUCKET_CANADMIN #tick=cor(elock(%0/user|AdminLock,num(%1)),gtebittype(%1,5),match(get(%0/STAFF),objid(%1)))
 &FIL_BUCKET_CANPOST #tick=cor(elock(%0/user|PostLock,num(%1)),gtebittype(%1,5))
 
 &REG_BUCKET_NAME #tick=[A-Za-z0-9]{2,12}
 
 &FUN_BUCKETS #tick=lcon(#bucket_parent,OBJECT,,,1)
 
-&INC_BUCKET_DISPLAY #tick=
+&FUN_VISIBLE_BUCKETS #tick=filter(FIL_BUCKET_CANPOST,u(FUN_BUCKETS),%b,%b,%0)
 
-&INC_BUCKET_LIST #tick=
+&INC_BUCKET_DISPLAY #tick=@attach %!/FINDBUCKET=%0,bucket,ADMIN;@pemit %#=header(All Tickets for: [cname(%q<bucket>)]);@pemit %#=u(FUN_LIST_COLUMNS);@if words(setr(!,filterobjid(get(%q<bucket>/TICKETS)),vis))={@dolist/inline %q<vis>={@pemit %#=u(FUN_LIST_ROW,%d0)}};@pemit %#=footer()
+
+&FIL_STATUS #tick=strmatch(get(%0/STATUS),%1)
+
+&COUNT #tick=words(filter(FIL_STATUS,get(%0/TICKETS),%b,%b,%1))
+
+&FIL_OVERDUE #tick=cand(u(FIL_STATUS,%0,Pending),gte(%1,get(%0/DUE)))
+
+&FUN_BUCKET_COLUMNS #tick=ansi(confoverride(%#,COLUMN),printf($-12s $-41s $-3s $-3s $-3s $-3s $-3s $-3s,Name,Description,Pen,Com,Dny,Cnc,Ovr,Due))
+&FUN_BUCKET_ROW #tick=printf($-12s $-41s $:0:3s $:0:3s $:0:3s $:0:3s $:0:3s $3-s,cname(%0),get(%0/DESC),u(COUNT,%0,Pending),u(COUNT,%0,Completed),u(COUNT,%0,Denied),u(COUNT,%0,Canceled),words(filter(FIL_OVERDUE,get(%0/TICKETS),%b,%b,secs())),smalltime(getconf(%0,DUE)))
+
+&INC_BUCKET_LIST #tick=@pemit %#=header(Buckets);@pemit %#=u(FUN_BUCKET_COLUMNS);@if words(setr(!,u(FUN_VISIBLE_BUCKETS,%:),vis))={@dolist/inline %q<vis>={@pemit %#=u(FUN_BUCKET_ROW,%d0)}};@pemit %#=footer()
 
 &SW_BUCKET_MAIN #tick=@if strlen(%0)={@attach %!/INC_BUCKET_DISPLAY},{@attach %!/INC_BUCKET_LIST}
 
@@ -44,8 +55,6 @@
 
 &SW_BUCKET_DESCRIBE #tick=@attach %!/FINDBUCKET=%0,bucket,ADMIN;@assert/inline strlen(%1)=@pemit %#=Describe it as what?;@describe %q<bucket>=%1;@pemit %#=New description set for Bucket '[cname(%q<bucket>)]';@attach #inc/MSG_ALERT=New description set for Bucket '[cname(%q<bucket>)]'
 
-&SW_BUCKET_SHORT #tick=@attach %!/FINDBUCKET=%0,bucket,ADMIN;@assert/inline strlen(%1)=@pemit %#=Describe it as what?;&SHORTDESC %q<bucket>=%1;@pemit %#=New shortdesc set for Bucket '[cname(%q<bucket>)]';@attach #inc/MSG_ALERT=New shortdesc set for Bucket '[cname(%q<bucket>)]'
-
 &SW_BUCKET_GRANT #tick=@attach %!/FINDBUCKET=%0,bucket,ADMIN;@attach #inc/GET_PLAYER=%1,t1;@break/inline match(setr(!,filterobjid(get(%q<bucket>/STAFF)),staff),%q<t1>)=@pemit %#=[cname(%q<t1>)] is already a member of that Bucket's staff!;@set %q<bucket>=STAFF:[setunion(%q<staff>,%q<t1>)];@pemit %#=Added [cname(%q<t1>)] as Bucket '[cname(%q<bucket>)]' Staff.;@attach #inc/MSG_ALERT=Added [cname(%q<t1>)] as Bucket '[cname(%q<bucket>)]' Staff.;@pemit %q<t1>=You've been added as Staff to Bucket '[cname(%q<bucket>)]'
 
 &SW_BUCKET_REVOKE #tick=@attach %!/FINDBUCKET=%0,bucket,ADMIN;@attach #inc/GET_PLAYER=%1,t1;@assert/inline match(setr(!,filterobjid(get(%q<bucket>/STAFF)),staff),%q<t1>)=@pemit %#=[cname(%q<t1>)] is not a member of that Bucket's staff!;@set %q<bucket>=STAFF:[setdiff(%q<staff>,%q<t1>)];@pemit %#=Removed [cname(%q<t1>)] from Bucket '[cname(%q<bucket>)]' Staff.;@attach #inc/MSG_ALERT=Removed [cname(%q<t1>)] from Bucket '[cname(%q<bucket>)]' Staff.;@pemit %q<t1>=You're no longer Staff for Bucket '[cname(%q<bucket>)]'
@@ -56,44 +65,116 @@
 &SWITCHES_TICKET_0 #tick=CREATE|NEW|REPLY|STAFFCOMMENT|CLAIM|UNCLAIM|ASSIGN|UNASSIGN|ADDHELPER|REMHELPER|COMPLETE|APPROVE|DENY|CANCEL|REOPEN|DUE|SCAN|NEXT|PENDING
 &SWITCHES_TICKET_5 #tick=ARCHIVE
 
-&SW_TICKET_CREATE #tick=
+&TICKET_ALERT #tick=@if words(setr(!,filter(%1,lwhoid()),targets))={@pemit/list %q<targets>=[ansi(c,TICKETS:)] [ansi(hw,New Activity By)] %k [ansi(hw,For)] Ticket [cname(%q<ticket>)]: '[get(%q<ticket>/TITLE)]' - %0}
+
+&HEAR_CREATE #tick=u(CAN_REPLY,%0,%1)
+
+&SW_TICKET_CREATE #tick=@attach %!/FINDBUCKET=trim(before(%0,/)),bucket,POST;@assert/inline strlen(setr(!,trim(after(%0,/)),title))=@pemit %#=Must enter a title for the new ticket!;@assert/inline strlen(%1)=@pemit %#=Must enter a description for the ticket!;@assert/inline isdbref(setr(!,create(setr(!,inc(v(LASTID)),latest),,t),ticket))=@pemit %#=Error creating Ticket: %q<ticket>;@set %!=LASTID:%q<latest>;@set %q<ticket>=INDESTRUCTIBLE SAFE;@set %q<ticket>=BUCKET:%q<bucket>;@set %q<bucket>=TICKETS:[listunion(filterobjid(get(%q<bucket>/TICKETS)),objid(%q<ticket>))];@describe %q<ticket>=%1;@set %q<ticket>=TITLE:%q<title>;@set %q<ticket>=OWNER:%:;@set %q<ticket>=STATUS:Pending;@set %q<ticket>=DUE:[add(secs(),getconf(%q<bucket>,DUE))];@set %q<ticket>=LAST_CREATE:[csecs(%q<ticket>)];@attach %!/TICKET_ALERT=New Ticket created!,HEAR_REPLY
+
 &SW_TICKET_NEW #tick=@attach %!/SW_TICKET_CREATE
 
-&SW_TICKET_REPLY #tick=
+&FUN_TICKETS #tick=lcon(%!,OBJECT,,,1)
 
-&SW_TICKET_STAFFCOMENT #tick=
+&FUN_TICKET #tick=locate(%!,%0,Ti)
 
-&SW_TICKET_CLAIM #tick=
+&FUN_LASTCHECKED #tick=[lmax(iter(lattr(%0/LAST_*),if(u(CAN_[after(%i0,_)],%0,objid(%1)),get(%0/%i0),0)))]
 
-&SW_TICKET_UNCLAIM #tick=
+&FUN_NEWACTIVITY #tick=gte(u(FUN_LASTCHECKED,%0,%1),default(%0/CHECKED_[num(%1)],0))
 
-&SW_TICKET_ASSIGN #tick=
+&FINDTICKET #tick=@assert/inline strlen(%0)=@pemit %#=Must enter a Ticket ID!;@assert/inline isdbref(setr(!,u(FUN_TICKET,%0),%1))=@pemit %#=Cannot find Ticket: [switch(r(%1),#-2*,Ambiguous match!,#-1*,Not found!)];th setq(!,objid(r(%1)),%1);th setq(!,get(r(%1)),strfirstof(%2,bucket));
 
-&SW_TICKET_UNASSIGN #tick=
+&ADDEVENT #tick=@set %0=EV_[rjust(setr(!,inc(get(%0/LASTID)),lastid),4,0)]:%2|%1|[cname(%1)]|[secs()]|%3;@set %0=LASTID:%q<lastid>;@set %0=LAST_%2:[secs()]
 
-&SW_TICKET_ADDHELPER #tick=
+@@ %0 - ticket objid, %1 - objid of cause, %2 - type of event (REPLY, COMMENT, EVENT, CLAIM, UNCLAIM, etc), %3 - text
 
-&SW_TICKET_REMHELPER #tick=
+&FUN_ACTION #tick=switch(%0,REPLY,replied,COMMENT,ansi(hr,internal staff commented),CLAIM,claimed,UNCLAIM,unclaimed,ASSIGN,assigned,UNASSIGN,unassigned,ADDHELPER,added a helper,REMHELPER,removed a helper,COMPLETE,completed,DENY,denied,CANCEL,canceled,REOPEN,re-opened,DUE,updated due,%0)
 
-&SW_TICKET_COMPLETE #tick=
+&CAN_SEE #tick=cor(strmatch(get(%0/OWNER),%1),match(setunion(get(%0/HANDLERS),get(%0/HELPERS)),%1),u(FIL_BUCKET_CANADMIN,get(%0/BUCKET),%1))
 
-&SW_TICKET_APPROVE #tick=
+&DISPLAY_TICKET #tick=@attach %!/FINDTICKET=%0,ticket;@assert/inline u(CAN_SEE,%q<ticket>,%:)=@pemit %#=Permission denied.;@pemit %#=header(Ticket [cname(%q<ticket>)]);@pemit %#=printf($-36s $-36s,ljust(rjust(ansi(h,Category:),10),10) [cname(get(%q<ticket>/BUCKET))],ljust(rjust(ansi(h,Due:),10),10) [fancytime(get(%q<ticket>/DUE))]);@pemit %#=printf($-36s $-36s,ljust(rjust(ansi(h,Title:),10),10) [get(%q<ticket>/TITLE)],ljust(rjust(ansi(h,Status:),10),10) [get(%q<ticket>/STATUS)]);@pemit %#=printf($-36s $-36s,ljust(rjust(ansi(h,Handlers:),10),10) [iter(filterobjid(get(%q<ticket>/HANDLERS)),cname(%i0),%b,chr(44)%B)],ljust(rjust(ansi(h,Helpers:),10),10) [iter(filterobjid(get(%q<ticket>/HELPERS)),cname(%i0),%b,chr(44)%B)]);@pemit %#=separator();@pemit %#=cname(get(%q<ticket>/OWNER)) [ansi(hw,created on [fancytime(csecs(%q<ticket>))]:)];@pemit %#=get(%q<ticket>/DESC);@dolist/inline sort(lattr(%q<ticket>/EV_*))={@if u(HEAR_[elements(setr(!,get(%q<ticket>/%d0),ev),1,|)],%:)={@pemit %#=separator();@pemit %#=if(isobjid(elements(%q<ev>,2,|)),cname(elements(%q<ev>,2,|)),elements(%q<ev>,3,|)%B\(Deleted\)) [ansi(hw,u(FUN_ACTION,elements(%q<ev>,1,|)) on [fancytime(elements(%q<ev>,4,|))])];@pemit %#=after(%q<ev>,[elements(get(%q<ticket>/%d0),4,|)]|)}};@pemit %#=footer();@set %q<ticket>=CHECKED_%#:[secs()]
 
-&SW_TICKET_DENY #tick=
+&FUN_VISIBLE_TICKETS #tick=sort(filter(CAN_SEE,u(FUN_TICKETS),%b,%b,objid(%0)))
 
-&SW_TICKET_CANCEL #tick=
+&FUN_LIST_COLUMNS #tick=ansi(confoverride(%#,COLUMN),printf($-2s $4s $-8s $-15s $-20s $-15s $-8s,*,ID,Bucket,Owner,Title,Handlers,Due))
+&FUN_LIST_ROW #tick=printf($-2s $4s $-8s $-15s $-20s $-15s $-8s,if(u(FUN_NEWACTIVITY,%0,%:),ansi(hr,*),%B)[ucstr(left(get(%0/STATUS),1))],cname(%0),cname(get(%0/BUCKET)),if(isobjid(get(%0/OWNER)),cname(get(%0/OWNER)),get(%0/OWNER_NAME)%B\(Deleted\)),get(%0/TITLE),strfirstof(iter(filterobjid(get(%0/HANDLERS)),cname(%i0),%B,chr(44)%B),---),fancytime(get(%0/DUE),,,$02M/$02D/$y))
 
-&SW_TICKET_REOPEN #tick=
+&LIST_TICKETS #tick=@pemit %#=header(Visible Tickets);@pemit %#=u(FUN_LIST_COLUMNS);@if words(setr(!,u(FUN_VISIBLE_TICKETS,%:),vis))={@dolist/inline %q<vis>=@pemit %#=u(FUN_LIST_ROW,%d0)};@pemit %#=footer()
 
-&SW_TICKET_DUE #tick=
+&SW_TICKET_MAIN #tick=@if strlen(%0)={@attach %!/DISPLAY_TICKET},{@attach %!/LIST_TICKETS}
+
+&CAN_REPLY #tick=cor(strmatch(get(%0/OWNER),%1),u(FIL_BUCKET_CANADMIN,get(%0/BUCKET),%1),match(setunion(get(%0/HANDLERS),get(%0/HELPERS)),%1))
+&HEAR_REPLY #tick=u(CAN_REPLY,%0,%1)
+@@ %0 - the ticket, %1 - objid of one being checked.
+
+&SW_TICKET_REPLY #tick=@attach %!/FINDTICKET=%0,ticket;@assert/inline u(CAN_REPLY,%q<ticket>,%:)=@pemit %#=Permission denied.;@assert/inline strlen(%1)=@pemit %#=Must enter a reply!;@attach %!/ADDEVENT=%q<ticket>,%:,REPLY,%1;@attach %!/TICKET_ALERT=Reply added!,HEAR_REPLY
+
+&CAN_COMMENT #tick=cor(u(FIL_BUCKET_CANADMIN,get(%0/BUCKET),%1),match(setunion(get(%q<ticket>/HANDLERS)),%1))
+&HEAR_COMMENT #tick=u(CAN_COMMENT,%0,%1)
+
+&SW_TICKET_STAFFCOMENT #tick=@attach %!/FINDTICKET=%0,ticket;@assert/inline u(CAN_COMMENT,%q<ticket>,%:)=@pemit %#=Permission denied.;@assert/inline strlen(%1)=@pemit %#=Must enter a comment!;@attach %!/ADDEVENT=%q<ticket>,%:,COMMENT,%1;@attach %!/TICKET_ALERT=Staff comment added!,HEAR_COMMENT
+
+&CAN_CLAIM #tick=u(FIL_BUCKET_CANADMIN,get(%0/BUCKET),%1)
+&HEAR_CLAIM #tick=u(CAN_CLAIM,%0,%1)
+
+&SW_TICKET_CLAIM #tick=@attach %!/FINDTICKET=%0,ticket;@assert/inline u(CAN_CLAIM,%q<ticket>,%:)=@pemit %#=Permission denied.;@break/inline t(match(get(%q<ticket>/HANDLERS),%:))=@pemit %#=You are already working on '[cname(%q<ticket>)]: [get(%q<ticket>/TITLE)]';@set %q<ticket>=HANDLERS:[setunion(filterobjid(get(%q<ticket>/HANDLERS)),%:)];@attach %!/ADDEVENT=%q<ticket>,%:,CLAIM,Handler Appointed: %k;@attach %!/TICKET_ALERT=Claimed the Ticket.,HEAR_CLAIM
+
+&CAN_UNCLAIM #tick=u(FIL_BUCKET_CANADMIN,get(%0/BUCKET),%1)
+&HEAR_UNCLAIM #tick=u(CAN_UNCLAIM,%0,%1)
+
+&SW_TICKET_UNCLAIM #tick=@attach %!/FINDTICKET=%0,ticket;@assert/inline u(CAN_UNCLAIM,%q<ticket>,%:)=@pemit %#=Permission denied.;@assert/inline t(match(get(%q<ticket>/HANDLERS),%:))=@pemit %#=You are not working on '[cname(%q<ticket>)]: [get(%q<ticket>/TITLE)]';@set %q<ticket>=HANDLERS:[setdiff(filterobjid(get(%q<ticket>/HANDLERS)),%:)];@attach %!/ADDEVENT=%q<ticket>,%:,UNCLAIM,Handler Removed: %k;@attach %!/TICKET_ALERT=Reversed claim of the Ticket.,HEAR_UNCLAIM
+
+&CAN_ASSIGN #tick=u(FIL_BUCKET_CANADMIN,get(%0/BUCKET),%1)
+&HEAR_ASSIGN #tick=u(CAN_ASSIGN,%0,%1)
+
+&SW_TICKET_ASSIGN #tick=@attach %!/FINDTICKET=%0,ticket;@assert/inline u(CAN_ASSIGN,%q<ticket>,%:)=@pemit %#=Permission denied.;@attach #inc/GET_PLAYER=%1,t1;@break/inline t(match(get(%q<ticket>/HANDLERS),%q<t1>))=@pemit %#=[cname(%q<t1>)] is already working on '[cname(%q<ticket>)]: [get(%q<ticket>/TITLE)]';@set %q<ticket>=HANDLERS:[setunion(filterobjid(get(%q<ticket>/HANDLERS)),%q<t1>)];@attach %!/ADDEVENT=%q<ticket>,%:,ASSIGN,Handler Assigned: [cname(%q<t1>)];@attach %!/TICKET_ALERT=Assigned the Ticket to [cname(%q<t1>)],HEAR_ASSIGN
+
+&CAN_UNASSIGN #tick=u(FIL_BUCKET_CANADMIN,get(%0/BUCKET),%1)
+&HEAR_UNASSIGN #tick=u(CAN_UNASSIGN,%0,%1)
+
+&SW_TICKET_UNASSIGN #tick=@attach %!/FINDTICKET=%0,ticket;@assert/inline u(CAN_UNASSIGN,%q<ticket>,%:)=@pemit %#=Permission denied.;@attach #inc/GET_PLAYER=%1,t1;@assert/inline t(match(get(%q<ticket>/HANDLERS),%q<t1>))=@pemit %#=[cname(%q<t1>)] is not working on '[cname(%q<ticket>)]: [get(%q<ticket>/TITLE)]';@set %q<ticket>=HANDLERS:[setdiff(filterobjid(get(%q<ticket>/HANDLERS)),%q<t1>)];@attach %!/ADDEVENT=%q<ticket>,%:,UNASSIGN,Handler Removed: [cname(%q<t1>)];@attach %!/TICKET_ALERT=Removed handlership from [cname(%q<t1>)],HEAR_UNASSIGN
+
+&CAN_ADDHELPER #tick=cor(match(get(%0/CLAIMED),%1),u(FIL_BUCKET_CANADMIN,get(%0/BUCKET),%1))
+&HEAR_ADDHELPER #tick=u(CAN_REPLY,%0,%1)
+
+&SW_TICKET_ADDHELPER #tick=@attach %!/FINDTICKET=%0,ticket;@assert/inline u(CAN_ADDHELPER,%q<ticket>,%:)=@pemit %#=Permission denied.;@attach #inc/GET_PLAYER=%1,t1;@break/inline t(match(get(%q<ticket>/HELPERS),%q<t1>))=@pemit %#=[cname(%q<t1>)] is already working on '[cname(%q<ticket>)]: [get(%q<ticket>/TITLE)]';@set %q<ticket>=HELPERS:[setunion(filterobjid(get(%q<ticket>/HELPERS)),%q<t1>)];@attach %!/ADDEVENT=%q<ticket>,%:,ADDHELPER,Helper Assigned: [cname(%q<t1>)];@attach %!/TICKET_ALERT=Added [cname(%q<t1>)] as a helper.,HEAR_ADDHELPER
+
+&CAN_REMHELPER #tick=cor(match(get(%0/CLAIMED),%1),u(FIL_BUCKET_CANADMIN,get(%0/BUCKET),%1))
+&HEAR_REMHELPER #tick=u(CAN_REPLY,%0,%1)
+
+&SW_TICKET_REMHELPER #tick=@attach %!/FINDTICKET=%0,ticket;@assert/inline u(CAN_REMHELPER,%q<ticket>,%:)=@pemit %#=Permission denied.;@attach #inc/GET_PLAYER=%1,t1;@assert/inline t(match(get(%q<ticket>/HELPERS),%q<t1>))=@pemit %#=[cname(%q<t1>)] is not working on '[cname(%q<ticket>)]: [get(%q<ticket>/TITLE)]';@set %q<ticket>=HELPERS:[setdiff(filterobjid(get(%q<ticket>/HELPERS)),%q<t1>)];@attach %!/ADDEVENT=%q<ticket>,%:,REMHELPER,Helper Removed: [cname(%q<t1>)];@attach %!/TICKET_ALERT=Removed [cname(%q<t1>)] as a helper.,HEAR_REMHELPER
+
+&FINISH #tick=@attach %!/FINDTICKET=%0,ticket;@assert/inline u(CAN_%2,%q<ticket>,%:)=@pemit %#=Permission denied.;@assert/inline strlen(%1)=@pemit %#=Must enter a finishing message!;@attach %!/ADDEVENT=%q<ticket>,%:,%2,%1;@attach %!/TICKET_ALERT=%3 Ticket.,HEAR_%2
+
+&CAN_COMPLETE #tick=cor(match(get(%0/CLAIMED),%1),u(FIL_BUCKET_CANADMIN,get(%0/BUCKET),%1))
+&HEAR_COMPLETE #tick=u(CAN_REPLY,%0,%1)
+
+&SW_TICKET_COMPLETE #tick=@attach %!/FINISH=%0,%1,COMPLETE,Completed;@set %q<ticket>=STATUS:Completed
+
+&CAN_DENY #tick=cor(match(get(%0/CLAIMED),%1),u(FIL_BUCKET_CANADMIN,get(%0/BUCKET),%1))
+&HEAR_DENY #tick=u(CAN_REPLY,%0,%1)
+
+&SW_TICKET_DENY #tick=@attach %!/FINISH=%0,%1,DENY,Denied;@set %q<ticket>=STATUS:Denied
+
+&CAN_CANCEL #tick=cor(strmatch(get(%0/OWNER),%1),match(get(%0/CLAIMED),%1),u(FIL_BUCKET_CANADMIN,get(%0/BUCKET),%1))
+&HEAR_CANCEL #tick=u(CAN_REPLY,%0,%1)
+
+&SW_TICKET_CANCEL #tick=@attach %!/FINISH=%0,%1,CANCEL,Canceled;@set %q<ticket>=STATUS:Canceled
+
+&CAN_REOPEN #tick=cor(match(get(%0/CLAIMED),%1),u(FIL_BUCKET_CANADMIN,get(%0/BUCKET),%1))
+&HEAR_REOPEN #tick=u(CAN_REPLY,%0,%1)
+
+&SW_TICKET_REOPEN #tick=@attach %!/FINISH=%0,%1,REOPEN,Re-opened;@set %q<ticket>=STATUS:Pending
+
+&CAN_DUE #tick=cor(match(get(%0/CLAIMED),%1),u(FIL_BUCKET_CANADMIN,get(%0/BUCKET),%1))
+&HEAR_DUE #tick=u(CAN_REPLY,%0,%1)
+
+&SW_TICKET_DUE #tick=@attach %!/FINDTICKET=%0,ticket;@assert/inline u(CAN_DUE,%q<ticket>,%:)=@pemit %#=Permission denied.
 
 &SW_TICKET_SCAN #tick=
 
 &SW_TICKET_NEXT #tick=
 
 &SW_TICKET_PENDING #tick=
-
-&SW_TICKET_UNCLAIM #tick=
 
 &SW_TICKET_ARCHIVE #tick=
 

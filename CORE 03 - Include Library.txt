@@ -10,7 +10,7 @@
 &MSG_SUCCESS #inc=@pemit %#=[ansi(hg,SUCCESS:)] %0,%1,%2,%3
 
 &MSG_ALERT #inc=@attach/localize #inc/MSG_ALERT_DO=%0,%1
-&MSG_ALERT_DO #inc=th setq(!,%[[strfirstof(%1,cname(%!) - %!)]%]-%[%k%] %0,msg);@log %[[time()]%]-%q<msg>;@dolist/inline filter(#lambda/[lit(default(%0/ALERTS,1))],bitwho(globalconf(ALERTLVL)))={@pemit %d0=%[[runintz(gettz(%d0),time())]%]-%q<msg>}
+&MSG_ALERT_DO #inc=th setq(!,%[[strfirstof(%1,cname(%!) - %!)]%]-%[%k%] %0,msg);@log %[[time()]%]-%q<msg>;@dolist/inline filter(#lambda/[lit(default(%0/ALERTS,1))],bitwho(globalconf(ALERTLEVEL)))={@pemit %d0=%[[runintz(gettz(%d0),time())]%]-%q<msg>}
 
 &GET_PLAYER #inc=@assert/inline strlen(%0)=@pemit %#=You must enter a player name!;@assert/inline strlen(%1);@assert/inline isdbref(pmatchreg(%0,%1))=@pemit %#=%0 [if(strmatch(r(%1),#-2*),matches multiple players!,does not match a player!)];th setq(!,objid(r(%1)),%1)
 @@ GET_PLAYER Arguments: %0 = player being checked, %1 = register number to load their data into.
