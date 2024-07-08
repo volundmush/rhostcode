@@ -1,0 +1,154 @@
+@@ Core
+@cmdquota me=99999
+
+@skip isdbref(tag(setr(1,acc)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(Account System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom()}
+
+&FN.LIST_ACCOUNTS #acc=searchngobjid(TOTEMS=A)
+&FN.FIND_ACCOUNT #acc=if(%1,namegrab(u(FN.LIST_ACCOUNTS),%0),namefind(u(FN.LIST_ACCOUNTS),%0))
+
+&FN.VALID_ACCOUNT_NAME #acc=ofparse(3,if(strlen(%0),1,#-1 ACCOUNT NAMES CANNOT BE EMPTY),if(!strmatch(%0,@*),1,#-1 ACCOUNT NAMES MAY NOT START WITH @),if(lte(strlen(%0),25),1,#-1 ACCOUNT NAMES MUST BE LESS THAN 26 CHARACTERS),if(valid(name,%0),1,#-1 ACCOUNT NAME CONTAINS INVALID FORMATTING),if(words(setdiff(u(FN.FIND_ACCOUNT,stripansi(%0)),objid(%1))),#-1 ACCOUNT NAME IN USE,1))
+@@ %0 - name to check. %1 - A dbref to exclude when checking for duplicates.
+
+&FN.CREATE_ACCOUNT #acc=privatize(1,if(isdbref(setr(0,create(%0,,t))),[null([tel(%q0,%!,1)][totemset(%q0,ACCOUNT)][set(%q0,SAFE)][attrpass(%q0/_PASSWORD,%1,SET)][iter(lattr(%!/FN.CREATE_ACCOUNT_*),ulocal(%!/%i0,%0,%1))])][objid(%q0)],%q0))
+@@ %0 - name to use. This should already have been validated. %1 - password to set. Also needs to have been used valid(password,%1) on it.
+
+&FN.SET_PASSWORD #acc=null(iter(%0 [u(FN.CHARACTERS,%0)],attrpass(%i0/_PASSWORD,%1,SET)))
+@@ %0 - dbref of account. %1 - password. needs to have already been validated.
+
+&FN.RANDOM_PASSWORD #acc=scramble(!@#$^&*0123456789[digest(md5,secs())])
+
+&FN.ADD_CHARACTER #acc=privatize(1,null([set(%0,CHARACTERS:[setunion(get(%0/CHARACTERS),objid(%1))])][set(%1,_ACCOUNT:[objid(%0)])][set(%1,_PASSWORD:_%0/_PASSWORD)][iter(lattr(%!/FN.ADD_CHARACTER_*),ulocal(%!/%i0,%0,%1))]))
+
+&FN.ADD_CHARACTER_TIMEZONE #acc=set(%1,TIMEZONE:_%0/CONFIG.TIMEZONE.VALUE)
+
+&FN.REMOVE_CHARACTER #acc=privatize(1,null(set(%0,CHARACTERS:[setdiff(get(%0/CHARACTERS),objid(%1))])[set(%1,_ACCOUNT:)][set(%1,_PASSWORD:)][iter(lattr(%!/FN.REMOVE_CHARACTER_*),ulocal(%!/%i0,%0,%1))]))
+
+&FN.CREATE_CHARACTER #acc=privatize(1,if(isdbref(setr(0,create(%1,u(FN.RANDOM_PASSWORD),p))),[null([iter(lattr(%!/FN.CREATE_CHARACTER_*),ulocal(%!/%i0,%0,%q0))][totemset(%q0,CHARACTER PC)][parent(%q0,#pc_parent)][u(FN.ADD_CHARACTER,%0,%q0)])],%q0))
+@@ %0 - dbref of account. %1 - name of character. Must've already been validated.
+
+@@ Commands and stuff.
+&CMD.@ACCOUNT #acc=$^(?s)(?\:@|\+)?(acc|account)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2;@attach %!/SW.[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
+@set #acc/CMD.@ACCOUNT=regexp
+
+&SWITCHES.0 #acc=OPTIONS|RENAME|PASSWORD
+&SWITCHES.4 #acc=BIND|UNBIND|UNBOUND|CREATE|LIST|INACTIVE
+&SWITCHES.5 #acc=CONFIG
+
+&SW.CONFIG #acc=@attach #inc/CONFIG=%0,trim(%1),%!
+
+&CONFIG.PLAYERRENAME.DESC #acc=Players can manage rename their own accounts?
+&CONFIG.PLAYERRENAME.DEFAULT #acc=0
+&CONFIG.PLAYERRENAME.TYPE #acc=BOOL
+
+&CONFIG.OPENCREATE.DESC #acc=Players can create new accounts at the login screen.
+&CONFIG.OPENCREATE.DEFAULT #acc=1
+&CONFIG.OPENCREATE.TYPE #acc=BOOL
+
+&CONFIG.OPENPCREATE.DESC #acc=Players can create new characters at the login screen.
+&CONFIG.OPENPCREATE.DEFAULT #acc=1
+&CONFIG.OPENPCREATE.TYPE #acc=BOOL
+
+&CONFIG.ALTLIMIT.DESC #acc=Maximum amount of characters per account. Only enforced at login menu.
+&CONFIG.ALTLIMIT.DEFAULT #acc=16
+&CONFIG.ALTLIMIT.TYPE #acc=POSINT
+
+&CONFIG.EMAIL.DESC #acc=Can players set their own email addresses to accounts?
+&CONFIG.EMAIL.DEFAULT #acc=1
+&CONFIG.EMAIL.TYPE #acc=BOOL
+
+&CONFIG.INACTIVE.DESC #acc=Days until an account is considered inactive when its characters haven't logged in.
+&CONFIG.INACTIVE.DEFAULT #acc=30d
+&CONFIG.INACTIVE.TYPE #acc=DURATION
+
+@@ Options section.
+&SW.OPTIONS #acc=@assert/inline isdbref(setr(!,get(%#/_ACCOUNT),acc))=@pemit %#=You have no account set!;@attach %!/CONFIG=%0,%1,%q<acc>
+
+&CONFIG.TIMEZONE.DESC #acc=Timezone to use for accounts.
+&CONFIG.TIMEZONE.DEFAULT #acc=UTC
+&CONFIG.TIMEZONE.TYPE #acc=TIMEZONE
+&CONFIG.TIMEZONE.TRIGGER #acc=@dolist/inline u(FN.CHARACTERS,%2)=@set %d0=TIMEZONE:%1
+
+&CONFIG.SCREENREADER.DESC #acc=Using a screenreader. Simplifies text output. Please contact staff if something isn't screenreader friendly.
+&CONFIG.SCREENREADER.DEFAULT #acc=0
+&CONFIG.SCREENREADER.TYPE #acc=BOOL
+
+&CONFIG.BORDER.DESC #acc=Color for header/footer/boxes.
+&CONFIG.BORDER.DEFAULT #acc=
+&CONFIG.BORDER.TYPE #acc=COLOR
+
+&CONFIG.HDRSTAR.DESC #acc=Color for header *
+&CONFIG.HDRSTAR.DEFAULT #acc=
+&CONFIG.HDRSTAR.TYPE #acc=COLOR
+
+&CONFIG.HDRTEXT.DESC #acc=Color for header text
+&CONFIG.HDRTEXT.DEFAULT #acc=
+&CONFIG.HDRTEXT.TYPE #acc=COLOR
+
+@@ Account management switches.
+
+&INC.ACCOUNT #acc=@assert/inline isdbref(setr(!,account(%0),%1))=@pemit %#=ERROR: [cname(%0)] has no valid account set.
+
+&INC.ACCPLAYER #acc=@assert/inline strlen(%0)=@pemit %#=ERROR: No player or account name entered.;@if strmatch(%0,@*)={@assert/inline isdbref(setr(!,u(FN.FIND_ACCOUNT,after(%0,@),1),%1))=@pemit %#=ERROR: Account '%0' not found.},{@attach #inc/GET_PLAYER=%0,%1;@attach %!/INC.ACCOUNT=r(%1),%1}
+@@ %0 - string to look for. %1 - register to load results into.
+
+&FIL.CHARACTER #acc=hastype(%0,PLAYER)
+
+&FN.CHARACTERS #acc=sortname(filter(%!/FIL.CHARACTER,filterobjid(get(%0/CHARACTERS))))
+@@ %0 - dbref/objid of account.
+
+&SW.MAIN #acc=@attach %!/INC.ACCPLAYER=if(cand(strlen(%0),gtebittype(%#,4)),trim(%0),%#),acc;@pemit %#=header([ansi(hw,Account:)] [cname(%q<acc>)]);@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.ACC_COLUMNS));@pemit %#=subheader();@dolist/inline [u(FN.CHARACTERS,%q<acc>)]=@pemit %#=u(FN.ACC_ROW,%d0);@pemit %#=footer()
+
+&FN.ACC_COLUMNS #acc=printf($-5s $-3s $-2s $-4s $-s $s,Dbref,Bit,Al,Mail,Name)
+
+&FN.ACC_ROW #acc=printf($-5s $3s $2s $-4:0:s $-s $s,num(%d0),bittype(%0),default(%0/ALTS,0),umail(%0),cname(%0))
+
+&SW.CREATE #acc=@assert/inline setr(!,u(FN.VALID_ACCOUNT_NAME,%0),res)=@pemit %#=ERROR: %q<res>;@assert/inline valid(password,%1)=@pemit %#=ERROR: Cannot use provided password: '%1'.;@assert/inline isobjid(setr(!,u(FN.CREATE_ACCOUNT,%0,%1),acc))=@pemit %#=ERROR: %q<acc>;@if has_markup(%0)={@name/ansi %q<acc>=%0};@pemit %#=Account '[cname(%q<acc>)]' created with password: %1;@attach #inc/MSG_ALERT=Account '[cname(%q<acc>)]' created.
+
+&FN.MAX_BITTYPE #acc=lmax(iter(filterobjid(get(%0/CHARACTERS)),bittype(%i0)))
+
+&INC.CANMODIFY #acc=th setq(!,strmatch(objid(account(%#)),objid(%0)),accsame);th setq(!,u(FN.MAX_BITTYPE,%0),maxbit);@assert/inline cor(%q<accsame>,gtbittype(%#,%q<maxbit>),gtebittype(%#,6))=@pemit %#=Permission denied.
+
+&SW.RENAME #acc=@assert/inline cor(getconf(%!,PLAYERRENAME),gtebittype(%#,4))=@pemit %#=Permission denied.;@if gtebittype(%#,4)={@attach %!/INC.ACCPLAYER=%0,acc;@attach %!/DO_RENAME=%q<acc>,%1},{@attach %!/INC.ACCOUNT=%#,acc;@attach %!/DO_RENAME=%q<acc>,%0}
+
+&DO_RENAME #acc=@attach %!/INC.CANMODIFY=%0;@assert/inline setr(!,u(FN.VALID_ACCOUNT_NAME,%1,%0),res)=@pemit %#=ERROR: %q<res>;th setq(!,cname(%0),oldname);@if has_markup(%1)={@name/ansi %0=%1},{@name %0=%1};@pemit %#=Your account has been renamed from '%q<oldname>' to: [cname(%0)].;@attach #inc/MSG_ALERT=Account '%q<oldname>' renamed to: [cname(%0)]
+@@ %0 - target account, %1 - new name
+
+&SW.PASSWORD #acc=@if gtebittype(%#,4)={@attach %!/INC.ACCPLAYER=%0,acc},{@attach %!/INC.ACCOUNT=%#,acc;@assert/inline attrpass(%q<acc>/_PASSWORD,%0,CHK)=@pemit %#=Provided old password does not match.};@attach %!/DO_PASSWORD=%q<acc>,%1
+
+&DO_PASSWORD #acc=@attach %!/INC.CANMODIFY=%0;@assert/inline valid(password,%1)=@pemit %#=ERROR: Provided new password is not acceptable. Try another.;th u(FN.SET_PASSWORD,%0,%1);@pemit %#=Password changed.;@if !%q<accsame>={@attach #inc/MSG_ALERT=Changed password of Account: [cname(%0)]}
+@@ %0 - target account, %1 - new password.
+
+&SW.BIND #acc=@attach #inc/GET_PLAYER=%0,t1;@assert/inline cor(gte(bittype(%#),bittype(%q<t1>)),gtebittype(%#,6))=@pemit %#=Permission denied.;@attach %!/INC.ACCPLAYER=%1,acc;@break/inline strmatch(account(%q<t1>),objid(%q<acc>))=@pemit %#=[cname(%q<t1>)] already belongs to [cname(%q<acc>)].;@if isdbref(setr(!,account(%q<t1>),exist))={@attach %!/DO_UNBIND=%q<exist>,%q<t1>,0};@attach %!/DO_BIND=%q<acc>,%q<t1>;@pemit %#=You added '[cname(%q<t1>)]' to account '[cname(%q<acc>)]'
+
+&DO_BIND #acc=th u(FN.ADD_CHARACTER,%0,%1);@pemit %1=You have been added to account '[cname(%1)]';@attach #inc/MSG_ALERT=Added '[cname(%1)]' to Account: '[cname(%0)]'
+@@ %0 - account, %1 - character objid
+
+&SW.UNBIND #acc=@attach #inc/GET_PLAYER=%0,t1;@assert/inline cor(gte(bittype(%#),bittype(%q<t1>)),gtebittype(%#,6))=@pemit %#=Permission denied.;@assert/inline isdbref(setr(!,account(%q<t1>),acc))=@pemit %#=[cname(%q<t1>)] does not belong to any account.;@attach %!/DO_UNBIND=%q<acc>,%q<t1>,1;@pemit %#=You removed '[cname(%q<t1>)]' from account '[cname(%q<acc>)]'
+
+&DO_UNBIND #acc=th u(FN.REMOVE_CHARACTER,%0,%1);@if %2={@pemit %1=You have been removed from account '[cname(%1)]';@attach #inc/MSG_ALERT=Removed '[cname(%1)]' from Account: '[cname(%0)]'}
+@@ %0 - account, %1 - character objid, %2 - announce.
+
+&SW.UNBOUND #acc=@pemit %#=header(Account-less Characters);@dolist/inline sortname(searchobjid(EPLAYER=\[!isdbref(account(##))\]))=@pemit %#=[cname(%d0)] %(%d0%);@pemit %#=footer()
+
+&SW.LIST #acc=@pemit %#=header(Accounts);@pemit %#=u(FN.ACCLIST_COLUMNS);@pemit %#=subheader();@dolist/inline u(FN.LIST_ACCOUNTS)={@pemit %#=u(FN.ACCLIST_ROW,%d0)};@pemit %#=footer()
+
+&FN.ACCLIST_COLUMNS #acc=printf($-5s $-25s $s,Dbref,Name,Characters)
+&FN.ACCLIST_ROW #acc=printf($-5s $-25s $s,num(%0),cname(%0),iter(u(FN.CHARACTERS,%0),cname(%i0),%b,\,%B))
+
+&FN.ACC_LAST #acc=lmax(iter(u(FN.CHARACTERS,%0),convtime(get(%i0/LAST))))
+
+&FIL.INACTIVE #acc=cor(!words(u(FN.CHARACTERS,%0)),lt(u(FN.ACC_LAST,%0),%1))
+
+&FN.INACTIVE_ACCOUNTS #acc=filter(%!/FIL.INACTIVE,u(FN.LIST_ACCOUNTS),%b,%b,sub(secs(),stringsecs(getconf(%!,INACTIVE))))
+
+&SW.INACTIVE #acc=@pemit %#=header(Inactive Accounts);@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.INACTIVE_COLUMNS));@pemit %#=subheader();@dolist/inline [setr(!,u(FN.INACTIVE_ACCOUNTS),inactive)]={@pemit %#=u(FN.INACTIVE_ROW,%d0)};@pemit %#=footer(Inactive Total: [words(%q<inactive>)])
+
+&FN.INACTIVE_COLUMNS #acc=u(FN.ACCLIST_COLUMNS)
+&FN.INACTIVE_ROW #acc=u(FN.ACCLIST_ROW,%0)
+
+@@ Help
++help/add System/@account=#acc/HLP_ACCOUNT
+&HLP_ACCOUNT #acc=[ansi(hw,Command Aliases:)] @acc, @account, +acc, +account%R%R[ansi(hc,Player Commands)]%R%R[ansi(hw,@acc)]%R%TDisplay your current account details.%R%R[ansi(hw,@acc/password <old>=<new>)]%R%TChange your password. Use this instead of @password!%R%R[ansi(hw,@acc/rename <new name>)]%R%TRename your account. Supports ansi() colors.%R%R[ansi(hw,@acc/options)]%R%TDisplay available account options and current settings.%R%R[ansi(hw,@acc/options <option>=<value>)]%R%TChange an account option's value.
+
++shelp/add System/@account=#acc/SHLP_ACCOUNT
+&SHLP_ACCOUNT #acc=[ansi(hc,NOTE:)]%RAny command which expects an <account> can take either a player name (their account will be auto-detected) OR a name beginning with @ to force an account lookup.%R%R[ansi(hc,Administrator Commands)]%R%R[ansi(hw,@account <account>)]%R%TDisplay details about an account.%R%R[ansi(hw,@account/list)]%R%TDisplay all accounts in system.%R%R[ansi(hw,@account/create <name>=<password>)]%R%TCreates a new account.%R%R[ansi(hw,@account/password <account>=<password>)]%R%TSets a new password for the account.%R%R[ansi(hw,@account/rename <account>=<new name>)]%R%TRename an account.%R%R[ansi(hw,@account/bind <character>=<account>)]%R%TMakes <character> a member of <account>.%R%R[ansi(hw,@account/unbind <character>)]%R%TMakes <character> account-less. Not really a good idea.%R%R[ansi(hw,@account/inactive)]%R%TLists accounts that are currently inactive.%R%R[ansi(hw,@account/config)]%R%TDisplays the account system configuration.%R%R[ansi(hw,@account/config <parameter>=<value>)]%R%TSet an account system configuration option.

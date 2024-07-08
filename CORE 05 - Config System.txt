@@ -3,44 +3,44 @@
 
 @skip isdbref(tag(setr(1,conf)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master_room set!;@assert/inline isdbref(setr(0,create(Config System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom()}
 
-&CMD_+GLOBALCONFIG #conf=$^(?s)(?\:\+)?(globalconfig)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@assert/inline gtebittype(%#,5)=@pemit %#=error();@attach #inc/GET_SWITCHES=%2;@attach %!/SW_[strfirstof(%q<switch>,MAIN)]=trim(%3),trim(%4)
-@set #conf/CMD_+GLOBALCONFIG=regexp
+&CMD.+GLOBALCONFIG #conf=$^(?s)(?\:\+)?(globalconfig)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@assert/inline gtebittype(%#,5)=@pemit %#=error();@attach #inc/GET_SWITCHES=%2;@attach %!/SW.[strfirstof(%q<switch>,MAIN)]=trim(%3),trim(%4)
+@set #conf/CMD.+GLOBALCONFIG=regexp
 
-&FUN_LIST_CONFIGS #conf=setunion(iter(lattrp(%0/CONFIG_*_*),elementsmux(%i0,2,_),%b,|),,|,|,i)
+&FN.LIST_CONFIGS #conf=setunion(iter(lattrp(%0/CONFIG.*.*),elementsmux(%i0,2,.),%b,|),,|,|,i)
 
-&CONFIG_PERM #conf=@assert/inline gtebittype(%#,6)=@pemit %#=Permission denied.
+&CONFIG.PERM #conf=@assert/inline gtebittype(%#,6)=@pemit %#=Permission denied.
 
-&CONFIG_ALERTLEVEL_DESC #conf=bittype()>=this to hear staff alerts.
-&CONFIG_ALERTLEVEL_DEFAULT #conf=4
-&CONFIG_ALERTLEVEL_TYPE #conf=POSINT
+&CONFIG.ALERTLEVEL.DESC #conf=bittype()>=this to hear staff alerts.
+&CONFIG.ALERTLEVEL.DEFAULT #conf=4
+&CONFIG.ALERTLEVEL.TYPE #conf=POSINT
 
-&CONFIG_BORDER_DESC #conf=Color for header/footer/boxes.
-&CONFIG_BORDER_DEFAULT #conf=m
-&CONFIG_BORDER_TYPE #conf=COLOR
+&CONFIG.BORDER.DESC #conf=Color for header/footer/boxes.
+&CONFIG.BORDER.DEFAULT #conf=m
+&CONFIG.BORDER.TYPE #conf=COLOR
 
-&CONFIG_HDRSTAR_DESC #conf=Color for header *
-&CONFIG_HDRSTAR_DEFAULT #conf=hm
-&CONFIG_HDRSTAR_TYPE #conf=COLOR
+&CONFIG.HDRSTAR.DESC #conf=Color for header *
+&CONFIG.HDRSTAR.DEFAULT #conf=hm
+&CONFIG.HDRSTAR.TYPE #conf=COLOR
 
-&CONFIG_HDRTEXT_DESC #conf=Color for header text
-&CONFIG_HDRTEXT_DEFAULT #conf=hw
-&CONFIG_HDRTEXT_TYPE #conf=COLOR
+&CONFIG.HDRTEXT.DESC #conf=Color for header text
+&CONFIG.HDRTEXT.DEFAULT #conf=hw
+&CONFIG.HDRTEXT.TYPE #conf=COLOR
 
-&CONFIG_COLUMN_DESC #conf=Color for column names
-&CONFIG_COLUMN_DEFAULT #conf=g
-&CONFIG_COLUMN_TYPE #conf=COLOR
+&CONFIG.COLUMN.DESC #conf=Color for column names
+&CONFIG.COLUMN.DEFAULT #conf=g
+&CONFIG.COLUMN.TYPE #conf=COLOR
 
-&CONFIG_REQAPPROVAL_DESC #conf=Game requires use of approval system?
-&CONFIG_REQAPPROVAL_DEFAULT #conf=1
-&CONFIG_REQAPPROVAL_TYPE #conf=BOOL
+&CONFIG.REQAPPROVAL.DESC #conf=Game requires use of approval system?
+&CONFIG.REQAPPROVAL.DEFAULT #conf=1
+&CONFIG.REQAPPROVAL.TYPE #conf=BOOL
 
-&CONFIG_EMAIL_DESC #conf=Game's public email, for relevant messages?
-&CONFIG_EMAIL_DEFAULT #conf=
-&CONFIG_EMAIL_TYPE #conf=WORD
+&CONFIG.EMAIL.DESC #conf=Game's public email, for relevant messages?
+&CONFIG.EMAIL.DEFAULT #conf=
+&CONFIG.EMAIL.TYPE #conf=WORD
 
-&SW_MAIN #conf=@if strlen(%0)={@assert/inline gtebittype(%#,6)=@pemit %#=Permission denied.};@attach #inc/CONFIG=%0,%1,%!
+&SW.MAIN #conf=@if strlen(%0)={@assert/inline gtebittype(%#,6)=@pemit %#=Permission denied.};@attach #inc/CONFIG=%0,%1,%!
 
 @@ Help stuffs.
 +shelp/add Configuration/+globalconfig=#conf/SHLP_GAMECONFIG
 
-&SHLP_GAMECONFIG #conf=The Global Configuration affects softcoded config options that affect the whole game.%R%R[ansi(hc,Commands)]%R%R[ansi(hw,+globalconfig)]%R%TDisplay current configuration.%R%R[ansi(hw,+globalconfig <option>=<value>)]%R%TSet an option.%R%R[ansi(hc,Extending)]%RIf you @decompile #conf you'll see the attributes beginning with &CONFIG_<type>. create more of those to add more options. The _TYPE fields must align with VALID_<type> found on #inc.
+&SHLP_GAMECONFIG #conf=The Global Configuration affects softcoded config options that affect the whole game.%R%R[ansi(hc,Commands)]%R%R[ansi(hw,+globalconfig)]%R%TDisplay current configuration.%R%R[ansi(hw,+globalconfig <option>=<value>)]%R%TSet an option.%R%R[ansi(hc,Extending)]%RIf you @decompile #conf you'll see the attributes beginning with &CONFIG.<type>. create more of those to add more options. The .TYPE fields must align with VALID_<type> found on #inc.

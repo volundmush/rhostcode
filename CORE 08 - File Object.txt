@@ -1,0 +1,38 @@
+@@ Core
+@cmdquota me=99999
+
+@skip isdbref(tag(setr(1,fobj)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No object storage set!;@assert/inline isdbref(setr(0,create(File Object,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=#stor}
+
+&FAKECOMMANDS #fobj=LOGIN|REGISTER|CHARGEN|PLAY
+
+&RUN_REGISTER #fobj=[if(isdbref(setr(!,#[account_owner(%4)],acc)),You are already logged in.,if(setr(!,u(#acc/FN.VALID_ACCOUNT_NAME,setr(!,trim(before(%1,=)),accname)),res),if(valid(password,setr(!,after(%1,=),pass)),if(isdbref(setr(!,u(#acc/FN.CREATE_ACCOUNT,%q<accname>,%q<pass>),res)),Congratulations! Your account has been created. You may now login with:%R[ansi(hw,login %q<accname>=<password>)]%R%(without the <>%),Error: %q<res>),Error: Bad password. Try another.),Error: %q<res>))]
+
+&RUN_LOGIN #fobj=[if(isdbref(setr(!,#[account_owner(%4)],acc)),You are already logged in.,if(strlen(setr(!,before(%1,=),accname)),if(isobjid(setr(!,u(#acc/FN.FIND_ACCOUNT,%q<accname>),acc)),if(account_owner(%q<acc>,_PASSWORD,%4,after(%1,=)),Welcome%, [cname(%q<acc>)]%R[u(CONNECT,%2,%3,%4)],ERROR: Invalid credentials.),ERROR: Invalid credentials.),ERROR: Username field empty.))]
+
+&RUN_CHARGEN #fobj=[if(isdbref(setr(!,#[account_owner(%4)],acc)),if(setr(!,if(gte(u(#acc/FN.MAX_BITTYPE,%q<acc>),4),1,ofparse(3,if(getconf(#acc,OPENPCREATE),1,#-1 OPEN PCREATE IS DISABLED),if(lt(words(u(#acc/FN.CHARACTERS,%q<acc>)),getconf(#acc,ALTLIMIT)),1,#-1 OVER ALT LIMIT %([getconf(#acc,ALTLIMIT)]%)),1)),res),if(valid(playername,trim(%1)),u(#acc/FN.CREATE_CHARACTER,%q<acc>,trim(%1)),Cannot use that name. [if(isdbref(pmatch(trim(%0))),Already in use.,Contains bad characters.)]),Error: %q<res>),You are not logged in.)]
+
+&RUN_PLAY #fobj=[if(isdbref(setr(!,#[account_owner(%4)],acc)),if(words(setr(!,u(#acc/FN.CHARACTERS,%q<acc>),chars)),if(isobjid(setr(!,namegrab(%q<chars>,trim(%1)),char)),if(account_login(%q<char>,_PASSWORD,%4),Now playing as: [cname(%q<char>)],Login failed. Contact Staff.),Character not found.),You have no characters.),You are not logged in.)]
+
+&CONNECT #fobj=[if(isdbref(setr(!,#[account_owner(%2)],acc)),u(CONNECT_ACCOUNT,%0,%1,%2,%3,%q<acc>),u(CONNECT_NOTAUTH,%0,%1,%2,%3,))]%R
+
+&LOGO #fobj=center(Welcome to [mudname()],78)
+
+&COMMAND_COLUMNS #fobj=ansi(confoverride(%#,COLUMN),printf($30-s $45-s,Command,Description))
+
+&FORMAT_COMMAND #fobj=printf($30-s $|45"-s,ansi(hw,elementsmux(%5,1,~)),elementsmux(%5,2,~))
+
+&LOGIN_COMMANDS #fobj=[header(Login Commands)]%R[u(COMMAND_COLUMNS,%0,%1,%2,%3,%4)]%R[subheader()]%R[iter(login <username>=<password>~Login to an account. Eg\, login MyName=mypass|register <username>=<password>~Register a new account. Eg\, register MyName=mypass,u(FORMAT_COMMAND,%0,%1,%2,%3,%4,%i0),|,%R)]%R[separator(Legacy Commands)]%R[iter(create <player> <password>~Create a character directly. Enclose multi-word names in ""|connect <player> <password>~Directly select a character. Enclose multi-word names in ""|WHO~See who's on|QUIT~Quit the game and disconnect.~QUIT,u(FORMAT_COMMAND,%0,%1,%2,%3,%4,%i0),|,%R)]%R[footer()]
+
+&CONNECT_NOTAUTH #fobj=[u(LOGO,%0,%1,%2,%3,%4)]%R[u(LOGIN_COMMANDS,%0,%1,%2,%3,%4)]
+
+&FN.LIST_CHARACTERS_COLUMNS #fobj=ansi(confoverride(%#,COLUMN),printf($-5s $-30s $-4s $-4s,Dbref,Name,Last,Idle))
+
+&FN.LIST_CHARACTERS_ROW #fobj=printf($-5s $-30s $-4s $-4s,num(%5),cname(%5),lastconn(%5),hideidle(%5))
+
+&FN.LIST_CHARACTERS #fobj=trim(iter(u(#acc/FN.CHARACTERS,%4),u(FN.LIST_CHARACTERS_ROW,%0,%1,%2,%3,%4,%i0),%b,%R),b,%r)
+
+&CONNECT_ACCOUNT #fobj=[header(Character Select: [cname(%4)],%4)][if(strlen(setr(!,u(CONNECT_ACCOUNT_CHARACTERS,%0,%1,%2,%3,%4),chars)),%R%q<chars>)]%R[u(CONNECT_ACCOUNT_COMMANDS,%0,%1,%2,%3,%4)]
+
+&CONNECT_ACCOUNT_CHARACTERS #fobj=if(strlen(setr(!,u(FN.LIST_CHARACTERS,%0,%1,%2,%3,%4),chars)),[u(FN.LIST_CHARACTERS_COLUMNS)]%R[subheader()]%R%q<chars>)
+
+&CONNECT_ACCOUNT_COMMANDS #fobj=[subheader(Commands)]%R[u(COMMAND_COLUMNS,%0,%1,%2,%3,%4)]%R[iter(chargen <character name>~Create a character.|play <character name>~Select a character and enter play.,u(FORMAT_COMMAND,%0,%1,%2,%3,%4,%i0),|,%R)]%R[footer()]

@@ -1,0 +1,101 @@
+@@ This is used for MUDs. No need to install it if you don't plan on using MUD stats.
+
+@skip isdbref(tag(setr(1,equip)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(Equip Database,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=SAFE INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=[globalroom()]}
+
+&CMD.EQUIP #equip=$^(?s)(equip|wear|wield|hold|unequip|rem|remove)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:th setq(!,switch(%1,equip,equip,wear,equip,hold,equip,wield,equip,unequip,unequip,remove,unequip,rem,unequip),cmdfam);@attach #inc/GET_SWITCH=%2,%q<cmdfam>;@attach %!/SW.%q<cmdfam>_[strfirstof(%q<switch>,MAIN)]=trim(%3),%4,%q<cmdfam>
+@set #equip/CMD.EQUIP=regexp
+
+&TARGET #equip=@assert/inline strlen(%0)=@pemit %#=%2 what?;@assert/inline isdbref(setr(!,objeval(%#,locate(%#,%0,Tia),3),%1))=@pemit %#=[if(strmatch(%q<obj>,#-2*),That was ambiguous.,Item not found.)]
+
+&IN_USE #equip=cor(hastoggle(%0,WIELDED),hastoggle(%0,WORN))
+
+@@ TODO: Fix these placeholders.
+&ANNOUNCE_EQUIP #equip=@femit/here %#=%k equips [cname(%0)] to %2.
+&ANNOUNCE_REMOVE #equip=@femit/here %#=%k removes [cname(%0)] from their equip list.
+@@ %0 - object being equipped, %1 - target to equip to, %2 - slot it's being equipped to.
+
+&PERFORM_EQUIP #equip=@set %0=GAME.EQUIPTO:[objid(%1)];@set %0=SLOT:%2;@set %1=EQUIP.%2:[objid(%0)];@toggle %0=[if(strmatch(%2,WIELD),WIELDED,WORN)];@skip strmatch(loc(%0),num(%0))={@tel/silent %0=%1};@skip [t(%3)]={@attach %!/ANNOUNCE_EQUIP=%0,%1,%2};@skip [t(%4)]={@trigger %0/AEQUIP=%1,%2}
+@@ %0 - object being equipped, %1 - target to equip to, %2 - slot it's being equipped to. %3 - disable equip announces. %4 - disable equipment triggers
+
+&PERFORM_REMOVE #equip=th setq(!,get(%0/SLOT),slot);th setq(!,loc(%0),user);@set %q<user>=EQUIP.%q<slot>:;@set %0=SLOT;@toggle %0=!WIELDED !WORN;@skip [t(%1)]={@attach %!/ANNOUNCE_REMOVE=%0,%q<user>,%q<slot>};@skip [t(%2)]={@trigger %0/AREMOVE=%q<user>,%q<slot>}
+@@ %0 - object being removed. %1 - disable remove announces, %2 - disable triggers.
+
+&DO_EQUIP #equip=@attach %!/TARGET=%0,obj,Equip;@break/inline u(IN_USE,%q<obj>)=@pemit %#=[cname(%q<obj>)] is already equipped.;@assert/inline setr(!,udefault(%q<obj>/CAN_EQUIP,1,%#,%q<slot>),res)=@pemit %#=[rest(%q<res>)];@attach %!/PERFORM_EQUIP=%q<obj>,%:,%q<slot>
+
+&DO_REMOVE #equip=@attach %!/TARGET=%0,obj,Remove;@assert/inline u(IN_USE,%q<obj>)=@pemit %#=[cname(%q<obj>)] is not equipped.;@assert/inline setr(!,udefault(%q<obj>/CAN_REMOVE,1,%#,%q<slot>),res)=@pemit %#=[rest(%q<res>)];@attach %!/PERFORM_REMOVE=%q<obj>
+
+&FN.RENDER_SLOT #equip=privatize(1,[ansi(c,<)][ansi(hc,ljust(u(EQ.%1.LIST),20))][ansi(c,>)][if(isobjid(setr(!,get(%0/EQUIP.%1),obj)),%B[cname(%q<obj>)],%BNothing.)])
+@@ %0 - target, %1 - slot
+
+&FN.RENDER_EQUIP #equip=trim(iter(strfirstof(%1,v(EQ)),u(FN.RENDER_SLOT,%0,%i0),|,%r),b,%r)
+
+&LIST_EQUIP #equip=@pemit %#=Equipment Being Worn;@pemit %#=-------------------------------------;@pemit %#=u(FN.RENDER_EQUIP,%:)
+
+&SW.EQUIP_MAIN #equip=@if strlen(%0)={@attach %!/DO_EQUIP},{@attach %!/LIST_EQUIP}
+
+&SW.UNQUIP_MAIN #equip=@attach %!/DO_REMOVE
+
+&EQ #equip=FINGER_L|FINGER_R|NECK_1|NECK_2|BODY|HEAD|LEGS|FEET|HANDS|ARMS|ABOUT|WAIST|WRIST_L|WRIST_R|WIELD|HOLD|BACK|EAR_L|EAR_R|SHOULDERS|FACE
+
+&EQ.FINGER_L.NAME #equip=Left Finger
+&EQ.FINGER_L.LIST #equip=Worn on Left Finger
+
+&EQ.FINGER_R.NAME #equip=Right Finger
+&EQ.FINGER_R.LIST #equip=Worn on Right Finger
+
+&EQ.NECK_1.NAME #equip=Neck
+&EQ.NECK_1.LIST #equip=Worn Around Neck
+
+&EQ.NECK_2.NAME #equip=Neck
+&EQ.NECK_2.LIST #equip=Worn Around Neck
+
+&EQ.BODY.NAME #equip=Body
+&EQ.BODY.LIST #equip=Worn on Body
+
+&EQ.HEAD.NAME #equip=Body
+&EQ.HEAD.LIST #equip=Worn on Body
+
+&EQ.LEGS.NAME #equip=Legs
+&EQ.LEGS.LIST #equip=Worn on Legs
+
+&EQ.FEET.NAME #equip=Feet
+&EQ.FEET.LIST #equip=Worn on Feet
+
+&EQ.HANDS.NAME #equip=Hands
+&EQ.HANDS.LIST #equip=Worn on Hands
+
+&EQ.ARMS.NAME #equip=Hands
+&EQ.ARMS.LIST #equip=Worn on Arms
+
+&EQ.ABOUT.NAME #equip=About Body
+&EQ.ABOUT.LIST #equip=Worn About Body
+
+&EQ.WAIST.NAME #equip=Waist
+&EQ.WAIST.LIST #equip=Worn Waist Body
+
+&EQ.WRIST_L.NAME #equip=Left Wrist
+&EQ.WRIST_L.LIST #equip=Worn on Left Wrist
+
+&EQ.WRIST_R.NAME #equip=Right Wrist
+&EQ.WRIST_R.LIST #equip=Worn on Right Wrist
+
+&EQ.WIELD.NAME #equip=Wield
+&EQ.WIELD.LIST #equip=Wielded
+
+&EQ.HOLD.NAME #equip=Hold
+&EQ.HOLD.LIST #equip=Held in Offhand
+
+&EQ.BACK.NAME #equip=Back
+&EQ.BACK.LIST #equip=Worn on Back
+
+&EQ.EAR_L.NAME #equip=Left Ear
+&EQ.EAR_L.LIST #equip=Worn on Left Ear
+
+&EQ.EAR_R.NAME #equip=Right Ear
+&EQ.EAR_R.LIST #equip=Worn on Right Ear
+
+&EQ.SHOULDERS.NAME #equip=Shoulders
+&EQ.SHOULDERS.LIST #equip=Worn on Shoulders
+
+&EQ.FACE.NAME #equip=Face
+&EQ.FACE.LIST #equip=Worn over Face

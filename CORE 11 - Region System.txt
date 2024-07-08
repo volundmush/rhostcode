@@ -1,0 +1,61 @@
+@@ ZONEMASTER SCHEMA?
+
+@skip isdbref(tag(setr(1,reg)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(Region System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom()}
+
+&LOCK_ZONEWIZLOCK #globthing=[switch(bittype(%#),>1,t(match(v(BUILDERS),%:)),>4,1,0)]
+&LOCK_ZONETOLOCK #globthing=[u(LOCK_ZONEWIZLOCK,%0,%1)]
+
+@@ Commands and stuff.
+&CMD.@REGION #reg=$^(?s)(?\:@|\+)?(reg|region)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2;@attach %!/SW.[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
+@set #reg/CMD.@REGION=regexp
+
+&LOCK_USE #reg=[gtebittype(%#,2)]
+@lock/use #reg=LOCK_USE/1
+
+&SWITCHES.0 #reg=LIST|SELECT
+&SWITCHES.5 #reg=CREATE|RENAME|DELETE|GRANT|REVOKE
+
+&FN.SEARCH #reg=searchngobjid([tag(gm)] TOTEMS=R)
+&FN.SEARCH_NAME #reg=searchngobjid([tag(gm)] ETHING=\[cand(hastotem(##,REGION),strmatch(name(##),%0*))\])
+
+&FIL.ROOTS #reg=!hasattr(%0/GAME.UPZONES)
+
+&FN.ROOTS #reg=filter(FIL.ROOTS,u(FN.SEARCH))
+
+&FIL.BRANCH #reg=hastotem(%0,REGION)
+&FN.BRANCHES #reg=filter(FIL.BRANCH,setunion(lcon(%0,THING),zlcon(%0,THING)))
+
+&FN.FIND_REGION #reg=namegrab(u(FN.SEARCH_NAME,%0),%0)
+
+&SW.MAIN #reg=@if strlen(%0)={@attach %!/INC.LIST=Regions Beginning with: %0,u(FN.SEARCH_NAME,%0)},{@attach %!/INC.LIST=Regions Tree,u(FN.ROOTS),0}
+
+&FN.LIST_COLUMNS #reg=printf($-5s $-5s $-55s,Dbref,Mcnt,Name)
+&FN.LIST_ROW #reg=printf($-5s $-5s $-55s,num(%0),words(lzone(%0)),[if(gt(%1,0),space(%1)-%B)][cname(%0)])
+
+&DEPTH #reg=@if setr(!,add(words(%0),%q<total>),total)={@dolist/inline %0={@pemit %#=u(FN.LIST_ROW,%d0,%1);@if cand(strlen(%1),words(setr(!,u(FN.BRANCHES,%d0),branches)))={@attach %!/DEPTH=%q<branches>,inc(%1)}}}
+
+&INC.LIST #reg=@pemit %#=header(%0);@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.LIST_COLUMNS));@pemit %#=subheader();@attach %!/DEPTH=%1,%2;@pemit %#=footer(Total: %q<total>)
+
+&INC.FINDREG #reg=@assert/inline strlen(%0)=@pemit %#=Region name field empty.;@assert/inline isdbref(setr(!,u(FN.FIND_REGION,%0),%1))=@pemit %#=Region '%0' not found.
+
+&SW.SELECT #reg=@attach %!/INC.FINDREG=%0,reg;@assert/inline elock(%q<reg>/ZoneWizLock,%#)=@pemit %#=ERROR: You do not have build rights to that Region. Request them from staff first.
+
+&FN.SEARCH_BUILDER #reg=searchngobjid([tag(gm)] ETHING=\[cand(hastotem(##,REGION),elock(##/ZoneWizLock,num(%0)))\])
+
+&SW.LIST #reg=@attach %!/INC.LIST=Your Buildable Regions,u(FN.SEARCH_BUILDER,%#)
+
+&SW.CREATE #reg=@assert/inline valid(name,stripansi(%0))=@pemit %#=That's not a good name for a region.;@assert/inline setr(!,create(stripansi(%0),,t),reg)=@pemit %#=ERROR: %q<reg>;@if has_markup(%0)={@name/ansi %q<reg>=%0};@attach %!/INIT.REGION=%q<reg>;@pemit %#=Region [objid(%q<reg>)] '[cname(%q<reg>)]' Created.;@attach #inc/MSG_ALERT=Region [objid(%q<reg>)] '[cname(%q<reg>)]' Created.
+
+&SW.RENAME #reg=@attach %!/INC.FINDREG=%0,reg;@assert/inline valid(name,stripansi(%1))=@pemit %#=That's not a good name for a region.;th setq(!,cname(%q<reg>),oldname);@if has_markup(%0)={@name/ansi %q<reg>=%0},{@name %q<reg>=%0};@pemit %#=Region [objid(%q<reg>)] '%q<oldname>' renamed to: [cname(%q<reg>)];@attach #inc/MSG_ALERT=Region [objid(%q<reg>)] '%q<oldname>' renamed to: [cname(%q<reg>)]
+
+&FN.SAFEDELETE #reg=ofparse(3,if(!words(lzone(%0)),1,#-1 ZONE HAS MEMBERS. DEAL WITH THEM FIRST.),if(!lcon(%0,,,,,1),1,#-1 ZONE HAS lcon() CONTENTS. DEAL WITH IT FIRST.),if(!zlcon(%0,,,,,1),1,#-1 ZONE HAS zlcon() CONTENTS. DEAL WITH IT FIRST),1)
+
+&SW.DELETE #reg=@attach %!/INC.FINDREG=%0,reg;@assert/inline setr(!,u(FN.SAFEDELETE,%q<reg>),res)=@pemit %#=ERROR: %q<res>;@assert/inline t(match([name(%q<reg>)]|[objid(%q<reg>)],%0,|))=@pemit %#=ERROR: Must have =<objid|name> to verify. Enter as: [ansi(hw,@region/destroy [name(%q<reg>)]=[objid(%q<reg>)])] for instance.;@pemit %#=Destroyed Region [objid(%q<reg>)] '[cname(%q<reg>)]';@attach #inc/MSG_ALERT=Destroyed Region [objid(%q<reg>)] '[cname(%q<reg>)]';@attach %!/DESTROY_REGION=%q<reg>
+
+&SW.GRANT #reg=@attach %!/INC.FINDREG=%0,reg;@attach #inc/GET_PLAYER=%1,t1;@assert/inline gtebittype(%q<t1>,2)=@pemit %#=They must be at least bittype 2 (Guildmaster) to have build rights.;@break/inline t(match(setr(!,get(%q<reg>/BUILDERS),builders),%q<t1>))=@pemit %#=They are already a Builder for Region [objid(%q<reg>)] '[cname(%q<reg>)]';@set %q<reg>=BUILDERS:[setunion(%q<builders>,objid(%q<t1>))];@pemit %#=Added '[cname(%q<t1>)]' to Builders of Region [objid(%q<reg>)] '[cname(%q<reg>)]';@attach #inc/MSG_ALERT=Added '[cname(%q<t1>)]' to Builders of Region [objid(%q<reg>)] '[cname(%q<reg>)]';@pemit %q<t1>=You have been added to the Builders of Region [objid(%q<reg>)] '[cname(%q<reg>)]'
+
+&SW.REVOKE #reg=@attach %!/INC.FINDREG=%0,reg;@attach #inc/GET_PLAYER=%1,t1;@assert/inline t(match(setr(!,get(%q<reg>/BUILDERS),builders),%q<t1>))=@pemit %#=They are not a Builder for Region [objid(%q<reg>)] '[cname(%q<reg>)]';@set %q<reg>=BUILDERS:[setdiff(%q<builders>,objid(%q<t1>))];@pemit %#=Removed '[cname(%q<t1>)]' from Builders of Region [objid(%q<reg>)] '[cname(%q<reg>)]';@attach #inc/MSG_ALERT=Removed '[cname(%q<t1>)]' from Builders of Region [objid(%q<reg>)] '[cname(%q<reg>)]';@pemit %q<t1>=Your Builder rights for Region [objid(%q<reg>)] '[cname(%q<reg>)]' have been revoked.
+
+&INIT.REGION #reg=@set %0=ZONEMASTER INDESTRUCTIBLE;@totem %0=REGION;@lock/ZoneWizLock %0=LOCK_ZONEWIZLOCK/1;@lock/ZoneToLock %0=LOCK_ZONETOLOCK/1;@chown/preserve %0=[tag(gm)]
+
+&DESTROY_REGION #reg=@set %0=!INDESTRUCTIBLE;@zone/purge %0;@set %0=!ZONEMASTER;@totem %0=!REGION;@destroy/override %0

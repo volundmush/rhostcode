@@ -6,48 +6,45 @@
 &MSG #inc=@pemit/list strfirstof(%1,%#)=%0
 @@ %0 - Message. %1 - Recipients.
 
-&MSG_ERROR #inc=@pemit %#=[ansi(hr,ERROR:)] %0,%1,%2,%3
-&MSG_SUCCESS #inc=@pemit %#=[ansi(hg,SUCCESS:)] %0,%1,%2,%3
-
 &MSG_ALERT #inc=@attach/localize #inc/MSG_ALERT_DO=%0,%1
 &MSG_ALERT_DO #inc=th setq(!,%[[strfirstof(%1,cname(%!) - %!)]%]-%[%k%] %0,msg);@log %[[time()]%]-%q<msg>;@dolist/inline filter(#lambda/[lit(default(%0/ALERTS,1))],bitwho(globalconf(ALERTLEVEL)))={@pemit %d0=%[[runintz(gettz(%d0),time())]%]-%q<msg>}
 
 &GET_PLAYER #inc=@assert/inline strlen(%0)=@pemit %#=You must enter a player name!;@assert/inline strlen(%1);@assert/inline isdbref(pmatchreg(%0,%1))=@pemit %#=%0 [if(strmatch(r(%1),#-2*),matches multiple players!,does not match a player!)];th setq(!,objid(r(%1)),%1)
 @@ GET_PLAYER Arguments: %0 = player being checked, %1 = register number to load their data into.
 
-&VALID_BASE #inc=@assert/inline strlen(setr(!,trim(%0),value))=@pemit %#=Nothing entered!
+&VALID.BASE #inc=@assert/inline strlen(setr(!,trim(%0),value))=@pemit %#=Nothing entered!
 
-&VALID_EMAIL #inc=@attach #inc/VALID_BASE=%0;@assert/inline lte(strlen(%q<value>),255)=@pemit %#=Emails must be 255 characters or less.;@break/inline strmatch(%q<value>,* *)=@pemit %#=Email addresses may not contain spaces.;@assert/inline strmatch(%q<value>,*@*.*)=@pemit %#=An Email must be in the format: *@*.* (example@game.com).;th setq(!,%q<value>,valueformat)
+&VALID.EMAIL #inc=@attach #inc/VALID.BASE=%0;@assert/inline lte(strlen(%q<value>),255)=@pemit %#=Emails must be 255 characters or less.;@break/inline strmatch(%q<value>,* *)=@pemit %#=Email addresses may not contain spaces.;@assert/inline strmatch(%q<value>,*@*.*)=@pemit %#=An Email must be in the format: *@*.* (example@game.com).;th setq(!,%q<value>,valueformat)
 
-&VALID_COLOR #inc=@break/inline strmatch(ansi(setr(!,%0,value),Test),#-*)=@pemit %#='%0' is not a valid color.;th setq(!,ansi(%q<value>,%q<value>),valueformat)
+&VALID.COLOR #inc=@break/inline strmatch(ansi(setr(!,%0,value),Test),#-*)=@pemit %#='%0' is not a valid color.;th setq(!,ansi(%q<value>,%q<value>),valueformat)
 
-&VALID_WORD #inc=@attach #inc/VALID_BASE=%0;th setq(!,%q<value>,valueformat)
+&VALID.WORD #inc=@attach #inc/VALID.BASE=%0;th setq(!,%q<value>,valueformat)
 
-&VALID_LIST #inc=@attach #inc/VALID_BASE=%0;th setq(!,%q<value>,valueformat)
+&VALID.LIST #inc=@attach #inc/VALID.BASE=%0;th setq(!,%q<value>,valueformat)
 
-&VALID_BOOL #inc=@attach #inc/VALID_BASE=%0;@assert/inline match(0 1,%q<value>)=@pemit %#={ERROR: BOOL options can only be 0 (false) or 1 (true).};th setq(!,if(%q<value>,True,False),valueformat)
+&VALID.BOOL #inc=@attach #inc/VALID.BASE=%0;@assert/inline match(0 1,%q<value>)=@pemit %#={ERROR: BOOL options can only be 0 (false) or 1 (true).};th setq(!,if(%q<value>,True,False),valueformat)
 
-&VALID_DBREF #inc=@assert/inline isdbref(%0)=@pemit %#={ERROR: DBREF not found.};th setq(!,objid(%0),value);th setq(!,name(%q<value>),valueformat)
+&VALID.DBREF #inc=@assert/inline isdbref(%0)=@pemit %#={ERROR: DBREF not found.};th setq(!,objid(%0),value);th setq(!,name(%q<value>),valueformat)
 
-&VALID_TIMEZONE #inc=@attach #inc/VALID_BASE=%0;@assert/inline valid(timezone,%q<value>)=@pemit %#={That is not a valid timezone. Check +help timezones};th setq(!,%q<value>,valueformat)
+&VALID.TIMEZONE #inc=@attach #inc/VALID.BASE=%0;@assert/inline valid(timezone,%q<value>)=@pemit %#={That is not a valid timezone. Check +help timezones};th setq(!,%q<value>,valueformat)
 
-&VALID_DURATION #inc=@attach #inc/VALID_BASE=%0;@assert/inline setr(!,stringsecs(%0),value)=@pemit %#={'%0' did not resolve into a time. Example input: 30d 5h 3m for 30 days 5 hours and 3 minutes.};th setq(!,u(etime,%q<value>),valueformat)
+&VALID.DURATION #inc=@attach #inc/VALID.BASE=%0;@assert/inline setr(!,stringsecs(%0),value)=@pemit %#={'%0' did not resolve into a time. Example input: 30d 5h 3m for 30 days 5 hours and 3 minutes.};th setq(!,u(etime,%q<value>),valueformat)
 
-&VALID_POSINT #inc=@assert/inline cand(isint(%0),gte(%0,1))=@pemit %#={'[strfirstof(%1,%0)]' must be a whole number 1 or greater.};th setq(!,%0,value);th setq(!,%q<value>,valueformat)
+&VALID.POSINT #inc=@assert/inline cand(isint(%0),gte(%0,1))=@pemit %#={'[strfirstof(%1,%0)]' must be a whole number 1 or greater.};th setq(!,%0,value);th setq(!,%q<value>,valueformat)
 
-&VALID_POSNUM #inc=@assert/inline gt(setr(!,%0,value),0)=@pemit %#='%0' must be a positive number.;th setq(!,%q<value>,valueformat)
+&VALID.POSNUM #inc=@assert/inline gt(setr(!,%0,value),0)=@pemit %#='%0' must be a positive number.;th setq(!,%q<value>,valueformat)
 
-&VALID_NUMBER #inc=@assert/inline isnum(setr(!,%0,value))=@pemit %#='%0' must be a number.;th setq(!,%q<value>,valueformat)
+&VALID.NUMBER #inc=@assert/inline isnum(setr(!,%0,value))=@pemit %#='%0' must be a number.;th setq(!,%q<value>,valueformat)
 
-&VALID_INT #inc=@assert/inline isint(%0)=@pemit %#={'%0' must be a whole number 0 or greater.};th setq(!,setr(!,%0,value),valueformat)
+&VALID.INT #inc=@assert/inline isint(%0)=@pemit %#={'%0' must be a whole number 0 or greater.};th setq(!,setr(!,%0,value),valueformat)
 
-&VALID_LOCKKEY #inc=@assert/inline valid(lockkey,%0)=@pemit %#={'%0' was not accepted by the @lock system.};th setq(!,setr(!,%0,value),valueformat)
+&VALID.LOCKKEY #inc=@assert/inline valid(lockkey,%0)=@pemit %#={'%0' was not accepted by the @lock system.};th setq(!,setr(!,%0,value),valueformat)
 
-&VALID_TIME #inc=@assert/inline strlen(%0)=@attach %!/INC`MSG=You didn't enter a date!;@assert/inline gt(setr(!,setr(!,runintz(gettz(%#),convtime(%0)),value),time),0)=@attach %!/INC`MSG=The entered date was not recognized. Did you typo? Dates should be in abbreviated 24-hour <month> <day> <hour>:<minute> format using YOUR timezone\, such as Jun 26 7:00 or Oct 31 13:00. Check [ansi(hw,@list options convtime)] for more information.;th setq(!,runintz(UTC,convsecs(%q<value>)),valueformat)
+&VALID.TIME #inc=@assert/inline strlen(%0)=@attach %!/INC`MSG=You didn't enter a date!;@assert/inline gt(setr(!,setr(!,runintz(gettz(%#),convtime(%0)),value),time),0)=@attach %!/INC`MSG=The entered date was not recognized. Did you typo? Dates should be in abbreviated 24-hour <month> <day> <hour>:<minute> format using YOUR timezone\, such as Jun 26 7:00 or Oct 31 13:00. Check [ansi(hw,@list options convtime)] for more information.;th setq(!,runintz(UTC,convsecs(%q<value>)),valueformat)
 
-&VALID_FUTURE #inc=@attach %!/VALID_TIME;@assert/inline gt(%q<time>,secs())=@attach %!/INC`MSG=That would be in the past!
+&VALID.FUTURE #inc=@attach %!/VALID_TIME;@assert/inline gt(%q<time>,secs())=@attach %!/INC`MSG=That would be in the past!
 
-&REGISTER_FUNCTIONS #inc=@dolist/inline lattr(%!/GPFUN_*)={@function/protect/privilege [after(%d0,_)]=%!/%d0};@dolist/inline lattr(%!/GFUN_*)={@function/protect [after(%d0,_)]=%!/%d0};@dolist/inline lattr(%!/GMFUN_*)={@function/protect/privilege gm_[after(%d0,_)]=%!/%d0;@admin function_access=gm_[after(%d0,_)] guildmaster}
+&REGISTER_FUNCTIONS #inc=@dolist/inline lattr(%!/GPFN.*)={@function/protect/privilege [after(%d0,.)]=%!/%d0};@dolist/inline lattr(%!/GFN.*)={@function/protect [after(%d0,.)]=%!/%d0};@dolist/inline lattr(%!/GMFN.*)={@function/protect/privilege gm_[after(%d0,.)]=%!/%d0;@admin function_access=gm_[after(%d0,.)] guildmaster}
 
 &PARTIAL #inc=@if or(not(strlen(%0)),setr(!,match(%1,setr(!,%0,strfirstof(%3,choice)),strfirstof(%2,%b)),matched))={@if cand(t(strlen(%0)),t(%q<matched>))={th setq(!,elementsmux(%1,%q<matched>,strfirstof(%2,%b)),strfirstof(%3,choice))}},{@assert/inline words(setr(!,graball(%1,%0*,strfirstof(%2,%b),strfirstof(%2,%b)),strfirstof(%3,choice)))=@pemit %#={Invalid %4! Valid choices are: [elist(%1,,strfirstof(%2,%b))]};@break/inline gt(words(r(strfirstof(%3,choice)),strfirstof(%2,%b)),1)=@pemit %#={ERROR: %0 matched [elist(r(strfirstof(%3,choice)),strfirstof(%2,%b),,|)]. Please be more specific.}}
 @@ PARTIAL %0 = entry, %1 = choices, %2 = delimiter, %3 = register name, %4 = topic name
@@ -59,6 +56,6 @@
 
 &CONFIG #inc=@if strlen(%0)={@attach #inc/CONF_SET},{@attach #inc/CONF_LIST}
 
-&CONF_LIST #inc=@pemit %#=header(cname(%2) Options);@dolist/inline/delimit | [u(#conf/FUN_LIST_CONFIGS,%2)]={@pemit %#=separator(%d0);@pemit %#=get(%2/CONFIG_%d0_DESC);@pemit %#=[ansi(hw,TYPE:)] [get(%2/CONFIG_%d0_TYPE)];@pemit %#=[ansi(hw,DEFAULT:)] [get(%2/CONFIG_%d0_DEFAULT)];@pemit %#=[ansi(hw,CURRENT:)] [getconf(%2,%d0)]};@pemit %#=footer()
+&CONF_LIST #inc=@pemit %#=header(cname(%2) Options);@dolist/inline/delimit | [u(#conf/FN.LIST_CONFIGS,%2)]={@pemit %#=separator(%d0);@pemit %#=get(%2/CONFIG.%d0.DESC);@pemit %#=[ansi(hw,TYPE:)] [get(%2/CONFIG.%d0.TYPE)];@pemit %#=[ansi(hw,DEFAULT:)] [get(%2/CONFIG.%d0.DEFAULT)];@pemit %#=[ansi(hw,CURRENT:)] [getconf(%2,%d0)]};@pemit %#=footer()
 
-&CONF_SET #inc=@attach %2/CONFIG_PERM;@attach #inc/PARTIAL=%0,u(#conf/FUN_LIST_CONFIGS,%2),|,op,option;@attach %2/CONFIG_%q<op>_PERM=%0,%1,%2;@attach #inc/VALID_[get(%2/CONFIG_%q<op>_TYPE)]=%1;th setq(!,getconf(%2,%q<op>),oldvalue);@attach %2/CONFIG_%q<op>_VALID=%q<value>,%q<oldvalue>,%2;@set %2=CONFIG_%q<op>_VALUE:%q<value>;@attach %2/CONFIG_%q<op>_TRIGGER=%q<oldvalue>,%q<newvalue>,%2;@pemit %#=[cname(%2)] %q<op> is now: %q<valueformat>;@attach #inc/MSG_ALERT=[cname(%2)] %q<op> is now: %q<valueformat>
+&CONF_SET #inc=@attach %2/CONFIG.PERM;@attach #inc/PARTIAL=%0,u(#conf/FN.LIST_CONFIGS,%2),|,op,option;@attach %2/CONFIG.%q<op>.PERM=%0,%1,%2;@attach #inc/VALID.[get(%2/CONFIG.%q<op>.TYPE)]=%1;th setq(!,getconf(%2,%q<op>),oldvalue);@attach %2/CONFIG.%q<op>.VALID=%q<value>,%q<oldvalue>,%2;@set %2=CONFIG.%q<op>.VALUE:%q<value>;@attach %2/CONFIG.%q<op>.TRIGGER=%q<oldvalue>,%q<newvalue>,%2;@pemit %#=[cname(%2)] %q<op> is now: %q<valueformat>;@attach #inc/MSG_ALERT=[cname(%2)] %q<op> is now: %q<valueformat>

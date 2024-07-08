@@ -1,0 +1,22 @@
+@@ This is used for MUDs. No need to install it if you don't plan on using MUD stats.
+
+@skip isdbref(tag(setr(1,statdb)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(Stat Database,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=SAFE INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=[globalroom()]}
+
+&GMFN.STAT #statdb=locate(%!,%0,Ti)
+&GMFN.NEWSTAT #statdb=privatize(1,if(strmatch(setr(0,locate(%!,%0,Ti)),#-1),if(isdbref(setr(0,create(%0,,t))),%q0[null([totemset(%q0,STAT)][parent(%q0,#stat_parent)][set(%q0,INDESTRUCTIBLE SAFE)])],%q0),%q0))
+
+&GMFN.GET_STAT_MODDED #statdb=if(hastotem(%1,STAT),u(%1CACHED,%0))
+&GMFN.GET_STAT_BASE #statdb=if(hastotem(%1,STAT),u(%1/BASE,%0))
+@@ %0 - target, %1 stat dbref.
+
+@startup #statdb=@attach #inc/REGISTER_FUNCTIONS
+
+&CALCULATE_MODDED #stat_parent=u(BASE,%0)
+
+&BASE #stat_parent=strfunc(fbound,[default(%0/ST_STAT.%!.BASE,0)] [default(BASE.MIN,0)] [v(BASE.MAX)])
+
+&MODDED #stat_parent=strfunc(fbound,[u(CALCULATE_MODDED,%0)] [default(MODDED.MIN,0)] [v(MODDED.MAX)])
+
+&CACHE_TIMEOUT #stat_parent=1
+
+&CACHED #stat_parent=if(cand(hasattr(%0/ST_STAT.%!.LASTCALC),lt(sub(msecs(),get(%0/ST_STAT.%!.LASTCALC)),v(CACHE_TIMEOUT))),get(%0/ST_STAT.%!.MODDED),[null([set(%0,ST_STAT.%!.LASTCALC:[msecs()])][set(%0,ST_STAT.%!.MODDED:[u(MODDED,%0)])])][get(%0/ST_STAT.%!.MODDED)])

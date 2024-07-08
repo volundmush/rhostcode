@@ -1,40 +1,40 @@
-&CONFIG_TEMPLATES_DEFAULT #stdata=Mortal|Solar|Lunar|Terrestrial|Abyssal|Sidereal|Alchemical|Dragon-King|God-Blooded|Infernal|Jadeborn|Raksha|Spirit
+&CONFIG.TEMPLATES.DEFAULT #stdata=Mortal|Solar|Lunar|Terrestrial|Abyssal|Sidereal|Alchemical|Dragon-King|God-Blooded|Infernal|Jadeborn|Raksha|Spirit
 
-&CONFIG_GUNSTAR_DESC #stdata=Are we running Gunstar Autochthonia?
-&CONFIG_GUNSTAR_DEFAULT #stdata=0
-&CONFIG_GUNSTAR_TYPE #stdata=BOOL
+&CONFIG.GUNSTAR.DESC #stdata=Are we running Gunstar Autochthonia?
+&CONFIG.GUNSTAR.DEFAULT #stdata=0
+&CONFIG.GUNSTAR.TYPE #stdata=BOOL
 
-&CONFIG_MODERNAGE_DESC #stdata=Are we running The Modern Age?
-&CONFIG_MODERNAGE_DEFAULT #stdata=0
-&CONFIG_MODERNAGE_TYPE #stdata=BOOL
+&CONFIG.MODERNAGE.DESC #stdata=Are we running The Modern Age?
+&CONFIG.MODERNAGE.DEFAULT #stdata=0
+&CONFIG.MODERNAGE.TYPE #stdata=BOOL
 
-&CONFIG_MUTATIONSCATEGORIES_DESC #stdata=The categories for Mutations.
-&CONFIG_MUTATIONSCATEGORIES_DEFAULT #stdata=Innate|Wyld|Warform|Rage
-&CONFIG_MUTATIONSCATEGORIES_TYPE #stdata=LIST
+&CONFIG.MUTATIONSCATEGORIES.DESC #stdata=The categories for Mutations.
+&CONFIG.MUTATIONSCATEGORIES.DEFAULT #stdata=Innate|Wyld|Warform|Rage
+&CONFIG.MUTATIONSCATEGORIES.TYPE #stdata=LIST
 
-&CONFIG_POOLMAXVIRTUES_DESC #stdata=HOUSE RULE: Pool Calculations Assume max virtues?
-&CONFIG_POOLMAXVIRTUES_DEFAULT #stdata=0
-&CONFIG_POOLMAXVIRTUES_TYPE #stdata=BOOL
+&CONFIG.POOLMAXVIRTUES.DESC #stdata=HOUSE RULE: Pool Calculations Assume max virtues?
+&CONFIG.POOLMAXVIRTUES.DEFAULT #stdata=0
+&CONFIG.POOLMAXVIRTUES.TYPE #stdata=BOOL
 
-&CONFIG_POOLMAXWILLPOWER_DESC #stdata=HOUSE RULE: Pool Calculations Assume max Willpower?
-&CONFIG_POOLMAXWILLPOWER_DEFAULT #stdata=0
-&CONFIG_POOLMAXWILLPOWER_TYPE #stdata=BOOL
+&CONFIG.POOLMAXWILLPOWER.DESC #stdata=HOUSE RULE: Pool Calculations Assume max Willpower?
+&CONFIG.POOLMAXWILLPOWER.DEFAULT #stdata=0
+&CONFIG.POOLMAXWILLPOWER.TYPE #stdata=BOOL
 
-&CONFIG_POOLMAXBREEDING_DESC #stdata=HOUSE RULE: Pool Calculations Assume max (5) Breeding for Dragon-Blooded?
-&CONFIG_POOLMAXBREEDING_DEFAULT #stdata=0
-&CONFIG_POOLMAXBREEDING_TYPE #stdata=BOOL
+&CONFIG.POOLMAXBREEDING.DESC #stdata=HOUSE RULE: Pool Calculations Assume max (5) Breeding for Dragon-Blooded?
+&CONFIG.POOLMAXBREEDING.DEFAULT #stdata=0
+&CONFIG.POOLMAXBREEDING.TYPE #stdata=BOOL
 
-&CONFIG_MAXOVERDRIVE_DESC #stdata=HOUSE RULE: Maximum size of Overdrive Pool?
-&CONFIG_MAXOVERDRIVE_DEFAULT #stdata=25
-&CONFIG_MAXOVERDRIVE_TYPE #stdata=INT
+&CONFIG.MAXOVERDRIVE.DESC #stdata=HOUSE RULE: Maximum size of Overdrive Pool?
+&CONFIG.MAXOVERDRIVE.DEFAULT #stdata=25
+&CONFIG.MAXOVERDRIVE.TYPE #stdata=INT
 
-&CONFIG_POOLGTESSBREEDING_DESC #stdata=HOUSE RULE: When calculating Dragon-Blooded pools, substitue Essence for Breeding where Essence > Breeding? This allows high-Essence Dragon-Blooded to close the gap on young, high-Breeding ones. At Essence 6, any Dragon-Blooded effectively has 'Legendary Breeding' for pools.
-&CONFIG_POOLGTESSBREEDING_DEFAULT #stdata=0
-&CONFIG_POOLGTESSBREEDING_TYPE #stdata=BOOL
+&CONFIG.POOLGTESSBREEDING.DESC #stdata=HOUSE RULE: When calculating Dragon-Blooded pools, substitue Essence for Breeding where Essence > Breeding? This allows high-Essence Dragon-Blooded to close the gap on young, high-Breeding ones. At Essence 6, any Dragon-Blooded effectively has 'Legendary Breeding' for pools.
+&CONFIG.POOLGTESSBREEDING.DEFAULT #stdata=0
+&CONFIG.POOLGTESSBREEDING.TYPE #stdata=BOOL
 
-&CONFIG_ALWAYSAWAKENED_DESC #stdata=HOUSE RULE: Player Character Mortals ALWAYS have an Essence Pool without purchasing Awakened Essence?
-&CONFIG_ALWAYSAWAKENED_DEFAULT #stdata=0
-&CONFIG_ALWAYSAWAKENED_TYPE #stdata=BOOL
+&CONFIG.ALWAYSAWAKENED.DESC #stdata=HOUSE RULE: Player Character Mortals ALWAYS have an Essence Pool without purchasing Awakened Essence?
+&CONFIG.ALWAYSAWAKENED.DEFAULT #stdata=0
+&CONFIG.ALWAYSAWAKENED.TYPE #stdata=BOOL
 
 &SPLAT_X_INFERNAL #stdata=[if(getconf(%!,GUNSTAR),Sovereign|Devourer|Mountebank|Rhapsode|Dement,Slayer)]|Fiend|Scourge|Malefactor|Defiler
 &SPLAT_X_DRAGON-KING #stdata=Anklok|Mosok|Pterok|Raptok
@@ -43,7 +43,7 @@
 &SPLAT_X_RAKSHA #stdata=Diplomat|Courtier|Imperial Raksha|Scribe|Entertainer|Luminary|Eshu|Ornamental Raksha|Warrior|Anarch|Xia|Cataphract|Worker|Panjandrum|Artisan|Strategos|Guide|Harbinger|Vagabond|Nomad|Ferryman|Herald|Skald|Dragoon|Attendant
 &SPLAT_X_SPIRIT #stdata=God|Demon
 
-&FUN_QUICK_STATS #stdata=iter(ATTRIBUTES~ATTRIBUTES|ABILITIES~ABILITIES|ADVANTAGES~ADVANTAGES,iter(u(before(%i0,~)),%i0~[after(%i1,~)],|,|),|,|)
+&FN.QUICK_STATS #stdata=iter(ATTRIBUTES~ATTRIBUTES|ABILITIES~ABILITIES|ADVANTAGES~ADVANTAGES,iter(u(before(%i0,~)),%i0~[after(%i1,~)],|,|),|,|)
 
 &ABILITIES #stdata=Archery|Martial Arts|Melee|Thrown|War|Bureaucracy|Linguistics|Ride|Sail|Socialize|Athletics|Awareness|Dodge|Larceny|Stealth|Craft|Investigation|Lore|Medicine|Occult|Integrity|Performance|Presence|Resistance|Survival[if(getconf(%!,MODERNAGE),|Drive|Firearms)]
 &ABILITIES_CONTEXT #stdata=switch(%1,Craft,2,0)
@@ -78,7 +78,7 @@
 
 &CHARMS_GHOST #stdata=Common|Chains of the Ancient Monarchs|Essence-Measuring Thief Arts|Noble Craftsman Ways|Savage Ghost Tamer|Shifting Ghost-Clay Path|The Stringless Puppeteer Art|Tangled Web Arts|Tenacious Merchant's Way|Terror-Spreading Art
 
-&NATIVE_TYPE #stdata=privatize(1,switch(u(setr,class,get(%0/ST_TEMPLATE)),God-Blooded,switch(1,t(match(Divine Demon,u(setr,caste,get(%0/ST_SPLAT_X)))),Spirit,strmatch(%q<caste>,Fae),Raksha,t(match(Solar Lunar Abyssal Infernal Sidereal)),%q<caste>,Mortal),%q<class>))
+&NATIVE.TYPE #stdata=privatize(1,switch(u(setr,class,get(%0/ST.TEMPLATE)),God-Blooded,switch(1,t(match(Divine Demon,u(setr,caste,get(%0/ST.SPLAT_X)))),Spirit,strmatch(%q<caste>,Fae),Raksha,t(match(Solar Lunar Abyssal Infernal Sidereal)),%q<caste>,Mortal),%q<class>))
 
 &SET_MERITS #stdata=@attach %!/DO_STATLIKE=%0,%1,%2,MERITS,MERITS,Merit,Merits,0
 &SET_FLAWS #stdata=@attach %!/DO_STATLIKE=%0,%1,%2,FLAWS,FLAWS,Flaw,Flaws,0
@@ -94,30 +94,30 @@
 &REM_PROTOCOL #stdata=@attach %!/ADD_PROTOCOL=%0,%1,%2,1
 
 @@ Sheet Templates
-&FUN_TEMPINFO_GOD-BLOODED #stdata=u(FUN_TEMPINFO_MAIN,%0,%1,NAME~Name|SPLAT_X~Caste~N/A,ADVANTAGES_ESSENCE~Essence~1)
-&FUN_TEMPINFO_DRAGON-KING #stdata=u(FUN_TEMPINFO_MAIN,%0,%1,NAME~Name|SPLAT_X~Caste~N/A,ADVANTAGES_ESSENCE~Essence~1)
-&FUN_TEMPINFO_JADEBORN #stdata=u(FUN_TEMPINFO_MAIN,%0,%1,NAME~Name|SPLAT_X~Caste~N/A,ADVANTAGES_ESSENCE~Essence~1)
-&FUN_TEMPINFO_RAKSHA #stdata=u(FUN_TEMPINFO_MAIN,%0,%1,NAME~Name|SPLAT_X~Caste~N/A,ADVANTAGES_ESSENCE~Essence~1|LURE~Lure~None)
+&FN.TEMPINFO_GOD-BLOODED #stdata=u(FN.TEMPINFO_MAIN,%0,%1,NAME~Name|SPLAT_X~Caste~N/A,ADVANTAGES_ESSENCE~Essence~1)
+&FN.TEMPINFO_DRAGON-KING #stdata=u(FN.TEMPINFO_MAIN,%0,%1,NAME~Name|SPLAT_X~Caste~N/A,ADVANTAGES_ESSENCE~Essence~1)
+&FN.TEMPINFO_JADEBORN #stdata=u(FN.TEMPINFO_MAIN,%0,%1,NAME~Name|SPLAT_X~Caste~N/A,ADVANTAGES_ESSENCE~Essence~1)
+&FN.TEMPINFO_RAKSHA #stdata=u(FN.TEMPINFO_MAIN,%0,%1,NAME~Name|SPLAT_X~Caste~N/A,ADVANTAGES_ESSENCE~Essence~1|LURE~Lure~None)
 
 @@ Sheet Rendering
 &SHEET_RENDER #stdata=@dolist/inline HEADER ATTRIBUTES ABILITIES SPECIALTIES EX2STATS MUTATIONS CHARMS THAUMATURGY SORCERY NECROMANCY PROTOCOLS STYLECHARMS HEALTH POOLTRACKXP FOOTER={@attach %!/SHEET_%d0}
 
 &SHEET_PROTOCOLS #stdata=@attach %!/SHEET_MAGIC=%0,%1,%2,Protocols,%BTier Protocols
 
-&SHEET_EX2STATS #stdata=@dolist/inline VIRTUES COLLEGES PACTS GRACES BACKGROUNDS MERITS FLAWS PATHS={@attach %!/SHEET_%d0=%0,%1,%2,capnames(%d0),get(%0/ST_%d0),ST_%d0,capnames(left(%d0,sub(strlen(%d0),1)))}
+&SHEET_EX2STATS #stdata=@dolist/inline VIRTUES COLLEGES PACTS GRACES BACKGROUNDS MERITS FLAWS PATHS={@attach %!/SHEET_%d0=%0,%1,%2,capnames(%d0),get(%0/ST.%d0),ST.%d0,capnames(left(%d0,sub(strlen(%d0),1)))}
 
 @@ Pools goofery
 @@ Format for Expanded/Overdrive data: CATEGORY~Charm Name~#|...
 
-&EXPANDHELPER #stdata=ladd(iter(%2,mul(get_kv(get(%0/[edit(strfirstof(%3,ST_CHARMS.%1).[elementsmux(%i0,1,~)],%B,_)),elementsmux(%i0,2,~),0),elementsmux(%i0,3,~)),|,%b))
+&EXPANDHELPER #stdata=ladd(iter(%2,mul(get_kv(get(%0/[edit(strfirstof(%3,ST.CHARMS.%1).[elementsmux(%i0,1,~)],%B,_)),elementsmux(%i0,2,~),0),elementsmux(%i0,3,~)),|,%b))
 
-&RES_PERSONAL.MAX #stdata=add(u(PERSONAL.[get(%0/ST_TEMPLATE)]),mul(3,get_kv(%0/ST_MUTATIONS.POSITIVE,Essence Abundance,0)))
+&RES_PERSONAL.MAX #stdata=add(u(PERSONAL.[get(%0/ST.TEMPLATE)]),mul(3,get_kv(%0/ST.MUTATIONS.POSITIVE,Essence Abundance,0)))
 
 &RES_EXPANDED.TYPE #stdata=Pool
 &RES_EXPANDED.UNIT_NAME #stdata=Mote
 &RES_EXPANDED.UNIT_NAME_PLURAL #stdata=Motes
-&RES_EXPANDED.UNIT_TYPE #stdata=Expanded Peripheral Essence
-&RES_EXPANDED.MAX #stdata=u(EXPANDED.[get(%0/ST_TEMPLATE)])
+&RES_EXPANDED.UNIT.TYPE #stdata=Expanded Peripheral Essence
+&RES_EXPANDED.MAX #stdata=u(EXPANDED.[get(%0/ST.TEMPLATE)])
 &RES_EXPANDED.INIT #stdata=u(RES_EXPANDED.MAX,%0)
 &RES_EXPANDED.OPTIONS #stdata=SPEND GAIN REFRESH COMMIT
 
@@ -144,79 +144,79 @@
 
 &OVERDRIVE.ALCHEMICAL #stdata=u(EXPANDHELPER,%0,ALCHEMICAL,SPIRITUAL~Optimized Overcharge Device~5|SUBMODULES~Expanded Charge Battery Submodule~1)
 
-&OVERDRIVE.MARTIAL #stdata=u(EXPANDHELPER,%0,MARTIAL,SAPPHIRE VEIL OF PASSION~Sapphire Veil of Passion Form~10,ST_STYLECHARMS)
+&OVERDRIVE.MARTIAL #stdata=u(EXPANDHELPER,%0,MARTIAL,SAPPHIRE VEIL OF PASSION~Sapphire Veil of Passion Form~10,ST.STYLECHARMS)
 
 &RES_OVERDRIVE.TYPE #stdata=Pool
 &RES_OVERDRIVE.UNIT_NAME #stdata=Mote
 &RES_OVERDRIVE.UNIT_NAME_PLURAL #stdata=Motes
-&RES_OVERDRIVE.UNIT_TYPE #stdata=Overdrive Peripheral Essence
-&RES_OVERDRIVE.MAX #stdata=min(add(u(OVERDRIVE.[get(%0/ST_TEMPLATE)]),u(OVERDRIVE.MARTIAL)),getconf(%!,MAXOVERDRIVE))
+&RES_OVERDRIVE.UNIT.TYPE #stdata=Overdrive Peripheral Essence
+&RES_OVERDRIVE.MAX #stdata=min(add(u(OVERDRIVE.[get(%0/ST.TEMPLATE)]),u(OVERDRIVE.MARTIAL)),getconf(%!,MAXOVERDRIVE))
 &RES_OVERDRIVE.INIT #stdata=u(RES_OVERDRIVE.MAX,%0)
 &RES_OVERDRIVE.OPTIONS #stdata=SPEND GAIN REFRESH COMMIT
 
 &RES_GOSSAMER.TYPE #stdata=Pool
 &RES_GOSSAMER.UNIT_NAME #stdata=Strand
 &RES_GOSSAMER.UNIT_NAME_PLURAL #stdata=Strands
-&RES_GOSSAMER.UNIT_TYPE #stdata=Gossamer
-&RES_GOSSAMER.MAX #stdata=switch(get_kv(get(%0/ST_BACKGROUNDS),Gossamer,0),1,1,2,3,3,6,4,10,5,20,0)
+&RES_GOSSAMER.UNIT.TYPE #stdata=Gossamer
+&RES_GOSSAMER.MAX #stdata=switch(get_kv(get(%0/ST.BACKGROUNDS),Gossamer,0),1,1,2,3,3,6,4,10,5,20,0)
 &RES_GOSSAMER.INIT #stdata=u(RES_GOSSAMER.MAX,%0)
 &RES_GOSSAMER.OPTIONS #stdata=SPEND GAIN REFRESH
 
-&RES_LIMIT.MAX #stdata=if(cor(match(Solar|Lunar|Sidereal|Infernal|Dragon-Blooded,get(%0/ST_TEMPLATE),|),get_kv(get(%0/ST_MUTATIONS.NEGATIVE),Great Curse,0)),10,0)
+&RES_LIMIT.MAX #stdata=if(cor(match(Solar|Lunar|Sidereal|Infernal|Dragon-Blooded,get(%0/ST.TEMPLATE),|),get_kv(get(%0/ST.MUTATIONS.NEGATIVE),Great Curse,0)),10,0)
 
 &RES_RESONANCE.TYPE #stdata=Track
 &RES_RESONANCE.UNIT_NAME #stdata=Point
 &RES_RESONANCE.UNIT_NAME_PLURAL #stdata=Points
-&RES_RESONANCE.UNIT_TYPE #stdata=RESONANCE
-&RES_RESONANCE.MAX #stdata=if(strmatch(Abyssal,get(%0/ST_TEMPLATE)),10,0)
+&RES_RESONANCE.UNIT.TYPE #stdata=RESONANCE
+&RES_RESONANCE.MAX #stdata=if(strmatch(Abyssal,get(%0/ST.TEMPLATE)),10,0)
 &RES_RESONANCE.INIT #stdata=0
 &RES_RESONANCE.OPTIONS #stdata=SPEND GAIN
 
 &RES_STASIS.TYPE #stdata=Track
 &RES_STASIS.UNIT_NAME #stdata=Point
 &RES_STASIS.UNIT_NAME_PLURAL #stdata=Points
-&RES_STASIS.UNIT_TYPE #stdata=Stasis
-&RES_STASIS.MAX #stdata=if(strmatch(Raksha,get(%0/ST_TEMPLATE)),10,0)
+&RES_STASIS.UNIT.TYPE #stdata=Stasis
+&RES_STASIS.MAX #stdata=if(strmatch(Raksha,get(%0/ST.TEMPLATE)),10,0)
 &RES_STASIS.INIT #stdata=0
 &RES_STASIS.OPTIONS #stdata=SPEND GAIN
 
 &RES_PARADOX.TYPE #stdata=Track
 &RES_PARADOX.UNIT_NAME #stdata=Point
 &RES_PARADOX.UNIT_NAME_PLURAL #stdata=Points
-&RES_PARADOX.UNIT_TYPE #stdata=Paradox
-&RES_PARADOX.MAX #stdata=if(strmatch(Sidereal,get(%0/ST_TEMPLATE)),10,0)
+&RES_PARADOX.UNIT.TYPE #stdata=Paradox
+&RES_PARADOX.MAX #stdata=if(strmatch(Sidereal,get(%0/ST.TEMPLATE)),10,0)
 &RES_PARADOX.INIT #stdata=0
 &RES_PARADOX.OPTIONS #stdata=SPEND GAIN
 
 &RES_DIVERGENCE.TYPE #stdata=Track
 &RES_DIVERGENCE.UNIT_NAME #stdata=Point
 &RES_DIVERGENCE.UNIT_NAME_PLURAL #stdata=Points
-&RES_DIVERGENCE.UNIT_TYPE #stdata=Divergence
-&RES_DIVERGENCE.MAX #stdata=if(strmatch(Jadeborn,get(%0/ST_TEMPLATE)),10,0)
+&RES_DIVERGENCE.UNIT.TYPE #stdata=Divergence
+&RES_DIVERGENCE.MAX #stdata=if(strmatch(Jadeborn,get(%0/ST.TEMPLATE)),10,0)
 &RES_DIVERGENCE.INIT #stdata=0
 &RES_DIVERGENCE.OPTIONS #stdata=SPEND GAIN
 
 &RES_CLARITY.TYPE #stdata=Track
 &RES_CLARITY.UNIT_NAME #stdata=Point
 &RES_CLARITY.UNIT_NAME_PLURAL #stdata=Points
-&RES_CLARITY.UNIT_TYPE #stdata=Clarity
-&RES_CLARITY.MAX #stdata=if(strmatch(Alchemical,get(%0/ST_TEMPLATE)),10,0)
+&RES_CLARITY.UNIT.TYPE #stdata=Clarity
+&RES_CLARITY.MAX #stdata=if(strmatch(Alchemical,get(%0/ST.TEMPLATE)),10,0)
 &RES_CLARITY.INIT #stdata=0
 &RES_CLARITY.OPTIONS #stdata=SPEND GAIN
 
 &RES_DISSONANCE.TYPE #stdata=Track
 &RES_DISSONANCE.UNIT_NAME #stdata=Point
 &RES_DISSONANCE.UNIT_NAME_PLURAL #stdata=Points
-&RES_DISSONANCE.UNIT_TYPE #stdata=Dissonance
-&RES_DISSONANCE.MAX #stdata=if(get_kv(get(%0/ST_MUTATIONS.NEGATIVE),Gremlin Syndrome,0),10,0)
+&RES_DISSONANCE.UNIT.TYPE #stdata=Dissonance
+&RES_DISSONANCE.MAX #stdata=if(get_kv(get(%0/ST.MUTATIONS.NEGATIVE),Gremlin Syndrome,0),10,0)
 &RES_DISSONANCE.INIT #stdata=0
 &RES_DISSONANCE.OPTIONS #stdata=SPEND GAIN
 
-&GET_VIRTUES #stdata=if(getconf(%!,POOLMAXVIRTUES),20,ladd(iter(get(%0/ST_VIRTUES),after(%i0,~),|,%b0)))
-&GET_HIGHVIRTUE #stdata=if(getconf(%!,POOLMAXVIRTUES),5,lmax(iter(get(%0/ST_VIRTUES),after(%i0,~),|,%b0)))
-&GET_2HIGHVIRTUE #stdata=if(getconf(%!,POOLMAXVIRTUES),10,ladd(elements(sort(iter(get(%0/ST_VIRTUES),last(%i0,~),|)),3 4)))
-&GET_WILLPOWER #stdata=if(getconf(%!,POOLMAXWILLPOWER),10,get_kv(get(%0/ST_ADVANTAGES),Willpower,0))
-&GET_BREEDING #stdata=max(if(getconf(%!,POOLMAXBREEDING),5,0),get_kv(get(%0/ST_BACKGROUNDS),Breeding,0),if(getconf(%!,POOLGTESSBREEDING),u(GET_ESSENCE,%0),0))
+&GET_VIRTUES #stdata=if(getconf(%!,POOLMAXVIRTUES),20,ladd(iter(get(%0/ST.VIRTUES),after(%i0,~),|,%b0)))
+&GET_HIGHVIRTUE #stdata=if(getconf(%!,POOLMAXVIRTUES),5,lmax(iter(get(%0/ST.VIRTUES),after(%i0,~),|,%b0)))
+&GET_2HIGHVIRTUE #stdata=if(getconf(%!,POOLMAXVIRTUES),10,ladd(elements(sort(iter(get(%0/ST.VIRTUES),last(%i0,~),|)),3 4)))
+&GET_WILLPOWER #stdata=if(getconf(%!,POOLMAXWILLPOWER),10,get_kv(get(%0/ST.ADVANTAGES),Willpower,0))
+&GET_BREEDING #stdata=max(if(getconf(%!,POOLMAXBREEDING),5,0),get_kv(get(%0/ST.BACKGROUNDS),Breeding,0),if(getconf(%!,POOLGTESSBREEDING),u(GET_ESSENCE,%0),0))
 
 &PERSONAL.SOLAR #stdata=add(mul(3,u(GET_ESSENCE,%0)),u(GET_WILLPOWER,%0))
 &PERIPHERAL.SOLAR #stdata=add(mul(7,u(GET_ESSENCE,%0)),u(GET_WILLPOWER,%0),u(GET_VIRTUES,%0))
@@ -236,15 +236,15 @@
 &PERSONAL.JADEBORN #stdata=mul(10,u(GET_ESSENCE,%0))
 &PERSONAL.RAKSHA #stdata=mul(10,u(GET_ESSENCE,%0))
 
-&PERSONAL.MORTAL #stdata=if(cor(getconf(%!,ALWAYSAWAKENED),get_kv(get(%0/ST_MERITS),Awakened Essence,0)),mul(10,u(GET_ESSENCE,%0)),0)
+&PERSONAL.MORTAL #stdata=if(cor(getconf(%!,ALWAYSAWAKENED),get_kv(get(%0/ST.MERITS),Awakened Essence,0)),mul(10,u(GET_ESSENCE,%0)),0)
 
 &PERSONAL.SPIRIT #stdata=add(mul(10,u(GET_ESSENCE,%0)),mul(5,u(GET_WILLPOWER,%0)))
 
-&PERSONAL.DRAGON-KING #stdata=privatize(1,add(mul(4,u(GET_ESSENCE,%0)),mul(2,u(GET_WILLPOWER,%0)),if(getconf(!,POOLMAXVIRTUES),10,add(get_kv(setr(!,get(%0/ST_VIRTUES),virtues),Conviction,0),get_kv(%q<virtues>,Valor,0)))))
+&PERSONAL.DRAGON-KING #stdata=privatize(1,add(mul(4,u(GET_ESSENCE,%0)),mul(2,u(GET_WILLPOWER,%0)),if(getconf(!,POOLMAXVIRTUES),10,add(get_kv(setr(!,get(%0/ST.VIRTUES),virtues),Conviction,0),get_kv(%q<virtues>,Valor,0)))))
 
-&GODHELPER #stdata=privatize(1,switch(1,t(match(Divine Demon Ghost,setr(!,get(%0/ST_SPLAT_X),caste))),u(%1.SPIRIT,%0),strmatch(%q<caste>,FAE),u(%1.RAKSHA,%0,%1),t(match(Solar Lunar Sidereal Abyssal Infernal,%q<caste>)),u(%1.%q<caste>,%0,%1)))
+&GODHELPER #stdata=privatize(1,switch(1,t(match(Divine Demon Ghost,setr(!,get(%0/ST.SPLAT_X),caste))),u(%1.SPIRIT,%0),strmatch(%q<caste>,FAE),u(%1.RAKSHA,%0,%1),t(match(Solar Lunar Sidereal Abyssal Infernal,%q<caste>)),u(%1.%q<caste>,%0,%1)))
 
-&PERSONAL.GOD-BLOODED #stdata=privatize(1,add(u(GODHELPER,%0,PERSONAL.GOD-BLOODED),switch(get_kv(get(%0/ST_MUTATIONS.POSITIVE),Essence Abundance,0),1,3,2,6,4,12,6,16,0)))
+&PERSONAL.GOD-BLOODED #stdata=privatize(1,add(u(GODHELPER,%0,PERSONAL.GOD-BLOODED),switch(get_kv(get(%0/ST.MUTATIONS.POSITIVE),Essence Abundance,0),1,3,2,6,4,12,6,16,0)))
 
 &PERSONAL.GOD-BLOODED.SPIRIT #stdata=add(mul(5,u(GET_ESSENCE,%0)),u(GET_VIRTUES,%0),mul(2,u(GET_WILLPOWER,%0)))
 

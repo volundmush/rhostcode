@@ -1,0 +1,47 @@
+@@ Depends: Channel System
+
+@skip isdbref(tag(setr(1,radio)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No global room set!;@assert/inline isdbref(setr(0,create(Radio System,,t)))=@pemit %#=ERROR: Could not create code object: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom();@parent %q0=#chan_lib}
+
+&CMD.@RADIO #radio=$^(?s)(?\:@|\+)?(rad|radio)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2;@attach %!/SW.[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
+@set #radio/CMD.@RADIO=regexp
+
+&FN.SYS_NAME #radio=Radio
+&CHAN.TYPE #radio=RADIO
+
+&CUSTOM_FORMATTER #radio=RADIOFORMAT
+&CUSTOM_IGNORE #radio=RADIOIGNORE
+
+&CHANNEL_ADMIN #radio=cor(u(parent(%!)/CHANNEL_ADMIN,%0,%1),match(setunion(get(%0/ADMINS),get(%0/OWNER)),objid(%1)))
+
+@@ TODO: Alter this.
+&BASE_FORMAT #radio==<[cname(%1)]>= [if(strlen(%4),%4%B)][parsestr(%2,%0,",",,&[if(strlen(%5),%5 [chr(40)][cname(%3)][chr(41)],cname(%3))])]
+@@ %0 - recipient, %1 - channel dbref, %2 - message, %3 - sender, %4 - title if enabled and set, %5 - altego if enabled and set
+
+&SWITCHES #radio=setunion(u(parent(%!)/SWITCHES),CHOWN)
+
+&CHAN_PARENT #radio=tag(radio_parent)
+
+&INC.CREATE_CHECK #radio=
+
+&SW.CREATE #radio=@attach [parent(%!)]/SW.CREATE;@set %q<chan>=OWNER:%:
+
+&GPFN.RADEMIT #radio=privatize(1,u(FN.CEMIT,%0,%1))
+
+&SW.CHOWN #radio=@attach %!/INC.FIND;@assert/inline u(#chan/LK_OWNER)=@pemit %#=Permission denied.;@attach #inc/GET_PLAYER=%1,t1;@set %q<chan>=OWNER:%q<t1>;@pemit %#=You transferred ownership!;@pemit %q<t1>=%k transferred ownership of Radio Channel '[cname(%q<chan>)]' to you.
+
+&FN.ERR_CHANNEL #radio=privatize(1,if(words(setr(!,setinter(get(%0/CHANNELS.[v(CHAN.TYPE)]),u(FN.CHANNELS)),avail)),if(isobjid(setr(!,namegrab(%q<avail>,%1),chan)),if(setr(!,rademit(%q<chan>,%2,%0),res),1,0[pemit(%0,Permission denied: %q<res>)]),0),0))
+
+&ERR.RADIO #eobj=privatize(1,if(strlen(setr(!,after(%0,.),aplus)),if(strlen(setr(!,objeval(%#,%q<aplus>),feval)),u(#radio/FN.ERR_CHANNEL,%#,stripansi(first(%q<aplus>)),rest(%q<aplus>)),0),0))
+
+@startup #radio=@attach [parent(me)]/STARTUP;@attach #inc/REGISTER_FUNCTIONS
+
+@skip isdbref(tag(setr(1,radio_parent)))={@assert/inline isdbref(tag(chan))=@pemit %#=ERROR: No Channel object set!;@assert/inline isdbref(setr(0,create(Radio Channel Parent,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE NO_COMMAND;@tag/add %q1=%q0;@tel %q0=[tag(stor)];@parent %q0=#chan_parent}
+
+&LK.OWNER #radio_parent=[t(strmatch(v(OWNER),%:))]
+
+@lock/user #radio_parent|TalkLock=LK.MEMBER/1
+@lock/user #radio_parent|ModerateLock=LK.MODERATE/1
+@lock/user #radio_parent|AdminLock=LK.ADMIN/1
+
++help/add Communications/@radio=#radio/HLP_RADIO
+&HLP_RADIO #radio=[ansi(hw,Command Aliases:)] +rad, +radio, @rad, @radio%R%RThe Radio System is a player-run channel system which co-exists with public channels. It shares most of its code with the Public Channels. Its commands/switches are the same as in [ansi(hw,+help @channel)]. Below are the additions/differences.%R%R[ansi(hc,Sending Messages)]%R%RYou can send messages by typing [ansi(hw,.<channel> <message>)], where <channel> is able to partial match by prefix. For example, to speak on a channel named MyRadio, you could use [ansi(hw,.MyRadio hello!)] or [ansi(hw,.my yo!)]%R%R[ansi(hc,Permissions and Membership)]%RThe OWNER of a Radio Channel is considered a super-admin of the channel, as if they were a Wizard.%R[ansi(hw,@rad/chown <channel>=<player>)]%R%TTo transfer ownership.%R%R[ansi(hc,Lock Keys)]%RIn addition to the Channel Special locks...%R[ansi(hw,LK.OWNER/1)]%R%TEvals true if checker is the owner.%R%R[ansi(hc,Default Radio Locks)]%R[iter(TalkLock ModerateLock AdminLock,[ansi(hw,%i0)]: [lock(#radio_parent/user|%i0)],%B,%R)]

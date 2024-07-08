@@ -3,153 +3,153 @@
 
 @skip isdbref(tag(setr(1,gfun)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object installed!;@assert/inline isdbref(setr(0,create(Global Functions,,t)))=@pemit %#=ERROR: Could not create code object: %q0;@set %q0=INDESTRUCTIBLE NO_COMMAND;@tag/add %q1=%q0;@tel %q1=#stor}
 
-&GFUN_STRINGSECS #gfun=ladd(iter(secure(regeditall(%0,(h|m|s),$1%b)),switch(%i0,*ML,mul(%i0,31536000000),*y,mul(%i0,31471200),*C,mul(%i0,3153600000),*Mo,mul(%i0,2628000),*w,mul(%i0,604800),*d,mul(%i0,86400),*h,mul(%i0,3600),*m,mul(%i0,60),*s,add(%i0,0))) 0)
+&GFN.STRINGSECS #gfun=ladd(iter(secure(regeditall(%0,(h|m|s),$1%b)),switch(%i0,*ML,mul(%i0,31536000000),*y,mul(%i0,31471200),*C,mul(%i0,3153600000),*Mo,mul(%i0,2628000),*w,mul(%i0,604800),*d,mul(%i0,86400),*h,mul(%i0,3600),*m,mul(%i0,60),*s,add(%i0,0))) 0)
 
-&GFUN_GTBITTYPE #gfun=gt(bittype(%0),%1)
-&GFUN_GTEBITTYPE #gfun=gte(bittype(%0),%1)
+&GFN.GTBITTYPE #gfun=gt(bittype(%0),%1)
+&GFN.GTEBITTYPE #gfun=gte(bittype(%0),%1)
 
-&GFUN_GET_SWITCHES #gfun=setunion(iter(lnum(7),if(gtebittype(%1,%i0),u(%0/SWITCHES_[if(strlen(%2),%2_)]%i0)),%b,|),u(%0/SWITCHES[if(strlen(%2),%2_)],%1),|,|)
+&GFN.GET_SWITCHES #gfun=setunion(iter(lnum(7),if(gtebittype(%1,%i0),u(%0/SWITCHES.[if(strlen(%2),%2.)]%i0)),%b,|),u(%0/SWITCHES[if(strlen(%2),%2.)],%1),|,|)
 
-&GFUN_SET_KV #gfun=setunion(del_kv(%0,%1),%1~%2,|,|)
-&GFUN_DEL_KV #gfun=setdiff(%0,grab(%0,%1~*,|),|,|)
-&GFUN_GET_KV #gfun=strfirstof(rest(grab(%0,%1~*,|),~),%2)
+&GFN.SET_KV #gfun=setunion(del_kv(%0,%1),%1~%2,|,|)
+&GFN.DEL_KV #gfun=setdiff(%0,grab(%0,%1~*,|),|,|)
+&GFN.GET_KV #gfun=strfirstof(rest(grab(%0,%1~*,|),~),%2)
 
-&GFUN_UCRC32 #gfun=crc32(ucstr(%0))
+&GFN.UCRC32 #gfun=crc32(ucstr(%0))
 
-&GFUN_ATTRIB_SET #gfun=if(writable(%@,%0/%1),set(%0,%1:%2),#-1 WRITE PERMISSION DENIED FOR %0/%1)
+&GFN.ATTRIB_SET #gfun=if(writable(%@,%0/%1),set(%0,%1:%2),#-1 WRITE PERMISSION DENIED FOR %0/%1)
 
-&GFUN_ATTRIB_GET #gfun=if(visiblemux(%@,%0/%1),xget(%0,%1),#-1 READ PERMISSION DENIED FOR %0/%1)
+&GFN.ATTRIB_GET #gfun=if(visiblemux(%@,%0/%1),xget(%0,%1),#-1 READ PERMISSION DENIED FOR %0/%1)
 
-&GFUN_SET_AKV #gfun=attrib_set(%0,%1,set_kv(attrib_get(%0,%1),%2,%3))
+&GFN.SET_AKV #gfun=attrib_set(%0,%1,set_kv(attrib_get(%0,%1),%2,%3))
 
-&GFUN_ITEMIZE #gfun=elist(%0,%2,%1,%4,%3)
+&GFN.ITEMIZE #gfun=elist(%0,%2,%1,%4,%3)
 
-&GFUN_SORTNAME #gfun=sortby(#lambda/[lit([comp(lcstr(name(%0)),lcstr(name(%1)))])],%0,if(strlen(%1),%1,%B),if(strlen(%2),%2,%B))
+&GFN.SORTNAME #gfun=sortby(#lambda/[lit([comp(lcstr(name(%0)),lcstr(name(%1)))])],%0,if(strlen(%1),%1,%B),if(strlen(%2),%2,%B))
 
-&GFUN_GETALIAS #gfun=switch(type(%0),EXIT,if(strfirstof(%1,1),elementsmux(fullname(%0),2,;),after(fullalias(%0),chr(59))),get(%0/ALIAS))
+&GFN.GETALIAS #gfun=switch(type(%0),EXIT,if(strfirstof(%1,1),elementsmux(fullname(%0),2,;),after(fullalias(%0),chr(59))),get(%0/ALIAS))
 @@ %0 - dbref, %1 - full alias if exit.
 
-&GFUN_RANDWORD #gfun=first(shuffle(%0,strfirstof(%1,%b),strfirstof(%1,%b)),strfirstof(%1,%b))
+&GFN.RANDWORD #gfun=first(shuffle(%0,strfirstof(%1,%b),strfirstof(%1,%b)),strfirstof(%1,%b))
 
-&GFUN_NAMEMATCH #gfun=t(match([name(%0)]|[num(%0)]|[objid(%0)][if(%2,|[getalias(%0)])][if(%3,|[u(%0/%3)])],%1,|))
-&GFUN_GRABNAME #gfun=strmatch(name(%0),%1*)
+&GFN.NAMEMATCH #gfun=t(match([name(%0)]|[num(%0)]|[objid(%0)][if(%2,|[getalias(%0)])][if(%3,|[u(%0/%3)])],%1,|))
+&GFN.GRABNAME #gfun=strmatch(name(%0),%1*)
 
-&GFUN_NAMEFIND #gfun=trim(localize(iter(sortname(%0),if(namematch(%i0,%1,%2,%3),%i0[ibreak()]))))
-&GFUN_NAMEGRAB #gfun=trim(localize(ofparse(1,iter(setr(0,sortname(%0)),if(namematch(%i0,%1,%2,%3),%i0[ibreak()])),iter(%q0,if(grabname(%i0,%1),%i0[ibreak()])))))
-&GFUN_NAMEGRABALL #gfun=trim(localize(ofparse(1,iter(setr(0,sortname(%0)),if(namematch(%i0,%1,%2,%3),%i0[ibreak()])),iter(%q0,if(grabname(%i0,%1),%i0),))))
+&GFN.NAMEFIND #gfun=trim(localize(iter(sortname(%0),if(namematch(%i0,%1,%2,%3),%i0[ibreak()]))))
+&GFN.NAMEGRAB #gfun=trim(localize(ofparse(1,iter(setr(0,sortname(%0)),if(namematch(%i0,%1,%2,%3),%i0[ibreak()])),iter(%q0,if(grabname(%i0,%1),%i0[ibreak()])))))
+&GFN.NAMEGRABALL #gfun=trim(localize(ofparse(1,iter(setr(0,sortname(%0)),if(namematch(%i0,%1,%2,%3),%i0[ibreak()])),iter(%q0,if(grabname(%i0,%1),%i0),))))
 @@ %0 - dbrefs. %1 - name. %2 - check aliases. %3 - match against results of this function call
 
-&GFUN_OBJIDS #gfun=squish(iter(%0,if(isdbref(%i0),objid(%i0))))
+&GFN.OBJIDS #gfun=squish(iter(%0,if(isdbref(%i0),objid(%i0))))
 @@ %0 dbref list.
 
-&GFUN_NUMTH #gfun=%0[switch(%0,11,th,12,th,13,th,switch(right(%0,1),1,st,2,nd,3,rd,th))]
+&GFN.NUMTH #gfun=%0[switch(%0,11,th,12,th,13,th,switch(right(%0,1),1,st,2,nd,3,rd,th))]
 
-&GPFUN_ISAPPROVED #gfun=cor(gtebittype(%0,2),if(globalconf(REQAPPROVAL),default(%0/APPROVED,0)))
+&GPFN.ISAPPROVED #gfun=cor(gtebittype(%0,2),if(globalconf(REQAPPROVAL),default(%0/APPROVED,0)))
 
-&FIL_INHERITABLE_ATTR #gfun=!hasflag(%1/%0,NO_INHERIT)
+&FIL.INHERITABLE_ATTR #gfun=!hasflag(%1/%0,NO_INHERIT)
 
-&FUN_INHERITABLE #gfun=filter(#gfun/FIL_INHERITABLE_ATTR,lattrp(%0/%1,%2,%3,%4,%5,%6),%b,%b,%0)
+&FN.INHERITABLE #gfun=filter(#gfun/FIL.INHERITABLE_ATTR,lattrp(%0/%1,%2,%3,%4,%5,%6),%b,%b,%0)
 
-&FUN_LATTR_ANCESTOR #gfun=if(isdbref(#[config(%0)]),u(#gfun/FUN_INHERITABLE,#[config(%0)],%1,%2,%3,%4,%5,%6))
+&FN.LATTR_ANCESTOR #gfun=if(isdbref(#[config(%0)]),u(#gfun/FN.INHERITABLE,#[config(%0)],%1,%2,%3,%4,%5,%6))
 
-&GPFUN_LATTRP_FULL #gfun=setunion(lattrp(%0/%1,%@,%2,%3,%4,%5),if(!hasflag(%0,NO_GOBJ),u(#gfun/FUN_LATTR_ANCESTOR,global_parent_[type(%0)],%1,%@,%2,%3,%4,%5)))
+&GPFN.LATTRP_FULL #gfun=setunion(lattrp(%0/%1,%@,%2,%3,%4,%5),if(!hasflag(%0,NO_GOBJ),u(#gfun/FN.LATTR_ANCESTOR,global_parent_[type(%0)],%1,%@,%2,%3,%4,%5)))
 
-&GFUN_AWHO #gfun=sortname(setunion(iter(account_who(),objid(#[account_owner(%i0)])),))
+&GFN.AWHO #gfun=sortname(setunion(iter(account_who(),objid(#[account_owner(%i0)])),))
 
 &REG_CAPNAMES #gfun=(?:^|(?<=[_\/\-\|\s()\+]))([a-z]+)
 &REG_CAPNAMES2 #gfun=(^|(?<=[(]))(of|the|a|and)
 &REG_CAPNAMES3 #gfun=\b(of|the|a|and)\b
 
-&GPFUN_CAPNAMES #gfun=regeditalli(lcstr(%0),v(REG_CAPNAMES),capstr($1),v(REG_CAPNAMES3),lcstr($0),v(REG_CAPNAMES2),$1[capstr($2)])
+&GPFN.CAPNAMES #gfun=regeditalli(lcstr(%0),v(REG_CAPNAMES),capstr($1),v(REG_CAPNAMES3),lcstr($0),v(REG_CAPNAMES2),$1[capstr($2)])
 
-&GFUN_COMMAFY #gfun=trim(flip(foreach(#lambda/if(mod([lit(%1)],3),[lit(%0)],\\,[lit(%0)]),flip(%0))),b,chr(44))
+&GFN.COMMAFY #gfun=trim(flip(foreach(#lambda/if(mod([lit(%1)],3),[lit(%0)],\\,[lit(%0)]),flip(%0))),b,chr(44))
 
-&GFUN_RYG #gfun=<[if(gt(%0,50),255,round(mul(255,fdiv(mul(%0,2),100)),0))] [if(gte(%0,50),sub(mul(255,2),round(mul(255,fdiv(mul(%0,2),100)),0)),255)] 0>
+&GFN.RYG #gfun=<[if(gt(%0,50),255,round(mul(255,fdiv(mul(%0,2),100)),0))] [if(gte(%0,50),sub(mul(255,2),round(mul(255,fdiv(mul(%0,2),100)),0)),255)] 0>
 
-&GFUN_STRFIRSTOF #gfun=ofparse(5,%0,%1,%2,%3,%4,%5,%6,%7,%8,%9)
+&GFN.STRFIRSTOF #gfun=ofparse(5,%0,%1,%2,%3,%4,%5,%6,%7,%8,%9)
 
-&GFUN_FIRSTOF #gfun=ofparse(1,%0,%1,%2,%3,%4,%5,%6,%7,%8,%9)
+&GFN.FIRSTOF #gfun=ofparse(1,%0,%1,%2,%3,%4,%5,%6,%7,%8,%9)
 
-&GFUN_AGO #gfun=singletime(%0)
-&GFUN_SMALLTIME #gfun=singletime(%0)
-&GFUN_ETIME #gfun=[trim(timefmt($!mML $!2UC $!2uy $!2EMo $!2ww $!2dd $!2Xh $!2Fm $!2Gs,%0))][if(!t(%0),0s)]
+&GFN.AGO #gfun=singletime(%0)
+&GFN.SMALLTIME #gfun=singletime(%0)
+&GFN.ETIME #gfun=[trim(timefmt($!mML $!2UC $!2uy $!2EMo $!2ww $!2dd $!2Xh $!2Fm $!2Gs,%0))][if(!t(%0),0s)]
 
-&GFUN_NCHILDREN #gfun=last(children(%0,l))
+&GFN.NCHILDREN #gfun=last(children(%0,l))
 
-&GFUN_CSECS #gfun=runintz(UTC,convtime(createtime(%0)))
+&GFN.CSECS #gfun=runintz(UTC,convtime(createtime(%0)))
 
-&GFUN_CTIME #gfun=createtime(%0)
+&GFN.CTIME #gfun=createtime(%0)
 
-&GFUN_GETTZ #gfun=strfirstof(accoption(%0,TIMEZONE),get(%0/TIMEZONE),UTC)
+&GFN.GETTZ #gfun=strfirstof(accoption(%0,TIMEZONE),get(%0/TIMEZONE),UTC)
 
-&GFUN_LWHOID #gfun=setunion(lwho(,,1),)
+&GFN.LWHOID #gfun=setunion(lwho(,,1),)
 
-&GFUN_BITWHO #gfun=filter(#lambda/[lit(gte(bittype(%0),%1))],lwhoid(),%b,%b,%0)
+&GFN.BITWHO #gfun=filter(#lambda/[lit(gte(bittype(%0),%1))],lwhoid(),%b,%b,%0)
 
-&GFUN_FILTEROBJID #gfun=filter(#lambda/[lit(isobjid(%0))],%0)
+&GFN.FILTEROBJID #gfun=filter(#lambda/[lit(isobjid(%0))],%0)
 
-&GFUN_FANCYTIME #gfun=if(cor(!strlen(%0),isint(%0)),runintz(if(strlen(%2),if(isdbref(%2),gettz(%2),%2),gettz(%#)),timefmt(switch(%1,2,$a $b $02D $02I:$02M$p $Z,3,$b $02D $02I:$02M$p $Y $Z,day,$b $02D $Y,date,$m/$d/$Y,strfirstof(%3,$b $02D $02H:$02T$P $i)),strfirstof(%0,secs()))),<invalid date>)
+&GFN.FANCYTIME #gfun=if(cor(!strlen(%0),isint(%0)),runintz(if(strlen(%2),if(isdbref(%2),gettz(%2),%2),gettz(%#)),timefmt(switch(%1,2,$a $b $02D $02I:$02M$p $Z,3,$b $02D $02I:$02M$p $Y $Z,day,$b $02D $Y,date,$m/$d/$Y,strfirstof(%3,$b $02D $02H:$02T$P $i)),strfirstof(%0,secs()))),<invalid date>)
 
-&GFUN_BASECONV #gfun=pack(unpack(%0,%1),%2)
+&GFN.BASECONV #gfun=pack(unpack(%0,%1),%2)
 
-&GFUN_DECOMPOSE #gfun=translate(%0,p)
+&GFN.DECOMPOSE #gfun=translate(%0,p)
 
-&GFUN_WIDTH #gfun=78
+&GFN.WIDTH #gfun=78
 
-&GFUN_HAS_MARKUP #gfun=!eq(strlen(%0),strlenraw(%0))
+&GFN.HAS_MARKUP #gfun=!eq(strlen(%0),strlenraw(%0))
 
-&GFUN_CENTER #gfun=printf($^[strfirstof(%1,78)]:%2:s,%0)
+&GFN.CENTER #gfun=printf($^[strfirstof(%1,78)]:%2:s,%0)
 
-&GFUN_HASATTRVAL #gfun=!!$get(%0)
+&GFN.HASATTRVAL #gfun=!!$get(%0)
 
-&GFUN_CONTAINS_CHARACTER #gfun=lmax(iter(%1,strmatch(%0,*%i0*)))
+&GFN.CONTAINS_CHARACTER #gfun=lmax(iter(%1,strmatch(%0,*%i0*)))
 
-&GFUN_PMATCHID #gfun=localize(if(setr(!,pmatch(%0),res),objid(%q<res>),%q<res>))
+&GFN.PMATCHID #gfun=localize(if(setr(!,pmatch(%0),res),objid(%q<res>),%q<res>))
 
-&GFUN_PMATCHREG #gfun=setr(!,pmatch(%0),%1)
+&GFN.PMATCHREG #gfun=setr(!,pmatch(%0),%1)
 
-&GFUN_PARTIAL #gfun=localize(if(setr(0,match(%0,%1,%2)),elementsmux(%0,%q0,%2),grab(%0,%1*,%2)))
+&GFN.PARTIAL #gfun=localize(if(setr(0,match(%0,%1,%2)),elementsmux(%0,%q0,%2),grab(%0,%1*,%2)))
 
-&GPFUN_UPZONE #gfun=if(hastype(%0,ROOM),if(isdbref(lzone(%0)),objid(lzone(%0))),if(isdbref(loc(%0)),if(hasflag(loc(%0),ZONEMASTER),objid(loc(%0)),upzone(loc(%0)))))
+&GPFN.UPZONE #gfun=if(hastype(%0,ROOM),if(isdbref(lzone(%0)),objid(lzone(%0))),if(isdbref(loc(%0)),if(hasflag(loc(%0),ZONEMASTER),objid(loc(%0)),upzone(loc(%0)))))
 @@ %0 - an object to find the next zone 'up' for. This strives to deal with searching up through locations and zone relationships. For example a ZONEMASTER could be in another ZONEMASTER's inventory, or it could be in a ROOM that belongs to the zone.
 
-&GPFUN_UPZONES #gfun=privatize(1,if(cand(isdbref(setr(!,upzone(%0),newzone)),!match(%1,%q<newzone>)),upzones(%q<newzone>,%1 %q<newzone>),trim(%1)))
+&GPFN.UPZONES #gfun=privatize(1,if(cand(isdbref(setr(!,upzone(%0),newzone)),!match(%1,%q<newzone>)),upzones(%q<newzone>,%1 %q<newzone>),trim(%1)))
 @@ %0 - start location object for upzone(). %1 - current chain.
 
-&GFUN_SECS_REMAIN #gfun=max(0,sub(%0,secs()))
+&GFN.SECS_REMAIN #gfun=max(0,sub(%0,secs()))
 
-&GFUN_UMAIL #gfun=elementsmux(mailquick(%0,,1),2)
+&GFN.UMAIL #gfun=elementsmux(mailquick(%0,,1),2)
 
-&GPFUN_GETCONF #conf=default(%0/CONFIG_%1_VALUE,get(%0/CONFIG_%1_DEFAULT))
+&GPFN.GETCONF #gfun=default(%0/CONFIG.%1.VALUE,get(%0/CONFIG.%1.DEFAULT))
 
-&GPFUN_GLOBALCONF #conf=getconf(#conf,%0)
+&GPFN.GLOBALCONF #gfun=getconf(#conf,%0)
 
-&GFUN_ACCOUNT #gfun=privatize(1,if(hastotem(%0,ACCOUNT),objid(%0),if(isdbref(setr(!,get(%0/ACCOUNT),acc)),account(%q<acc>))))
+&GFN.ACCOUNT #gfun=privatize(1,if(hastotem(%0,ACCOUNT),objid(%0),if(isdbref(setr(!,get(%0/_ACCOUNT),acc)),account(%q<acc>))))
 @@ %0 - dbref of player or account.
 
-&GPFUN_ACCOPTION #gfun=privatize(1,if(isdbref(setr(!,account(%0),acc)),default(%q<acc>/OP_%1_VALUE,get(#acc/OP_%1_DEFAULT)),get(#acc/OP_%1_DEFAULT)))
+&GPFN.ACCOPTION #gfun=privatize(1,if(isdbref(setr(!,account(%0),acc)),default(%q<acc>/CONFIG.%1.VALUE,get(#acc/CONFIG.%1.DEFAULT)),get(#acc/CONFIG.%1.DEFAULT)))
 @@ %0 - Dbref of player or account. %1 - Option.
 
-&GPFUN_LASTIDLE #gfun=switch(objeval(%#,conn(%0)),-1,ansi(hx,elementsmux(get(%0/last),2 3)),hideidle(%0))
+&GPFN.LASTIDLE #gfun=switch(objeval(%#,conn(%0)),-1,ansi(hx,elementsmux(get(%0/last),2 3)),hideidle(%0))
 
-&GPFUN_HIDECONN #gfun=switch(objeval(%#,conn(%0)),-1,ansi(hx,Off),ansi(if(ishidden(%0),hx,hg),smalltime(conn(%0),3)))
+&GPFN.HIDECONN #gfun=switch(objeval(%#,conn(%0)),-1,ansi(hx,Off),ansi(if(ishidden(%0),hx,hg),smalltime(conn(%0),3)))
 
-&GPFUN_HIDEIDLE #gfun=switch(objeval(%#,idle(%0)),-1,ansi(hx,Off),ansi(if(ishidden(%0),hx,ryg(round(mul(fdiv(bound(idle(%0),0,3600),3600),100),0))),smalltime(idle(%0),3)))
+&GPFN.HIDEIDLE #gfun=switch(objeval(%#,idle(%0)),-1,ansi(hx,Off),ansi(if(ishidden(%0),hx,ryg(round(mul(fdiv(bound(idle(%0),0,3600),3600),100),0))),smalltime(idle(%0),3)))
 
-&GPFUN_LASTCONN #gfun=switch(objeval(%#,conn(%0)),-1,ansi(hx,elementsmux(get(%0/last),2 3)),hideconn(%0))
+&GPFN.LASTCONN #gfun=switch(objeval(%#,conn(%0)),-1,ansi(hx,elementsmux(get(%0/last),2 3)),hideconn(%0))
 
-&GFUN_NAMELIST #gfun=localize(iter(%0,if(!match(setr(0,pmatch(%i0)),#-1*),%q0,#-1[objeval(%#,u(%1,%i0,#-1))])))
+&GFN.NAMELIST #gfun=localize(iter(%0,if(!match(setr(0,pmatch(%i0)),#-1*),%q0,#-1[objeval(%#,u(%1,%i0,#-1))])))
 
 @@ Header stuff
-&GPFUN_HEADER #gfun=localize(u(HEADER_PREP,%1,HEADER,%2,=,%3)[setq(!,if(strlen(%0),[ansi(%q<bordercolor>,<<)]%B[if(has_markup(%0),%0,ansi(%q<htextcolor>,%0))]%B[ansi(%q<bordercolor>,>>)]),headertext)][u(HEADER_RENDER,HEADER,%0)])
+&GPFN.HEADER #gfun=localize(u(HEADER_PREP,%1,HEADER,%2,=,%3)[setq(!,if(strlen(%0),[ansi(%q<bordercolor>,<<)]%B[if(has_markup(%0),%0,ansi(%q<htextcolor>,%0))]%B[ansi(%q<bordercolor>,>>)]),headertext)][u(HEADER_RENDER,HEADER,%0)])
 
-&GPFUN_SUBHEADER #gfun=localize(u(HEADER_PREP,%1,SUBHEADER,%2,=,%3)[setq(!,if(strlen(%0),[ansi(%q<bordercolor>,<)]%B[if(has_markup(%0),%0,ansi(%q<htextcolor>,%0))]%B[ansi(%q<bordercolor>,>)]),headertext)][u(HEADER_RENDER,SUBHEADER,%0)])
+&GPFN.SUBHEADER #gfun=localize(u(HEADER_PREP,%1,SUBHEADER,%2,=,%3)[setq(!,if(strlen(%0),[ansi(%q<bordercolor>,<)]%B[if(has_markup(%0),%0,ansi(%q<htextcolor>,%0))]%B[ansi(%q<bordercolor>,>)]),headertext)][u(HEADER_RENDER,SUBHEADER,%0)])
 
-&GPFUN_SEPARATOR #gfun=localize(u(HEADER_PREP,%1,SEPARATOR,%2,-,%3)[setq(!,if(strlen(%0),[ansi(%q<bordercolor>,<)]%B[if(has_markup(%0),%0,ansi(%q<htextcolor>,%0))]%B[ansi(%q<bordercolor>,>)]),headertext)][u(HEADER_RENDER,SEPARATOR,%0)])
+&GPFN.SEPARATOR #gfun=localize(u(HEADER_PREP,%1,SEPARATOR,%2,-,%3)[setq(!,if(strlen(%0),[ansi(%q<bordercolor>,<)]%B[if(has_markup(%0),%0,ansi(%q<htextcolor>,%0))]%B[ansi(%q<bordercolor>,>)]),headertext)][u(HEADER_RENDER,SEPARATOR,%0)])
 
-&GPFUN_FOOTER #gfun=localize(u(HEADER_PREP,%1,FOOTER,%2,=,%3)[setq(!,if(strlen(%0),[ansi(%q<bordercolor>,<)]%B[if(has_markup(%0),%0,ansi(%q<htextcolor>,%0))]%B[ansi(%q<bordercolor>,>)]),headertext)][u(HEADER_RENDER,FOOTER,%0)])
+&GPFN.FOOTER #gfun=localize(u(HEADER_PREP,%1,FOOTER,%2,=,%3)[setq(!,if(strlen(%0),[ansi(%q<bordercolor>,<)]%B[if(has_markup(%0),%0,ansi(%q<htextcolor>,%0))]%B[ansi(%q<bordercolor>,>)]),headertext)][u(HEADER_RENDER,FOOTER,%0)])
 
-&GPFUN_CONFOVERRIDE #gfun=strfirstof(accoption(%0,%1),globalconf(%1),%2)
+&GPFN.CONFOVERRIDE #gfun=strfirstof(accoption(%0,%1),globalconf(%1),%2)
 
 &HEADER_PREP #gfun=setq(!,owner(strfirstof(%0,%#)),target)[setq(!,confoverride(%q<target>,BORDER),bordercolor)][setq(!,%4,bordermode)][setq(!,confoverride(%q<target>,HDRTEXT),htextcolor)][setq(!,sub(width(%q<target>),2),width)][setq(!,%2,lwidth)][setq(!,%3,fill)][switch(%q<bordermode>,2,switch(%2,HEADER,setq(!,ansi(%q<bordercolor>,/),start)[setq(!,ansi(%q<bordercolor>,chr(92)),end)],FOOTER,setq(!,ansi(%q<bordercolor>,chr(92)),start)[setq(!,ansi(%q<bordercolor>,/),end)]),1,setq(!,setr(!,ansi(%q<bordercolor>,+),end),start),setq(!,setr(!,ansi(%q<bordercolor>,%q<fill>),end),start))]
 
@@ -159,30 +159,34 @@
 
 @@ Game Stuff
 
-&FIL_HASTOTEM #gfun=hastotem(%1,%0)
+&FIL.HASTOTEM #gfun=hastotem(%1,%0)
 
 &DATA_UPZONE_TOTEMS #gfun=CHARACTER NPC PC ITEM STRUCTURE REGION
 
-&FUN_UPZONE_CATEGORIES #gfun=filter(#gfun/FIL_HASTOTEM,v(DATA_UPZONE_TOTEMS),%b,%b,%1)
+&FN.UPZONE_CATEGORIES #gfun=filter(#gfun/FIL.HASTOTEM,v(DATA_UPZONE_TOTEMS),%b,%b,%1)
 
-&GMFUN_UPZONE_ADD #gfun=if(hasflag(%0,ZONEMASTER),privatize(1,[set(%1,GAME_UPZONE:[objid(%0)])][iter(u(FUN_UPZONE_CATEGORIES,%0,%1),[set(%0,GAME_UPZONE_%i0:[setunion(get(%0/GAME_UPZONE_%i0),objid(%1))])][u(FUN_UPZONE_ADD_TRIGGER_%i0,%0,objid(%1))])]))
+&GMFN.UPZONE_ADD #gfun=if(hasflag(%0,ZONEMASTER),privatize(1,[set(%1,GAME.UPZONE:[objid(%0)])][iter(u(FN.UPZONE_CATEGORIES,%0,%1),[set(%0,GAME.UPZONE_%i0:[setunion(get(%0/GAME.UPZONE_%i0),objid(%1))])][u(FN.UPZONE_ADD_TRIGGER_%i0,%0,objid(%1))])]))
 @@ %0 - zonemaster, %1 - objid
 
-&GMFUN_UPZONE_REMOVE #gfun=privatize(1,if(hasflag(%0,ZONEMASTER),[set(%1,GAME_UPZONE:)][iter(lattr(%0/GAME_UPZONE_*),if(match(setr(!,get(%0/%i0),data),objid(%1)),[set(%0,%i0:[setdiff(%q<data>,objid(%1))])][u(FUN_UPZONE_REMOVE_TRIGGER_[after(%i0,GAME_UPZONE_)],%0,objid(%1))]))]))
+&GMFN.UPZONE_REMOVE #gfun=privatize(1,if(hasflag(%0,ZONEMASTER),[set(%1,GAME.UPZONE:)][iter(lattr(%0/GAME.UPZONE_*),if(match(setr(!,get(%0/%i0),data),objid(%1)),[set(%0,%i0:[setdiff(%q<data>,objid(%1))])][u(FN.UPZONE_REMOVE_TRIGGER_[after(%i0,GAME.UPZONE_)],%0,objid(%1))]))]))
 
-&FUN_HASHRETAIN #gfun=lte(sub(%1,after(%0,~)),10)
+&FN.HASHRETAIN #gfun=lte(sub(%1,after(%0,~)),10)
 
-&GMFUN_SET_UPZONES #gfun=null(privatize(1,[set(%0,GAME_UPZONES:%1)][set(%0,GAME_UPZONES_HASH:[setunion(filter(#gfun/FUN_HASHRETAIN,get(%0/GAME_UPZONES_HASH),|,|,%2),%3~%2)])]))
+&GMFN.SET_UPZONES #gfun=null(privatize(1,[set(%0,GAME.UPZONES:%1)][set(%0,GAME.UPZONES.HASH:[setunion(filter(#gfun/FN.HASHRETAIN,get(%0/GAME.UPZONES.HASH),|,|,%2),%3~%2)])]))
 @@ %0 - target, %1 - zones to set. %2 - msecs, %3 - hash to set.
 
-&GMFUN_GET_UPZONES #gfun=filterobjid(get(%0/GAME_UPZONES))
+&GMFN.GET_UPZONES #gfun=filterobjid(get(%0/GAME.UPZONES))
 
-&GMFUN_GET_UPZONES_HASH #gfun=get(%0/GAME_UPZONES_HASH)
+&GMFN.GET_UPZONES.HASH #gfun=get(%0/GAME.UPZONES.HASH)
 @@ %0 - zonemaster, %1 - objid
 
-&GFUN_GETPARTIAL #gfun=if(!strlen(%0),#-1 MUST ENTER A [strfirstof(%4,%3)],if(setr(!,match(%1,%0,%2),%3),1[setq(!,elementsmux(%1,r(%3),%2),%3)],if(eq(words(setr(!,graball(%1,%0*,%2,%2),%3),%2),1),1,if(gt(words(r(%3),%2),1),#-2 AMBIGUOUS MATCH FOR A [strfirstof(%4,%3)]: [elist(r(%3),,%2)],#-1 NO MATCHED [strfirstof(%4,%3)]. CHOICES ARE: [elist(%1,,%2)]))))
+&GFN.GETPARTIAL #gfun=if(!strlen(%0),#-1 MUST ENTER A [strfirstof(%4,%3)],if(setr(!,match(%1,%0,%2),%3),1[setq(!,elementsmux(%1,r(%3),%2),%3)],if(eq(words(setr(!,graball(%1,%0*,%2,%2),%3),%2),1),1,if(gt(words(r(%3),%2),1),#-2 AMBIGUOUS MATCH FOR A [strfirstof(%4,%3)]: [elist(r(%3),,%2)],#-1 NO MATCHED [strfirstof(%4,%3)]. CHOICES ARE: [elist(%1,,%2)]))))
 @@ %0 - input, %1 - choices, %2 - delimiter, %3 register to load, %4 name of thing to display
 @@ Function returns 0 or 1 for if partial match successful, else returns helpful formatted error.
 
+&GMFN.CAN_ACT #gfun=ofparse(3,1)
+&GMFN.CAN_SEE #gfun=ofparse(3,1)
+
+&GMFN.CAN_MOVE #gfun=ofparse(3,u(GMFN.CAN_ACT,%0),1)
 
 @startup #gfun=@attach #inc/REGISTER_FUNCTIONS
