@@ -1,0 +1,82 @@
+@dolist/inline/delimit | abi~Ability|res~Resource|npc~NPC|com~Complication|ext~Extra|app~Application|copy~Copy={@skip isdbref(tag(setr(1,[before(%d0),~]_info)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No global room set!;@assert/inline isdbref(setr(0,create(after(%d0,~) Info System,,t)))=@pemit %#=ERROR: Could not create code object: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=[globalroom()];@parent %q0=#info_lib}}
+
+&CMD.+ABILITY #abi_info=$^(?s)(?\:\+)?(abi|ability)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?))?(?\:=(.*))?$:@attach %!/DO_INFO
+@set #abi_info/CMD.+ABILITY=regexp
+
+&INFO.ATTR #abi_info=ABI
+&INFO.NAME #abi_info=Ability
+&INFO.PLURAL #abi_info=Abilities
+&INFO.CMD #abi_info=+ABILITY
+
+&CMD.+RESOURCE #res_info=$^(?s)(?\:\+)?(res|resource)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?))?(?\:=(.*))?$:@attach %!/DO_INFO
+@set #res_info/CMD.+RESOURCE=regexp
+
+&INFO.ATTR #res_info=RES
+&INFO.NAME #res_info=Resource
+&INFO.PLURAL #res_info=Resources
+&INFO.CMD #res_info=+RESOURCE
+
+&CMD.+NPC #npc_info=$^(?s)(?\:\+)?(npc)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?))?(?\:=(.*))?$:@attach %!/DO_INFO
+@set #npc_info/CMD.+NPC=regexp
+
+&INFO.ATTR #npc_info=NPC
+&INFO.NAME #npc_info=NPC
+&INFO.PLURAL #npc_info=NPCs
+&INFO.CMD #npc_info=+NPC
+
+&CMD.+COMPLICATION #com_info=$^(?s)(?\:\+)?(com|complication)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?))?(?\:=(.*))?$:@attach %!/DO_INFO
+@set #com_info/CMD.+COMPLICATION=regexp
+
+&INFO.ATTR #com_info=COM
+&INFO.NAME #com_info=Complication
+&INFO.PLURAL #com_info=Complications
+&INFO.CMD #com_info=+COMPLICATION
+
+&CMD.+EXTRA #ext_info=$^(?s)(?\:\+)?(ext|extra)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?))?(?\:=(.*))?$:@attach %!/DO_INFO
+@set #ext_info/CMD.+EXTRA=regexp
+
+&INFO.ATTR #ext_info=EXT
+&INFO.NAME #ext_info=Extra
+&INFO.PLURAL #ext_info=Extra Data
+&INFO.CMD #ext_info=+EXTRA
+
+&CMD.+APPLICATION #app_info=$^(?s)(?\:\+)?(app|application)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?))?(?\:=(.*))?$:@attach %!/DO_INFO
+@set #app_info/CMD.+APPLICATION=regexp
+
+&INFO.ATTR #app_info=APP
+&INFO.NAME #app_info=Application
+&INFO.PLURAL #app_info=Application Info
+&INFO.CMD #app_info=+APPLICATION
+
+&CMD.+COPY #copy_info=$^(?s)(?\:\+)?(cop|copy)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?))?(?\:=(.*))?$:@attach %!/DO_INFO
+@set #copy_info/CMD.+COPY=regexp
+
+&INFO.ATTR #copy_info=COPY
+&INFO.NAME #copy_info=Copy
+&INFO.PLURAL #copy_info=Copied Powers
+&INFO.CMD #copy_info=+COPY
+
+@skip isdbref(tag(setr(1,superpower)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No glogbal room set!;@assert/inline isdbref(setr(0,create(Super Power Sheet Tracker,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=[globalroom()]}
+
+
+&CMD.+LIST #superpower=$^(?s)(?\:\+)?(list|sheet)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?))?(?\:=(.*))?$:th setq(!,%1,family);@attach %!/GET_SWITCH=%2,%q<family>;@attach %!/SW.%q<family>.[strfirstof(%q<switch>,MAIN)]=trim(%3),trim(%4),%5
+@set #superpower/CMD.+LIST=regexp
+
+&SWITCHES.LIST.0 #superpower=FULL
+&SWITCHES.SHEET.0 #superpower=ALL
+
+&ABILITIES #superpower=tag(abi_info)
+&COPY #superpower=tag(copy_info)
+&RESOURCES #superpower=tag(res_info)
+&NPCS #superpower=tag(npc_info)
+&COMPLICATIONS #superpower=tag(npc_info)
+
+&DO_LIST #superpower=@attach #inc/GET_PLAYER=%0,target;th setq(!,,choice);@if strlen(%1)={@attach %!/INC`PARTIAL=%1,ABILITIES|COPY|RESOURCES|NPCS|COMPLICATIONS,|,choice,choice};@dolist/inline/delimit | [strfirstof(%q<choice>,ABILITIES|COPY|RESOURCES|NPCS|COMPLICATIONS)]={th setq(!,u(%d0),obj);@pemit %#=header(cname(%q<target>) [get(%q<obj>/INFO.PLURAL)]][if(%2,%B- Full)]);@dolist/inline/delimit | [u(%q<obj>/FN.LIST_FILENAMES,%q<target>)]={th setq(!,u(%q<obj>/FN.FILENAME,%d0),attr);@pemit %#=separator(%d0 - [fancytime(get_kv(get(%q<target>/%q<attr>.META),DateModified),3)]);@pemit %#=default(%q<target>/%q<attr>.[if(%2,BODY,SUMMARY)],<No [if(%2,main,summary)]%bentry!>)}};@pemit %#=footer()
+
+&SW.LIST.MAIN #superpower=@attach %!/DO_LIST=%0,%1,0
+&SW.LIST.FULL #superpower=@attach %!/DO_LIST=%0,%1,1
+
+&DO_SHEET #superpower=@attach %!/GET_PLAYER=strfirstof(%0,%#),target;@attach #inc/PARTIAL=%1,ABILITIES|COPY|RESOURCES|NPCS|COMPLICATIONS,|,choice,choice;@dolist/inline/delimit | [strfirstof(%q<choice>,ABILITIES|COPY|RESOURCES|NPCS|COMPLICATIONS)]={@pemit %#=header(cname(%q<target>)'s [u(INFO.PLURAL,setr(!,u(%d0),obj))]);@pemit %#=columns(setr(!,u(%q<obj>/FN.LIST_FILENAMES,%q<target>),files),26,3,c,1,1,,%b,,1,|,%B,1)[if(strlen(%q<files>),%R%R[center(setr(!,lcstr(u(%q<obj>/INFO.CMD),cmd)) [cname(%q<target>)]/<entry>,setr(!,floor(fdiv(width(%#),2)),half))][center(%q<com>/all [cname(%q<target>)],%q<half>)])]};@pemit %#=footer(+sheet/all [cname(%q<target>)])
+
+&SW.SHEET.MAIN #superpower=@attach %!/DO_SHEET=%0,%1,0
+&SW.SHEET.ALL #superpower=@attach %!/DO_SHEET=%0,%1,1
