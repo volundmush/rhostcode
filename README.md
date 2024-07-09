@@ -146,7 +146,7 @@ lc_chk=`echo "$1"|tr '[:upper:]' '[:lower:]'`
 5. `@dig Master Room` to create a Master Room/Global Room. Note its dbref.
 6. Edit `objects.conf` to set the `master_room` parameter to this dbref. strip the #. it should be something like `master_room 3`
 7. Type `@reboot` and use `think globalroom()` to confirm that it's working.
-8. Copy and paste the contents of the CORE 01, then CORE 02 files into the game.
+8. Copy and paste the contents of the CORE 01, CORE 02, and CORE 03 files into the game.
 9. `@reboot` again. Confirm that `@function` has the new global functions listed.
 10. Copy and paste the contents of the remaining CORE files in numeric order to install everything else.
 11. edit `objects.conf` again to set the other Utility Object and Global Parent dbrefs just like you did the master room. you can use `@tag/list 0` to review everything that was created.
@@ -190,6 +190,6 @@ Keep in mind that pasting in large files drains a lot of `@cmdquota`. Use `@cmdq
 
 **A:** Yes! I have a [Patreon](https://www.patreon.com/volund) and a [PayPal](https://www.paypal.com/paypalme/volundmush).
 
-**Q:** I want this <cool system> from <other game>. Can you add it?
+**Q:** I want this `<cool system>` from `<other game>`. Can you add it?
 
-**A:** Well that's basically how this whole project came around in the first place. I kept seeing <cool systems> from <other games> and kinda shamelessly copied them. At the time, many of them were proprietary. I try to focus on code that's going to be super popular, super general, and useful to many games though, rather than something that's going to be specific to just one game. The best way to convince me to make something that's part of the main suite is to show me how it's going to be useful to a lot of games.
+**A:** Well that's basically how this whole project came around in the first place. I kept seeing `<cool systems>` from `<other games>` and kinda copied them. At the time, many of them were proprietary. I try to focus on code that's going to be super popular, super general, and useful to many games though, rather than something that's going to be specific to just one game. The best way to convince me to make something that's part of the main suite is to show me how it's going to be useful to a lot of games.

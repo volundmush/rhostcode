@@ -1,3 +1,5 @@
+@@ Greatly benefits from the Faction System.
+
 @skip isdbref(tag(setr(1,bbs_parent)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(BBS Parent,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE NO_COMMAND;@tag/add %q1=%q0;@tel %q0=#stor}
 
 @lock/user #bbs_parent|ReadLock=LK.TRUE/1

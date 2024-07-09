@@ -1,0 +1,14 @@
+@@ DEPENDENCY: Myrddin's MUSH Cron
+@@ https://bitbucket.org/myrddin0/myrddins-mush-code/src/master/Myrddin's%20mushcron/v1.1.0/mushcron.v110.code
+@@ Create it and add the #cron tag to it.
+
+&CRON_TIME_DUMP1 #cron=||||00|
+&CRON_TIME_DUMP2 #cron=||||15|
+&CRON_TIME_DUMP3 #cron=||||30|
+&CRON_TIME_DUMP4 #cron=||||45|
+
+&DUMP #cron=@attach #inc/MSG_ALERT=Dumping database to flatfile...;@dump/flat
+&CRON_JOB_DUMP1 #cron=@attach %!/DUMP
+&CRON_JOB_DUMP2 #cron=@attach %!/DUMP
+&CRON_JOB_DUMP3 #cron=@attach %!/DUMP
+&CRON_JOB_DUMP4 #cron=@attach %!/DUMP

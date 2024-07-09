@@ -112,7 +112,7 @@
 @lock/enter #char_parent=LK.TRUE/0
 
 @@ NPC Parent
-@lock/receive #char_parent=EVAL
+@lock/receive #char_parent=LK.TRUE/0
 @lock/givelock #char_parent=LK.TRUE/0
 
 @@ PC Parent

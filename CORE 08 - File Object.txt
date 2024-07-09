@@ -21,7 +21,9 @@
 
 &FORMAT_COMMAND #fobj=printf($30-s $|45"-s,ansi(hw,elementsmux(%5,1,~)),elementsmux(%5,2,~))
 
-&LOGIN_COMMANDS #fobj=[header(Login Commands)]%R[u(COMMAND_COLUMNS,%0,%1,%2,%3,%4)]%R[subheader()]%R[iter(login <username>=<password>~Login to an account. Eg\, login MyName=mypass|register <username>=<password>~Register a new account. Eg\, register MyName=mypass,u(FORMAT_COMMAND,%0,%1,%2,%3,%4,%i0),|,%R)]%R[separator(Legacy Commands)]%R[iter(create <player> <password>~Create a character directly. Enclose multi-word names in ""|connect <player> <password>~Directly select a character. Enclose multi-word names in ""|WHO~See who's on|QUIT~Quit the game and disconnect.~QUIT,u(FORMAT_COMMAND,%0,%1,%2,%3,%4,%i0),|,%R)]%R[footer()]
+&LOGIN_COMMANDS #fobj=[header(Login Commands)]%R[u(COMMAND_COLUMNS,%0,%1,%2,%3,%4)]%R[subheader()]%R[iter(login <username>=<password>~Login to an account. Eg\, login MyName=mypass|register <username>=<password>~Register a new account. Eg\, register MyName=mypass,u(FORMAT_COMMAND,%0,%1,%2,%3,%4,%i0),|,%R)]%R[separator(Admin Commands)]%R[iter(connect <player> <password>~Directly select a character. Enclose multi-word names in ""|WHO~See who's on|QUIT~Quit the game and disconnect.~QUIT,u(FORMAT_COMMAND,%0,%1,%2,%3,%4,%i0),|,%R)]%R[footer()]
+
+@@ create <player> <password>~Create a character directly. Enclose multi-word names in ""|
 
 &CONNECT_NOTAUTH #fobj=[u(LOGO,%0,%1,%2,%3,%4)]%R[u(LOGIN_COMMANDS,%0,%1,%2,%3,%4)]
 
