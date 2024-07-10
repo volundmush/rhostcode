@@ -139,7 +139,7 @@ lc_chk=`echo "$1"|tr '[:upper:]' '[:lower:]'`
 `./Startmush` to get the game going.
 
 ### Installing and Configuring the Codesuite:
-1. Login to the #1 (God) character via `connect #1 Nyctasia`
+1. Login to the #1 (God) character via `_conn #1 Nyctasia`. you gotta use `_conn` because we have a softcoded connect command!
 2. `@pcreate CodeHolder=<password>` to create a new character to hold the code. `@set *CodeHolder=IMMORTAL INHERIT` to give them full privileges.
 3. For the love of Pete, change the #1 password. `@password Nyctasia=<newpassword>`
 4. Log out of #1 and log in as CodeHolder.

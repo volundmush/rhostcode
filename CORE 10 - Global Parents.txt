@@ -3,7 +3,7 @@
 
 @skip isdbref(tag(setr(1,gm)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(Wizard Doing It,u(#acc/FN.RANDOM_PASSWORD),p)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE GUILDMASTER NO_MODIFY FREE;@power/coun %q0=free_quota tel_anything tel_anywhere;@tag/add %q1=%q0;@tel %q0=[tag(stor)];@limit/dmod %q0=-1}
 
-@dolist/inline/delimit | globobj~Object|globthing~Thing|globexit~Exit|globplayer~Player|globroom~Room=@skip isdbref(tag(setr(1,before(%d0,~))))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object installed!;@assert/inline isdbref(setr(0,create(Global Parent [after(%d0,~)],,t)))=@pemit %#=ERROR: Could not create code object: %q0;@set %q0=VISUAL INDESTRUCTIBLE NO_MODIFY NO_COMMAND;@tag/add %q1=%q0;@tel %q1=[tag(stor)];@chown/preserve %q0=[tag(gm)];@power/coun %q0=FORMATTING;@if !strmatch(%d0,globobj~*)=@parent %q0=[tag(globobj)]}
+@dolist/inline/delimit | globobj~Object|globthing~Thing|globexit~Exit|globplayer~Player|globroom~Room=@skip isdbref(tag(setr(1,before(%d0,~))))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object installed!;@assert/inline isdbref(setr(0,create(Global Parent [after(%d0,~)],,t)))=@pemit %#=ERROR: Could not create code object: %q0;@set %q0=VISUAL INDESTRUCTIBLE NO_MODIFY NO_COMMAND;@tag/add %q1=%q0;@tel %q0=[tag(stor)];@chown/preserve %q0=[tag(gm)];@power/coun %q0=FORMATTING;@if !strmatch(%d0,globobj~*)=@parent %q0=[tag(globobj)]}
 
 @skip isdbref(tag(setr(1,stat_parent)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Stat Parent,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE SAFE NO_COMMAND;@tag/add %q1=%q0;@tel %q0=#stor}
 
@@ -57,6 +57,7 @@
 
 @nameformat #globroom=[header(cname(%!)[if(gtebittype(%#,2),%B\(%!\))],%#,,1)][if(strlen(setr(!,u(FN.INFOBOX),infobox)),%R%q<infobox>)]
 &formatdesc #globroom=[if(strlen(%0),[separator(Description,%#,,1)]%R[wrap(%0,sub(width(%#),2),left,setr(!,ansi(confoverride(%#,BORDER),|),bord),%q<bord>,,)])]
+@set #globroom/formatdesc=default
 
 &FIL.TOTEM #globroom=hastotem(%0,%1)
 
@@ -70,7 +71,7 @@
 
 &FN.FORMATOBJ_ROW_PCS #globroom=if(gtebittype(%#,2),printf($1.&:%3:s $-5s $-|"21s $-|"37s $4s $-3s $1.&:%3:s,%R,num(%0),cname(%0),default(%0/short-desc,???),hideidle(%0),default(%0/RPSTATUS,OOC),%R),printf($1.&:%3:s $-|"33s $-|"29s $4s $-3s $1.&:%3:s,%R,cname(%0),default(%0/short-desc,???),hideidle(%0),default(%0/RPSTATUS,OOC),%R))
 
-&FN.FORMATSECTION #globroom=[separator(%0,%#,,1)]%R[if(hasattrp(%!/FN.FORMATOBJ_COLUMN_%0),u(FN.FORMATOBJ_COLUMN_%0,%0,%1,p%2,%3),u(FN.FORMATOBJ_COLUMN,%0,%1,%2,%3))]%R[trim(iter(%1,if(hasattrp(%!/FN.FORMATOBJ_ROW_%0),u(FN.FORMATOBJ_ROW_%0,%i0,%1,%2,%3),u(FN.FORMATOBJ_ROW,%i0,%1,%2,%3))),b,%r)]
+&FN.FORMATSECTION #globroom=[separator(%0,%#,,1)]%R[if(hasattrp(%!/FN.FORMATOBJ_COLUMN_%0),u(FN.FORMATOBJ_COLUMN_%0,%0,%1,p%2,%3),u(FN.FORMATOBJ_COLUMN,%0,%1,%2,%3))]%R[trim(iter(%1,if(hasattrp(%!/FN.FORMATOBJ_ROW_%0),u(FN.FORMATOBJ_ROW_%0,%i0,%1,%2,%3),u(FN.FORMATOBJ_ROW,%i0,%1,%2,%3)),%b,%r),b,%r)]
 
 &FIL.HASAFTER #globroom=t(words(after(%0,~)))
 

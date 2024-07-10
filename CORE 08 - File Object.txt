@@ -3,7 +3,7 @@
 
 @skip isdbref(tag(setr(1,fobj)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No object storage set!;@assert/inline isdbref(setr(0,create(File Object,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=#stor}
 
-&FAKECOMMANDS #fobj=LOGIN|REGISTER|CHARGEN|PLAY
+&FAKECOMMANDS #fobj=LOGIN|REGISTER|CHARGEN|PLAY|CONN|CONNECT
 
 &RUN_REGISTER #fobj=[if(isdbref(setr(!,#[account_owner(%4)],acc)),You are already logged in.,if(setr(!,u(#acc/FN.VALID_ACCOUNT_NAME,setr(!,trim(before(%1,=)),accname)),res),if(valid(password,setr(!,after(%1,=),pass)),if(isdbref(setr(!,u(#acc/FN.CREATE_ACCOUNT,%q<accname>,%q<pass>),res)),Congratulations! Your account has been created. You may now login with:%R[ansi(hw,login %q<accname>=<password>)]%R%(without the <>%),Error: %q<res>),Error: Bad password. Try another.),Error: %q<res>))]
 
@@ -11,7 +11,18 @@
 
 &RUN_CHARGEN #fobj=[if(isdbref(setr(!,#[account_owner(%4)],acc)),if(setr(!,if(gte(u(#acc/FN.MAX_BITTYPE,%q<acc>),4),1,ofparse(3,if(getconf(#acc,OPENPCREATE),1,#-1 OPEN PCREATE IS DISABLED),if(lt(words(u(#acc/FN.CHARACTERS,%q<acc>)),getconf(#acc,ALTLIMIT)),1,#-1 OVER ALT LIMIT %([getconf(#acc,ALTLIMIT)]%)),1)),res),if(valid(playername,trim(%1)),u(#acc/FN.CREATE_CHARACTER,%q<acc>,trim(%1)),Cannot use that name. [if(isdbref(pmatch(trim(%0))),Already in use.,Contains bad characters.)]),Error: %q<res>),You are not logged in.)]
 
-&RUN_PLAY #fobj=[if(isdbref(setr(!,#[account_owner(%4)],acc)),if(words(setr(!,u(#acc/FN.CHARACTERS,%q<acc>),chars)),if(isobjid(setr(!,namegrab(%q<chars>,trim(%1)),char)),if(account_login(%q<char>,_PASSWORD,%4),Now playing as: [cname(%q<char>)],Login failed. Contact Staff.),Character not found.),You have no characters.),You are not logged in.)]
+&TRY_CONNECT #fobj=if(strlen(%0),if(strlen(%1),if(isdbref(setr(!,pmatch(%0),char)),if(isdbref(get(%q<char>/_ACCOUNT)),if(account_owner(get(%q<char>/_ACCOUNT),_PASSWORD,%2,%1),if(account_login(%q<char>,_PASSWORD,%2),Now playing as: [cname(%q<char>)],Login failed. Contact staff.),Invalid credentials.),Invalid credentials.),Invalid credentials.),Must enter a password.),Must enter a character name.)
+@@ %0 character name, %1 character password, %2 for port.
+
+&RUN_PLAY #fobj=[if(isdbref(setr(!,#[account_owner(%4)],acc)),if(words(setr(!,u(#acc/FN.CHARACTERS,%q<acc>),chars)),if(isobjid(setr(!,namegrab(%q<chars>,trim(%1)),char)),if(account_login(%q<char>,_PASSWORD,%4),Now playing as: [cname(%q<char>)],Login failed. Contact Staff.),Character not found.),You have no characters.),u(TRY_CONNECT,before(%1,=),after(%1,=),%4))]
+
+&REG_CONN1 #fobj="(.+)"\s+(.+)?
+&REG_CONN2 #fobj=(\S+)\s+(.+)?
+
+&RUN_CONNECT #fobj=[if(isdbref(#[account_owner(%4)]),You are already logged in.,if(cor(regmatchi(%1,v(REG_CONN1),-1 0 1),regmatchi(%1,v(REG_CONN2),-1 0 1)),u(TRY_CONNECT,%q0,%q1,%4),Invalid Syntax. It's [ansi(hw,connect <name> <password>)] or [ansi(hw,connect "<multi-word name>" <password>)]))]
+&RUN_CONN #fobj=u(RUN_CONNECT,%0,%1,%2,%3,%4,%5)
+
+@@ You are not logged in.
 
 &CONNECT #fobj=[if(isdbref(setr(!,#[account_owner(%2)],acc)),u(CONNECT_ACCOUNT,%0,%1,%2,%3,%q<acc>),u(CONNECT_NOTAUTH,%0,%1,%2,%3,))]%R
 
@@ -21,7 +32,7 @@
 
 &FORMAT_COMMAND #fobj=printf($30-s $|45"-s,ansi(hw,elementsmux(%5,1,~)),elementsmux(%5,2,~))
 
-&LOGIN_COMMANDS #fobj=[header(Login Commands)]%R[u(COMMAND_COLUMNS,%0,%1,%2,%3,%4)]%R[subheader()]%R[iter(login <username>=<password>~Login to an account. Eg\, login MyName=mypass|register <username>=<password>~Register a new account. Eg\, register MyName=mypass,u(FORMAT_COMMAND,%0,%1,%2,%3,%4,%i0),|,%R)]%R[separator(Admin Commands)]%R[iter(connect <player> <password>~Directly select a character. Enclose multi-word names in ""|WHO~See who's on|QUIT~Quit the game and disconnect.~QUIT,u(FORMAT_COMMAND,%0,%1,%2,%3,%4,%i0),|,%R)]%R[footer()]
+&LOGIN_COMMANDS #fobj=[header(Login Commands)]%R[u(COMMAND_COLUMNS,%0,%1,%2,%3,%4)]%R[subheader()]%R[iter(login <username>=<password>~Login to an account. Eg\, login MyName=mypass|register <username>=<password>~Register a new account. Eg\, register MyName=mypass|play <character>=<password>~Perform account login and start playing as <character> in a single command.|connect <character> <password>~Legacy alternate to play. Enclose multi-word names in "",u(FORMAT_COMMAND,%0,%1,%2,%3,%4,%i0),|,%R)]%R[separator(Other Commands)]%R[iter(WHO~See who's on|QUIT~Quit the game and disconnect.~QUIT,u(FORMAT_COMMAND,%0,%1,%2,%3,%4,%i0),|,%R)]%R[footer()]
 
 @@ create <player> <password>~Create a character directly. Enclose multi-word names in ""|
 

@@ -1,0 +1,17 @@
+@skip isdbref(tag(setr(1,uglobals)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(User Globals,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom()}
+
+&CMD.COLORDEMO #uglobals=$^(?s)(?\:@|\+)?(colordemo)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@pemit %#=header(Color Demo);@pemit %#=iter(lnum(0,255),rjust(%i0,3,0)%b[ansi(%i0,colors(%i0,n))],%B,%R);@pemit %#=footer()
+@set #uglobals/CMD.COLORDEMO=regexp
+
+&CMD.BEEP #uglobals=$^(?s)(?\:@|\+)?(beep)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach #inc/GET_PLAYER=%3,target;@assert/inline hasflag(%q<target>,CONNECTED)=@pemit %#=[cname(%q<target>)] isn't online.;@pemit %q<target>=%k [ansi(hr,seeks your attention! BEEP!)][beep()];@pemit %#=You sent them a beep.
+@set #uglobals/CMD.BEEP=regexp
+
+&RANDFLIPS #uglobals=it landed on its side!|a Demon grabbed it!|it never comes back down...|when it lands, both sides are blank.|Reality Error 404: Coin not found!|it's drawn into a parallel universe!
+
+&CMD.FLIP #uglobals=$^(?s)(?\:@|\+)?(flip)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@if eq(rand(1,100),50)={@remit %l=%k flips a coin... [randextract(v(RANDFLIPS),1,|)]},{@remit %l=%k flips a coin: [ansi(h,if(rand(0,1),heads!,tails!))]}
+@set #uglobals/CMD.FLIP=regexp
+
+&REG_DICE #uglobals=(\d+)d(\d+)
+
+&CMD.DICE #uglobals=$^(?s)(?\:@|\+)?(dice)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@assert/inline regmatchi(%3,v(REG_DICE),-1 0 1)=@pemit %#=That's not a very good dice roll! try +dice 5d20 or +dice 3d10 etc.;@remit %l=%k rolls [ansi(h,%q0d%q1: [dice(%q0,%q1,1)])]
+@set #uglobals/CMD.DICE=regexp

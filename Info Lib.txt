@@ -4,8 +4,8 @@
 
 @skip isdbref(tag(setr(1,info_lib)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No Storage object set!;@assert/inline isdbref(setr(0,create(Info System Library,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE NO_COMMAND;@tag/add %q1=%q0;@tel %q0=[tag(stor)]}
 
-&SWITCHES.1 #info_lib=GET|RENAME|DELETE|SUMMARY
-&SWITCHES.4 #info_lib=LOCK|UNLOCK|LSET
+&SWITCHES.INFO.0 #info_lib=GET|RENAME|DELETE|SUMMARY
+&SWITCHES.INFO.4 #info_lib=LOCK|UNLOCK|LSET
 
 &SW.INFO.MAIN #info_lib=@if strlen(%2)={@attach %!/INC.INFO.SET},{@attach %!/INC.INFO.VIEW}
 
@@ -40,7 +40,7 @@
 
 &INFO.ADMIN #info_lib=gtebittype(%0,4)
 
-&DO_INFO #info_lib=@attach #inc/GET_SWITCH=%2;@attach %!/INC.INFO.TARGET=trim(%3),trim(%4);@attach %!/SW.INFO.[strfirstof(%q<switch>,MAIN)]=trim(%3),trim(%4),%5
+&DO_INFO #info_lib=@attach #inc/GET_SWITCH=%2,INFO;@attach %!/INC.INFO.TARGET=trim(%3),trim(%4);@attach %!/SW.INFO.[strfirstof(%q<switch>,MAIN)]=trim(%3),trim(%4),%5
 
 &INC.INFO.FINDFILE #info_lib=@assert/inline strlen(%0)=@pemit %#=File name empty.;@assert/inline words(setr(!,u(FN.LIST_FILENAMES,%q<target>),files),|)=@pemit %#=No files to choose from.;@attach #inc/PARTIAL=%0,%q<files>,|,filename,info file;@assert/inline hasattr(%q<target>,setr(!,u(FN.FILENAME,%q<filename>),attr).NAME)=@pemit %#=Code error! No attribute for this name. Contact a codewiz.;th setq(!,get(%q<target>/%q<attr>.BODY),contents);th setq(!,get(%q<target>/%q<attr>.META),meta);th setq(!,get(%q<target>/%q<attr>.NAME),fname);
 @@ Use INC.INFO.FINDFILE above to partial match existing files when searching for them.
@@ -58,21 +58,21 @@
 
 &INC.INFO.GETSUM #info_lib=@dolist/inline/nobreak/delimit | %q<filename>={@attach %!/INC.INFO.FINDFILE=%d0;@pemit %#=header(Unformatted Contents of %q<fname> Summary);@pemit %#=%q<contents>;@pemit %#=u(FOOTER)}
 
-&INC.INFO.VIEW #info_lib=@if %q<private>=1,{@assert/inline cor(strmatch(%#,%q<target>),u(INFO.ADMIN,%#))=@pemit %#=%q<sysname> files are private.};@if strlen(%q<filename>)={@attach %!/INC.INFO.VIEW_CONTENTS},{@attach %!/INC.INFO.VIEW_FILES}
+&INC.INFO.VIEW #info_lib=@if %q<private>={@assert/inline cor(strmatch(%#,num(%q<target>)),u(INFO.ADMIN,%#))=@pemit %#=%q<sysname> files are private.};@if strlen(%q<filename>)={@attach %!/INC.INFO.VIEW_CONTENTS},{@attach %!/INC.INFO.VIEW_FILES}
 
 &INC.INFO.VIEW_FILES #info_lib=@pemit %#=header(name(%q<target>)'s [v(INFO.NAME)] Files);@pemit %#=columns(iter(u(FN.LIST_FILENAMES,%q<target>),left(%i0,25)[if(get_kv(setr(!,get(%q<target>/[setr(!,u(FN.FILENAME,%i0),attr)].META),meta),Locked),\([ansi(hw,+)]\))],|,|),26,3,l,1,1,,%b,,1,|,%B,1);@pemit %#=footer(Legend: + - Locked)
 
-&INC.INFO.VIEW_CONTENTS #info_lib=@dolist/inline/nobreak/delimit | %q<filename>={@attach %!/INC.INFO.FINDFILE=%d0;@pemit %#=header(cname(%q<target>)'s +[lcstr(%q<sysname>)]: %q<fname>);@if [cand(%q<summary>,strlen(setr(!,get(%q<target>/%q<attr>.SUMMARY),sum)))]={@pemit %#=%q<sum>;@pemit %#=separator()};@pemit %#=%q<contents>;@if u(INFO.ADMIN,%#)={@pemit %#=separator(Admin Info);@pemit %#=[ansi(h,Last set by:)] [name(get_kv(%q<meta>,Author))] [ansi(h,On:)] [fancytime(get_kv(%q<meta>,DateModified))][if(setr(!,get_kv(%q<meta>,Locked),lockedon),%R[ansi(h,Locked by:)] [name(get_kv(%q<meta>,LockedBy))] [ansi(h,On:)] [fancytime(%q<lockedon>)])]};@pemit %#=subheader(if(%q<lockedon>,Admin Locked File))}
+&INC.INFO.VIEW_CONTENTS #info_lib=@dolist/inline/nobreak/delimit | %q<filename>={@attach %!/INC.INFO.FINDFILE=%d0;@pemit %#=header(cname(%q<target>)'s [lcstr(v(INFO.NAME))]: %q<fname>);@if [strlen(setr(!,get(%q<target>/%q<attr>.SUMMARY),sum))]={@pemit %#=%q<sum>;@pemit %#=separator()};@pemit %#=%q<contents>;@if u(INFO.ADMIN,%#)={@pemit %#=separator(Admin Info);@pemit %#=[ansi(h,Last set by:)] [name(get_kv(%q<meta>,Author))] [ansi(h,On:)] [fancytime(get_kv(%q<meta>,DateModified))][if(setr(!,get_kv(%q<meta>,Locked),lockedon),%R[ansi(h,Locked by:)] [name(get_kv(%q<meta>,LockedBy))] [ansi(h,On:)] [fancytime(%q<lockedon>)])]};@pemit %#=subheader(if(%q<lockedon>,Admin Locked File))}
 
 &SW.INFO.LSET #info_lib=@attach %!/INC.INFO.SET=%0,%1,%2,1
 
 &INC.INFO.SET #info_lib=@attach %!/INC.INFO.SETFILE;@attach %!/INC.INFO.FINISH_SET=%0,%1,%2,%3,0,File,Body
 
-&SW.INFO.SUMMARY #info_lib=@attach %!/INC.INFO.SETFILE;@attach %!/INC.INFO.FINISH_SET=%0,%1,%2,%3,1,Summary,Summary
+&SW.INFO.SUMMARY #info_lib=@attach %!/INC.INFO.FINDFILE=%q<filename>;@attach %!/INC.INFO.FINISH_SET=%0,%1,%2,%3,1,Summary,Summary
 
 &INC.INFO.FINISH_SET #info_lib=@assert/inline strlen(%2)=@pemit %#=%5 field empty. To delete a file use %q<comm>/delete.;@if %3={th setq(!,set_kv(set_kv(%q<meta>,Locked,secs()),LockedBy,%:),meta)};@set %q<target>=%q<attr>.META:[set_kv(set_kv(%q<meta>,Author,%:),DateModified,secs())];@set %q<target>=%q<attr>.%6:%2;@set %q<target>=%q<attr>.NAME:%q<fname>;@attach %!/REPORT=%#,%q<target>,%q<fname>,%6 Set!
 
-&SW.INFO.RENAME #info_lib=@attach %!/INC`TARGET;@attach %!/INC`FINDFILE=%q<filename>;@assert/inline setr(!,u(FN.VALID_FILENAME,%1),res)=@pemit %#=%q<res>;@dolist/inline lattr(%q<target>/%q<attr>.*)={@mvattr %q<target>=%d0,[u(FN.FILENAME,%0)].[elementsmux(%d0,4,.,.)]};@attach %!/REPORT=%#,%q<target>,%q<fname>,Renamed to: %1
+&SW.INFO.RENAME #info_lib=@attach %!/INC`FINDFILE=%q<filename>;@assert/inline setr(!,u(FN.VALID_FILENAME,%1),res)=@pemit %#=%q<res>;@dolist/inline lattr(%q<target>/%q<attr>.*)={@mvattr %q<target>=%d0,[u(FN.FILENAME,%0)].[elementsmux(%d0,4,.,.)]};@attach %!/REPORT=%#,%q<target>,%q<fname>,Renamed to: %1
 
 &DO_REPORT #info_lib=@if strmatch(num(%0),num(%1))={@pemit %0=%2},{@pemit %1=[ansi(hw,By)] [cname(%0)]: %2;@pemit %0=[ansi(hw,For)] [cname(%1)]: %2}
 
