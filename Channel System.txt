@@ -99,8 +99,8 @@
 &SW.MODADD #chan_lib=@attach %!/DO_ADD=%0,%1,u(CHECK,%q<chan>,AdminLock,%#),MODERATORS
 &SW.MODREM #chan_lib=@attach %!/DO_REM=%0,%1,u(CHECK,%q<chan>,AdminLock,%#),MODERATORS
 
-&SW.ADMADD #chan_lib=@attach %!/DO_ADD=%0,%1,u(#chan/LK_OWNER),ADMINS
-&SW.ADMREM #chan_lib=@attach %!/DO_REM=%0,%1,u(#chan/LK_OWNER),ADMINS
+&SW.ADMADD #chan_lib=@attach %!/DO_ADD=%0,%1,u(CHECK,%q<chan>,FakeLock,%#),ADMINS
+&SW.ADMREM #chan_lib=@attach %!/DO_REM=%0,%1,u(CHECK,%q<chan>,FakeLock,%#),ADMINS
 
 &CHANNEL_ADMIN #chan_lib=gtebittype(%0,5)
 

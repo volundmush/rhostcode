@@ -45,7 +45,9 @@
 &INC.INFO.FINDFILE #info_lib=@assert/inline strlen(%0)=@pemit %#=File name empty.;@assert/inline words(setr(!,u(FN.LIST_FILENAMES,%q<target>),files),|)=@pemit %#=No files to choose from.;@attach #inc/PARTIAL=%0,%q<files>,|,filename,info file;@assert/inline hasattr(%q<target>,setr(!,u(FN.FILENAME,%q<filename>),attr).NAME)=@pemit %#=Code error! No attribute for this name. Contact a codewiz.;th setq(!,get(%q<target>/%q<attr>.BODY),contents);th setq(!,get(%q<target>/%q<attr>.META),meta);th setq(!,get(%q<target>/%q<attr>.NAME),fname);
 @@ Use INC.INFO.FINDFILE above to partial match existing files when searching for them.
 
-&INC.INFO.SETFILE #info_lib=@assert/inline setr(!,u(FN.VALID_FILENAME,setr(!,trim(%0),fname)),results)=@pemit %#=%q<results>;@assert/inline valid(attrname,setr(!,u(FN.FILENAME,%q<fname>),attr))=@pemit %#=Code Error: Invalid Attribute name. Try simplifying the name or contact a coder for advice.;th setq(!,get(%q<target>/%q<attr>.BODY),contents)
+&INC.INFO.CANSET #info_lib=
+
+&INC.INFO.SETFILE #info_lib=@attach %!/INC.INFO.CANSET;@assert/inline setr(!,u(FN.VALID_FILENAME,setr(!,trim(%0),fname)),results)=@pemit %#=%q<results>;@assert/inline valid(attrname,setr(!,u(FN.FILENAME,%q<fname>),attr))=@pemit %#=Code Error: Invalid Attribute name. Try simplifying the name or contact a coder for advice.;th setq(!,get(%q<target>/%q<attr>.BODY),contents)
 @@ use INC.INFO.SETFILE when creating/replacing files using info or summary setting/replacing.
 
 &SW.INFO.LOCK #info_lib=@assert/inline strlen(%q<filename>)=@pemit %#=[v(INFO.NAME)] name empty.;@dolist/inline/nobreak/delimit | %q<filename>={@attach %!/INC.INFO.FINDFILE=%d0;@assert/inline t(get_kv(%q<meta>,Locked))=@pemit %#=[v(INFO.NAME)] File '%q<fname>' is already Locked!;@set %q<target>=%q<attr>.META:[set_kv(set_kv(%q<meta>,LockedBy,%:),Locked,secs())];@attach %!/REPORT=%#,%q<target>,%q<fname>,Locked
