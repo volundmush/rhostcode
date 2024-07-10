@@ -32,7 +32,7 @@
 
 &SWITCHES.0 #acc=OPTIONS|RENAME|PASSWORD
 &SWITCHES.4 #acc=BIND|UNBIND|UNBOUND|CREATE|LIST|INACTIVE
-&SWITCHES.5 #acc=CONFIG
+&SWITCHES.5 #acc=CONFIG|NEWPASSWORD
 
 &SW.CONFIG #acc=@attach #inc/CONFIG=%0,trim(%1),%!
 
@@ -113,9 +113,11 @@
 &DO_RENAME #acc=@attach %!/INC.CANMODIFY=%0;@assert/inline setr(!,u(FN.VALID_ACCOUNT_NAME,%1,%0),res)=@pemit %#=ERROR: %q<res>;th setq(!,cname(%0),oldname);@if has_markup(%1)={@name/ansi %0=%1},{@name %0=%1};@pemit %#=Your account has been renamed from '%q<oldname>' to: [cname(%0)].;@attach #inc/MSG_ALERT=Account '%q<oldname>' renamed to: [cname(%0)]
 @@ %0 - target account, %1 - new name
 
-&SW.PASSWORD #acc=@if gtebittype(%#,4)={@attach %!/INC.ACCPLAYER=%0,acc},{@attach %!/INC.ACCOUNT=%#,acc;@assert/inline attrpass(%q<acc>/_PASSWORD,%0,CHK)=@pemit %#=Provided old password does not match.};@attach %!/DO_PASSWORD=%q<acc>,%1
+&SW.PASSWORD #acc=@attach %!/INC.ACCOUNT=%#,acc;@assert/inline attrpass(%q<acc>/_PASSWORD,%0,CHK)=@pemit %#=Provided old password does not match.;@attach %!/DO_PASSWORD=%q<acc>,%1;@pemit %#=Password changed.;@attach #inc/MSG_ALERT=Changed own account password.
 
-&DO_PASSWORD #acc=@attach %!/INC.CANMODIFY=%0;@assert/inline valid(password,%1)=@pemit %#=ERROR: Provided new password is not acceptable. Try another.;th u(FN.SET_PASSWORD,%0,%1);@pemit %#=Password changed.;@if !%q<accsame>={@attach #inc/MSG_ALERT=Changed password of Account: [cname(%0)]}
+&SW.NEWPASSWORD #acc=@attach %!/INC.ACCPLAYER=%0,acc;@attach %!/INC.CANMODIFY=%q<acc>;@attach %!/DO_PASSWORD=%q<acc>,%1;@pemit %#=Password for Account '[cname(%q<acc>)]' changed.;@attach #inc/MSG_ALERT=Changed password for account: [cname(%q<acc>)].;@pemit/list [u(FN.CHARACTERS,%q<acc>)]=Your Account password was changed by %k.
+
+&DO_PASSWORD #acc=@attach %!/INC.CANMODIFY=%0;@assert/inline valid(password,%1)=@pemit %#=ERROR: Provided new password is not acceptable. Try another.;th u(FN.SET_PASSWORD,%0,%1);
 @@ %0 - target account, %1 - new password.
 
 &SW.BIND #acc=@attach #inc/GET_PLAYER=%0,t1;@assert/inline cor(gte(bittype(%#),bittype(%q<t1>)),gtebittype(%#,6))=@pemit %#=Permission denied.;@attach %!/INC.ACCPLAYER=%1,acc;@break/inline strmatch(account(%q<t1>),objid(%q<acc>))=@pemit %#=[cname(%q<t1>)] already belongs to [cname(%q<acc>)].;@if isdbref(setr(!,account(%q<t1>),exist))={@attach %!/DO_UNBIND=%q<exist>,%q<t1>,0};@attach %!/DO_BIND=%q<acc>,%q<t1>;@pemit %#=You added '[cname(%q<t1>)]' to account '[cname(%q<acc>)]'
@@ -151,4 +153,4 @@
 &HLP_ACCOUNT #acc=[ansi(hw,Command Aliases:)] @acc, @account, +acc, +account%R%R[ansi(hc,Player Commands)]%R%R[ansi(hw,@acc)]%R%TDisplay your current account details.%R%R[ansi(hw,@acc/password <old>=<new>)]%R%TChange your password. Use this instead of @password!%R%R[ansi(hw,@acc/rename <new name>)]%R%TRename your account. Supports ansi() colors.%R%R[ansi(hw,@acc/options)]%R%TDisplay available account options and current settings.%R%R[ansi(hw,@acc/options <option>=<value>)]%R%TChange an account option's value.
 
 +shelp/add System/@account=#acc/SHLP_ACCOUNT
-&SHLP_ACCOUNT #acc=[ansi(hc,NOTE:)]%RAny command which expects an <account> can take either a player name (their account will be auto-detected) OR a name beginning with @ to force an account lookup.%R%R[ansi(hc,Administrator Commands)]%R%R[ansi(hw,@account <account>)]%R%TDisplay details about an account.%R%R[ansi(hw,@account/list)]%R%TDisplay all accounts in system.%R%R[ansi(hw,@account/create <name>=<password>)]%R%TCreates a new account.%R%R[ansi(hw,@account/password <account>=<password>)]%R%TSets a new password for the account.%R%R[ansi(hw,@account/rename <account>=<new name>)]%R%TRename an account.%R%R[ansi(hw,@account/bind <character>=<account>)]%R%TMakes <character> a member of <account>.%R%R[ansi(hw,@account/unbind <character>)]%R%TMakes <character> account-less. Not really a good idea.%R%R[ansi(hw,@account/inactive)]%R%TLists accounts that are currently inactive.%R%R[ansi(hw,@account/config)]%R%TDisplays the account system configuration.%R%R[ansi(hw,@account/config <parameter>=<value>)]%R%TSet an account system configuration option.
+&SHLP_ACCOUNT #acc=[ansi(hc,NOTE:)]%RAny command which expects an <account> can take either a player name (their account will be auto-detected) OR a name beginning with @ to force an account lookup.%R%R[ansi(hc,Administrator Commands)]%R%R[ansi(hw,@account <account>)]%R%TDisplay details about an account.%R%R[ansi(hw,@account/list)]%R%TDisplay all accounts in system.%R%R[ansi(hw,@account/create <name>=<password>)]%R%TCreates a new account.%R%R[ansi(hw,@account/newpassword <account>=<password>)]%R%TSets a new password for the account.%R%R[ansi(hw,@account/rename <account>=<new name>)]%R%TRename an account.%R%R[ansi(hw,@account/bind <character>=<account>)]%R%TMakes <character> a member of <account>.%R%R[ansi(hw,@account/unbind <character>)]%R%TMakes <character> account-less. Not really a good idea.%R%R[ansi(hw,@account/inactive)]%R%TLists accounts that are currently inactive.%R%R[ansi(hw,@account/config)]%R%TDisplays the account system configuration.%R%R[ansi(hw,@account/config <parameter>=<value>)]%R%TSet an account system configuration option.

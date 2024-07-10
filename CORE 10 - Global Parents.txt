@@ -5,23 +5,27 @@
 
 @dolist/inline/delimit | globobj~Object|globthing~Thing|globexit~Exit|globplayer~Player|globroom~Room=@skip isdbref(tag(setr(1,before(%d0,~))))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object installed!;@assert/inline isdbref(setr(0,create(Global Parent [after(%d0,~)],,t)))=@pemit %#=ERROR: Could not create code object: %q0;@set %q0=VISUAL INDESTRUCTIBLE NO_MODIFY NO_COMMAND;@tag/add %q1=%q0;@tel %q0=[tag(stor)];@chown/preserve %q0=[tag(gm)];@power/coun %q0=FORMATTING;@if !strmatch(%d0,globobj~*)=@parent %q0=[tag(globobj)]}
 
-@skip isdbref(tag(setr(1,stat_parent)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Stat Parent,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE SAFE NO_COMMAND;@tag/add %q1=%q0;@tel %q0=#stor}
+@skip isdbref(tag(setr(1,stat_parent)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Stat Parent,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE SAFE NO_COMMAND NO_MODIFY VISUAL;@tag/add %q1=%q0;@tel %q0=#stor}
 
-@skip isdbref(tag(setr(1,obj_parent)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Gameobject Parent,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE SAFE NO_COMMAND;@tag/add %q1=%q0;@tel %q0=#stor}
+@skip isdbref(tag(setr(1,reg_parent)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Region Parent,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE SAFE NO_COMMAND NO_MODIFY VISUAL;@tag/add %q1=%q0;@tel %q0=#stor}
 
-@skip isdbref(tag(setr(1,item_parent)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Item Parent,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE SAFE NO_COMMAND;@tag/add %q1=%q0;@tel %q0=#stor;@parent %q0=obj_parent}
+@skip isdbref(tag(setr(1,obj_parent)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Gameobject Parent,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE SAFE NO_COMMAND NO_MODIFY VISUAL;@tag/add %q1=%q0;@tel %q0=#stor}
 
-@skip isdbref(tag(setr(1,equip_parent)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Equipment Parent,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE SAFE NO_COMMAND;@tag/add %q1=%q0;@tel %q0=#stor;@parent %q0=#item_parent}
+@skip isdbref(tag(setr(1,item_parent)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Item Parent,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE SAFE NO_COMMAND NO_MODIFY VISUAL;@tag/add %q1=%q0;@tel %q0=#stor;@parent %q0=obj_parent}
 
-@skip isdbref(tag(setr(1,structure_parent)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Structure Parent,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE SAFE NO_COMMAND;@tag/add %q1=%q0;@tel %q0=#stor;@parent %q0=#obj_parent}
+@skip isdbref(tag(setr(1,equip_parent)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Equipment Parent,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE SAFE NO_COMMAND NO_MODIFY VISUAL;@tag/add %q1=%q0;@tel %q0=#stor;@parent %q0=#item_parent}
 
-@skip isdbref(tag(setr(1,vehicle_parent)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Vehicle Parent,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE SAFE NO_COMMAND;@tag/add %q1=%q0;@tel %q0=#stor;@parent %q0=#structure_parent}
+@skip isdbref(tag(setr(1,structure_parent)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Structure Parent,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE SAFE NO_COMMAND NO_MODIFY VISUAL;@tag/add %q1=%q0;@tel %q0=#stor;@parent %q0=#obj_parent}
 
-@skip isdbref(tag(setr(1,char_parent)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Character Parent,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE SAFE NO_COMMAND;@tag/add %q1=%q0;@tel %q0=#stor;@parent %q0=obj_parent}
+@skip isdbref(tag(setr(1,vehicle_parent)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Vehicle Parent,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE SAFE NO_COMMAND NO_MODIFY VISUAL;@tag/add %q1=%q0;@tel %q0=#stor;@parent %q0=#structure_parent}
 
-@skip isdbref(tag(setr(1,npc_parent)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(NPC Parent,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE SAFE NO_COMMAND;@tag/add %q1=%q0;@tel %q0=#stor;@parent %q0=#char_parent}
+@skip isdbref(tag(setr(1,char_parent)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Character Parent,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE SAFE NO_COMMAND NO_MODIFY VISUAL;@tag/add %q1=%q0;@tel %q0=#stor;@parent %q0=obj_parent}
+
+@skip isdbref(tag(setr(1,npc_parent)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(NPC Parent,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE SAFE NO_COMMAND NO_MODIFY VISUAL;@tag/add %q1=%q0;@tel %q0=#stor;@parent %q0=#char_parent}
 
 @skip isdbref(tag(setr(1,pc_parent)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(PC Parent,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE SAFE NO_COMMAND VISUAL;@tag/add %q1=%q0;@tel %q0=#stor;@parent %q0=#char_parent}
+
+@dolist/inline stat reg obj item equip structure vehicle char npc pc={@chown/preserve [tag(%d0_parent)]=#gm}
 
 @@ General Objects
 &GAME.AENTER #globobj=th setq(!,gm_get_upzones(%#),oldupzones);th setq(!,upzones(%#),newupzones);@skip strmatch(%q<oldupzones>,%q<newupzones>)=@attach %!/HANDLE_ZONECHANGE=%#,revwords(listdiff(%q<oldupzones>,%q<newupzones>)),revwords(listdiff(%q<newupzones>,%q<oldupzones>)),msecs(),crc32(%:,objid(%!),%q<oldupzones>,%q<newupzones>)
@@ -57,7 +61,6 @@
 
 @nameformat #globroom=[header(cname(%!)[if(gtebittype(%#,2),%B\(%!\))],%#,,1)][if(strlen(setr(!,u(FN.INFOBOX),infobox)),%R%q<infobox>)]
 &formatdesc #globroom=[if(strlen(%0),[separator(Description,%#,,1)]%R[wrap(%0,sub(width(%#),2),left,setr(!,ansi(confoverride(%#,BORDER),|),bord),%q<bord>,,)])]
-@set #globroom/formatdesc=default
 
 &FIL.TOTEM #globroom=hastotem(%0,%1)
 
@@ -81,7 +84,7 @@
 
 @conformat #globroom=[if(words(%0),[null(u(FN.FILTERCON,%0))][setq(!,ansi(confoverride(%#,BORDER),|),bord)][setq(!,confoverride(%#,COLUMN),col)][trim(iter(filter(%!/FIL.HASAFTER,iter([v(TOTEM_FILTERS)]|Objects,[before(%i0,~)]~[r(before(%i0,~))],|,|),|,|),%R[u(FN.FORMATSECTION,before(%i0,~),after(%i0,~),%q<col>,%q<bord>)],|,),b,%R)])]
 
-&FN.FORMATEXITS #globroom=separator(%0,%#,,1)%R[printf($1.&:%3:s $-5s $-12s $-55s $1.&:%3:s,%R,ansi(%1,Alias),ansi(%1,Name),ansi(%1,Destination),%R)]%R[trim(iter(%1,printf($1.&:%3:s $-5s $-12s $-55s $1.&:%3:s,%R,getalias(%i0),cname(%i0),cname(loc(%i0)),%R),%B,%R),b,%R)]
+&FN.FORMATEXITS #globroom=separator(%0,%#,,1)%R[printf($1.&:%3:s $-5s $-12s $-55s $1.&:%3:s,%R,ansi(%2,Alias),ansi(%2,Name),ansi(%2,Destination),%R)]%R[trim(iter(%1,printf($1.&:%3:s $-5s $-12s $-55s $1.&:%3:s,%R,getalias(%i0),cname(%i0),cname(loc(%i0)),%R),%B,%R),b,%R)]
 
 @exitformat #globroom=[if(cor(words(%0),words(%2)),[setq(!,confoverride(%#,COLUMN),col)][setq(!,ansi(confoverride(%#,BORDER),|),bord)][if(words(%0),u(FN.FORMATEXITS,Exits,%0,%q<col>,%q<bord>)%R)][if(words(%2),[u(FN.FORMATEXITS,Dark Exits,%2,%q<col>,%q<bord>)]%R)])][footer(,%#,,1)]
 
@@ -118,3 +121,10 @@
 
 @@ PC Parent
 @lock/givelock #char_parent=LK.TRUE/1
+
+@@ Region Parent
+@set #reg_parent=ZONEMASTER
+&LK.BUILDERS #reg_parent=[cor(gtebittype(%#,4),cand(gtebittype(%#,1),t(match(v(BUILDERS),%:))))]
+@lock/ZoneToLock #reg_parent=LK.BUILDERS/1
+@lock/ZoneWizLock #reg_parent=LK.BUILDERS/1
+@set #reg_parent=!ZONEMASTER

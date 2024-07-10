@@ -23,3 +23,10 @@
 &AF_LOOK #hobj=u(SHOW_ERROR)
 
 &HOOK.MUD #hobj=@dolist/inline score kill slay +players use={@hook/ignore %d0};@dolist/inline goto inventory look={@hook/permit %d0;@hook/fail %d0}
+
+&P_@password #hobj=0
+&AF_@password #hobj=[pemit(%#,ansi(hr,ALERT:) @password has no affect on our softcoded login system! Use [ansi(hw,@acc/password <old>=<new>)] to change your password!)]
+
+&B_@newpassword #hobj=[pemit(%#,ansi(hr,ALERT:) @newpassword has no affect on our softcoded login system! It will only work with the hidden [ansi(hw,_conn)] command at the login screen for emergencies! Use [ansi(hw,@account/newpassword <account>=<password>)] to properly reset passwords!)]
+
+&HOOK.PASSWORDS #hobj=@hook/permit @password;@hook/fail @password;@hook/before @newpassword
