@@ -1,0 +1,74 @@
+@skip isdbref(tag(setr(1,scene)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No global room set!;@assert/inline isdbref(setr(0,create(Scene System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=[globalroom()];@parent %q0=#info_lib}
+
+&CMD.SCENE #scene=$^(?s)(scene|scenes|plot|plots|rplog|rplogs|rpchan)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:th setq(!,switch(%1,scene,scene,scenes,scene,plot,plot,plots,plot,rplog,scene,rplogs,scene,rpchan,rpchan),family);@assert/inline isint(setr(!,u(FN.PREPENT,%#),ent))=@pemit %#=Couldn't create Entity: %q<ent>;@attach #inc/GET_SWITCH=%2,%q<family>;@attach %!/SW.%q<family>.[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
+@set #scene/CMD.SCENE=regexp
+
+&SWITCHES.SCENE.0 #scene=CREATE|PITCH|OUTCOME|JOIN|LEAVE|START|PAUSE|FINISH|TAG|UNTAG|SCHEDULE|RESCHEDULE|UNDO|REDO|EDIT|UPCOMING|CALENDAR|OLD|ROLE
+
+&SWITCHES.PLOT.0 #plot=CREATE|ADDRUNNER|REMRUNNER|ADDHELPER|REMHELPER|TITLE|PITCH|OUTCOME|STARTED|ENDED|ADDSCENE|REMSCENE
+
+&Q.PREPENT.SELECT #scene=SELECT entity_id FROM entity WHERE entity_objid=?
+&Q.PREPENT.INSERT #scene=INSERT INTO entity (entity_name,entity_objid) VALUES (?,?)
+&FN.PREPENT #scene=privatize(1,if(isint(setr(!,mysql(PREPENT.SELECT,objid(%0)),res)),%q<res>,if(!strlen(setr(!,mysql(PREPENT.INSERT,name(%0),objid(%0)),res)),u(FN.PREPENT,%0),#-1 SQL ERROR: %q<res>)))
+
+&Q.PREPACT.SELECT #scene=SELECT actor_id FROM actor_view WHERE scene_id=? AND entity_objid=?
+&Q.PREPACT.INSERT #scene=INSERT actor (scene_id,entity_id,actor_date_created) VALUES (?,?,FROM_UNIXTIME(?))
+&FN.PREPACT #scene=privatize(1,if(isint(setr(!,mysql(PREPACT.SELECT,%0,objid(%1)),res)),%q<res>,if(!strlen(setr(!,mysql(PREPACT.INSERT,%0,u(FN.PREPENT,%1),secs()),res)),u(FN.PREPACT,%0,%1),#-1 SQL ERROR: %q<res>)))
+
+&Q.INSERT.POSE #scene=INSERT INTO pose (actrole_id,channel_id,pose_text,pose_date_created) VALUES (!,?,?,?)
+&Q.UPDATE.POSE.FIELD #scene=UPDATE pose SET !=? WHERE pose_id=?
+&INSERT_POSE #scene=@attach #inc/DOSQL=INSERT.POSE/pose_id,%0,%1,stripansi(%2),strfirstof(%3,secs());@attach #inc/DOSQL=UPDATE.POSE.FIELD=pose_text_color,%2,%q<pose_id>
+@@ %0 - actrole (ID or NULL), %1 - channel id, %2 - text, %3 - optional timestamp
+
+&Q.INSERT.SCENE #scene=INSERT INTO scene (scene_title,scene_title_color,scene_pitch,scene_pitch_color,scene_date_created,scene_date_scheduled) VALUES (?,?,?,?,FROM_UNIXTIME(?),FROM_UNIXTIME(?))
+
+&Q.UPDATE.SCENE.FIELD #scene=UPDATE scene SET !=? WHERE scene_id=?
+&Q.UPDATE.SCENE.UNIXTIME #scene=UPDATE scene SET !=FROM_UNIXTIME(?) WHERE scene_id=?
+
+&START_SCENE #scene=@set %l=GAME.SCENE:%0;@attach #inc/DOSQL=UPDATE.SCENE.FIELD,scene_status,1,%0;@attach #inc/DOSQL=UPDATE.SCENE.UNIXTIME=scene_date_started,secs(),%0
+@@ %0 - Scene ID.
+
+&PAUSE_SCENE #scene=@attach #inc/DOSQL=UPDATE.SCENE.FIELD,scene_status,2,%0;
+
+&Q.INSERT.ACTOR #scene=INSERT actor (scene_id,entity_id,actor_type,actor_date_created) VALUES (?,?,?,FROM_UNIXTIME(?))
+
+&MSG_SCENE #scene=@pemit/list [setunion(sql(SELECT entity_objid FROM actor WHERE scene_id=%0 AND actor_type>=%1),%2)]=[ansi(c,SCENE %0:)] [edit(%3,^^^,fancytime(%4,,##))]
+@@ %0 - scene id, %1 - minimum actor_type to display to, %2 - extra objids to send to. %3 - message. %4 timestamp data
+
+&SW.SCENE.CREATE #scene=@assert/inline strlen(%0)=@pemit %#=No name entered!;@attach #inc/DOSQL=INSERT.SCENE/scene,stripansi(%0),%0,stripansi(%1),%1,secs(),strfirstof(%2,secs());@attach #inc/DOSQL=INSERT.ACTOR,%q<scene>,%q<ent>,2,secs();@if strlen(%2)={@dolist/inline [lwho()]={@pemit %d0=[ansi(c,SCENE:)] Scene %q<scene>: '%1' has been Scheduled for [fancytime(%2,,%d0)]}},{@@ TODO: Announce and start local scene!}
+
+&SW.SCENE.SCHEDULE #scene=@attach #inc/VALID.FUTURE=before(%0,/);@attach %!/SW.SCENE.CREATE=after(%0,/),%1,%q<value>
+
+&Q.SELECT.SCENE #scene=SELECT ! FROM scene WHERE scene_id=?
+
+&FINDSCENE #scene=@assert/inline strlen(%0)=@pemit %#=No Scene ID entered!;@assert/inline isint(setr(!,mysql(SELECT.SCENE,scene_id,%0),%1))=@pemit %#=That isn't a valid scene ID!;th setq(!,mysql(SELECT.SCENE,scene_title,%0),sname);
+
+&Q.SELECT.ACTOR.TYPE #scene=SELECT actor_type FROM actor WHERE scene_id=? AND entity_id=?
+
+&CANCONTROL #scene=@assert cor(gtebittype(%#,4),gte(mysql(SELECT.ACTOR.TYPE,%q<scene>,%q<ent>),2))=@pemit %#=Permission denied.;
+
+&STATUSCHANGE #scene=@attach %!/FINDSCENE=%0,scene;@attach %!/CANCONTROL;@attach #inc/DOSQL=UPDATE.SCENE.FIELD,scene_status,%1,%q<scene>;@pemit %#=Scene %q<scene>: '%q<sname>' has been marked: %2!;@attach %!/MSG_SCENE=%q<scene>,0,lcon(%l,LISTEN,,,1),Scene has been %2!
+
+&SW.SCENE.START #scene=@attach %!/STATUSCHANGE=%0,1,started
+&SW.SCENE.PAUSE #scene=@attach %!/STATUSCHANGE=%0,2,paused
+&SW.SCENE.FINISH #scene=@attach %!/STATUSCHANGE=%0,3,finished
+
+&JOINSCENE #scene=
+@@ %0 - scene ID, %1 actor objid
+
+&SW.SCENE.JOIN #scene=@attach %!/FINDSCENE=%0,scene;@assert/inline eq(1,mysql(SELECT.SCENE,scene_status,%q<scene>))=@pemit %#=Scene %q<scene>: '%q<sname>' is not active!;@attach %!/JOINSCENE=%q<scene>,%:
+
+&PITCHCOME #scene=@attach %!/FINDSCENE=%0,scene;@attach %!/CANCONTROL;@assert/inline strlen(%1)=@pemit %#=No %1 entered!;@attach #inc/DOSQL=UPDATE.SCENE.FIELD,scene_%1,stripansi(%2),%q<scene>;@attach #inc/DOSQL=UPDATE.SCENE.FIELD,scene_%1_color,%2,%q<scene>;@attach %!/MSG_SCENE=%0,0,,[capstr(%1)] updated!
+@@ %0 - scene, %1 - field, %2 - text
+
+&SW.SCENE.PITCH #scene=@attach %!/PITCHCOME=%0,pitch,%1;
+&SW.SCENE.OUTCOME #scene=@attach %!/PITCHCOME=%0,outcome,%1;
+
+&SW.SCENE.RESCHEDULE #scene=@attach %!/FINDSCENE=%0,scene;@attach %!/CANCONTROL;@attach #inc/VALID.FUTURE=%1;@attach #inc/DOSQL=UPDATE.SCENE.UNIXTIME,scene_date_scheduled,%q<value>;@attach %!/MSG_SCENE=%0,0,%k rescheduled the Scene to: ^^^,%q<value>
+
+&Q.UPDATE.ACTOR.FIELD #scene=UPDATE actor SET !=? WHERE actor_id=?
+
+&SW.SCENE.TAG #scene=@attach %!/FINDSCENE=%0,scene;@break/inline gt(mysql(SELECT.ACTOR.TYPE,%q<scene>,%q<ent>),0)=@pemit %#=You already tagged Scene %q<scene>: '%q<sname>'!;th setq(!,u(FN.PREPACT,%q<scene>,%:),actor);@attach #inc/DOSQL=UPDATE.ACTOR.FIELD,actor_type,1,%q<actor>;@attach %!/MSG_SCENE=%0,0,%k tagged the scene!
+
+&SW.SCENE.UNTAG #scene=@attach %!/FINDSCENE=%0,scene;@assert/inline eq(mysql(SELECT.ACTOR.TYPE,%q<scene>,%q<ent>),1)=@pemit %#=You haven't tagged Scene %q<scene>: '%q<sname>'!;th setq(!,u(FN.PREPACT,%q<scene>,%:),actor);@attach %!/MSG_SCENE=%0,0,%k un-tagged the scene!;@attach #inc/DOSQL=UPDATE.ACTOR.FIELD,actor_type,0,%q<actor>
+

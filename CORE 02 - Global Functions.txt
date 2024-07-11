@@ -184,6 +184,16 @@
 @@ %0 - input, %1 - choices, %2 - delimiter, %3 register to load, %4 name of thing to display
 @@ Function returns 0 or 1 for if partial match successful, else returns helpful formatted error.
 
+&GFN.MYSQL #gfun=privatize(1,if(hasattrp(%!/Q.%0),sql(setr(!,sqlformat(%0,%1,%2,%3,%4,%5,%6,%7,%8,%9),sqlformat)),#-1 SQL QUERY DATA NOT FOUND))
+
+&GFN.MYSQL2 #gfun=privatize(1,if(hasattrp(%!/Q.%0),sql(setr(!,sqlformat(%0,%1,%2,%3,%4,%5,%6,%7,%8,%9),sqlformat),|,^),#-1 SQL QUERY DATA NOT FOUND))
+
+&REG.SQLFORMAT #gfun=(!|\?)
+
+&GFN.SQLFORMAT_RAW #gfun=privatize(1,edit(edit(regeditalli(%0,get(#gfun/REG.SQLFORMAT),[if(isint(setr(!,v(setr(!,inc(%q<sqlnum>),sqlnum)),sqlset)),%q<sqlset>,switch(setr(!,$0,sqlsub),!,%q<sqlset>,[switch(%q<sqlset>,NULL,NULL,SET_NULL,SET_NULL,'[sqlescape(%q<sqlset>)]')]))]),=NULL,%BIS NULL),=SET_NULL,=NULL))
+
+&GFN.SQLFORMAT #gfun=sqlformat_raw(v(Q.%0),%1,%2,%3,%4,%5,%6,%7,%8,%9)
+
 &GMFN.CAN_ACT #gfun=ofparse(3,1)
 &GMFN.CAN_SEE #gfun=ofparse(3,1)
 
