@@ -157,46 +157,49 @@
 
 @@ HEADER family args: %0 - Title. %1 - Viewer dbref. %2 - left side manual size, %3 - bordermode.
 
-@@ Game Stuff
-
-&FIL.HASTOTEM #gfun=hastotem(%1,%0)
-
-&DATA_UPZONE_TOTEMS #gfun=CHARACTER NPC PC ITEM STRUCTURE REGION
-
-&FN.UPZONE_CATEGORIES #gfun=filter(#gfun/FIL.HASTOTEM,v(DATA_UPZONE_TOTEMS),%b,%b,%1)
-
-&GMFN.UPZONE_ADD #gfun=if(hasflag(%0,ZONEMASTER),privatize(1,[set(%1,GAME.UPZONE:[objid(%0)])][iter(u(FN.UPZONE_CATEGORIES,%0,%1),[set(%0,GAME.UPZONE_%i0:[setunion(get(%0/GAME.UPZONE_%i0),objid(%1))])][u(FN.UPZONE_ADD_TRIGGER_%i0,%0,objid(%1))])]))
-@@ %0 - zonemaster, %1 - objid
-
-&GMFN.UPZONE_REMOVE #gfun=privatize(1,if(hasflag(%0,ZONEMASTER),[set(%1,GAME.UPZONE:)][iter(lattr(%0/GAME.UPZONE_*),if(match(setr(!,get(%0/%i0),data),objid(%1)),[set(%0,%i0:[setdiff(%q<data>,objid(%1))])][u(FN.UPZONE_REMOVE_TRIGGER_[after(%i0,GAME.UPZONE_)],%0,objid(%1))]))]))
-
-&FN.HASHRETAIN #gfun=lte(sub(%1,after(%0,~)),10)
-
-&GMFN.SET_UPZONES #gfun=null(privatize(1,[set(%0,GAME.UPZONES:%1)][set(%0,GAME.UPZONES.HASH:[setunion(filter(#gfun/FN.HASHRETAIN,get(%0/GAME.UPZONES.HASH),|,|,%2),%3~%2)])]))
-@@ %0 - target, %1 - zones to set. %2 - msecs, %3 - hash to set.
-
 &GMFN.GET_UPZONES #gfun=filterobjid(get(%0/GAME.UPZONES))
-
-&GMFN.GET_UPZONES.HASH #gfun=get(%0/GAME.UPZONES.HASH)
-@@ %0 - zonemaster, %1 - objid
 
 &GFN.GETPARTIAL #gfun=if(!strlen(%0),#-1 MUST ENTER A [strfirstof(%4,%3)],if(setr(!,match(%1,%0,%2),%3),1[setq(!,elementsmux(%1,r(%3),%2),%3)],if(eq(words(setr(!,graball(%1,%0*,%2,%2),%3),%2),1),1,if(gt(words(r(%3),%2),1),#-2 AMBIGUOUS MATCH FOR A [strfirstof(%4,%3)]: [elist(r(%3),,%2)],#-1 NO MATCHED [strfirstof(%4,%3)]. CHOICES ARE: [elist(%1,,%2)]))))
 @@ %0 - input, %1 - choices, %2 - delimiter, %3 register to load, %4 name of thing to display
 @@ Function returns 0 or 1 for if partial match successful, else returns helpful formatted error.
 
-&GFN.MYSQL #gfun=privatize(1,if(hasattrp(%!/Q.%0),sql(setr(!,sqlformat(%0,%1,%2,%3,%4,%5,%6,%7,%8,%9),sqlformat)),#-1 SQL QUERY DATA NOT FOUND))
+&GFN.MYSQL #gfun=if(hasattrp(%!/Q.%0),sql(setr(!,sqlformat(%0,%1,%2,%3,%4,%5,%6,%7,%8,%9),sqlformat)),#-1 SQL QUERY DATA NOT FOUND)
 
-&GFN.MYSQL2 #gfun=privatize(1,if(hasattrp(%!/Q.%0),sql(setr(!,sqlformat(%0,%1,%2,%3,%4,%5,%6,%7,%8,%9),sqlformat),|,^),#-1 SQL QUERY DATA NOT FOUND))
+&GFN.MYSQL2 #gfun=if(hasattrp(%!/Q.%0),sql(setr(!,sqlformat(%0,%1,%2,%3,%4,%5,%6,%7,%8,%9),sqlformat),|,^),#-1 SQL QUERY DATA NOT FOUND)
 
 &REG.SQLFORMAT #gfun=(!|\?)
 
-&GFN.SQLFORMAT_RAW #gfun=privatize(1,edit(edit(regeditalli(%0,get(#gfun/REG.SQLFORMAT),[if(isint(setr(!,v(setr(!,inc(%q<sqlnum>),sqlnum)),sqlset)),%q<sqlset>,switch(setr(!,$0,sqlsub),!,%q<sqlset>,[switch(%q<sqlset>,NULL,NULL,SET_NULL,SET_NULL,'[sqlescape(%q<sqlset>)]')]))]),=NULL,%BIS NULL),=SET_NULL,=NULL))
+&GFN.SQLFORMAT_RAW #gfun=privatize(1,edit(edit(regeditalli(%0,get(#gfun/REG.SQLFORMAT),[setq(!,$0,reg)][if(isint(setr(!,v(setr(!,inc(%q<sqlnum>),sqlnum)),arg)),%q<arg>,switch(%q<reg>,!,%q<arg>,switch(%q<arg>,NULL,NULL,SET_NULL,SET_NULL,'[sqlescape(%q<arg>)]')))]),=NULL,%BIS NULL),=SET_NULL,=NULL))
+
 
 &GFN.SQLFORMAT #gfun=sqlformat_raw(v(Q.%0),%1,%2,%3,%4,%5,%6,%7,%8,%9)
+
 
 &GMFN.CAN_ACT #gfun=ofparse(3,1)
 &GMFN.CAN_SEE #gfun=ofparse(3,1)
 
 &GMFN.CAN_MOVE #gfun=ofparse(3,u(GMFN.CAN_ACT,%0),1)
+
+&FN.ONAME_PC #gfun=cname(%0)
+&FN.ONAME_ITEM #gfun=cname(%0)
+&FN.ONAME_NPC #gfun=cname(%0)
+&FN.ONAME_STRUCTURE #gfun=cname(%0)
+&FN.ONAME_REGION #gfun=cname(%0)
+
+&GMFN.ONAME_FOR #gfun=privatize(1,if(cor(strmatch(num(%0),num(%1)),gtebittype(%1,2),!hastype(%1,PLAYER)),cname(%0),if(strlen(setr(!,trim(squish(iter(PC NPC ITEM STRUCTURE REGION,if(cand(hastotem(%0,%i0),strlen(setr(!,u(FN.ONAME_%i0,%0,%1),%q<res>[ibreak()])))),|,|),|),b,|),res)),%q<res>,cname(%0))))
+@@ %0 target, %1 - viewer
+
+&GPFN.ONAME #gfun=oname_for(%0,%#)
+
+&FN.KEYWORDS_PC #gfun=name(%0)
+&FN.KEYWORDS_ITEM #gfun=name(%0)
+&FN.KEYWORDS_NPC #gfun=name(%0)
+&FN.KEYWORDS_STRUCTURE #gfun=name(%0)
+&FN.KEYWORDS_REGION #gfun=name(%0)
+
+&GMFN.KEYWORDS_FOR #gfun=privatize(1,if(cor(strmatch(num(%0),num(%1)),gtebittype(%1,2),!hastype(%1,PLAYER)),name(%0),if(strlen(setr(!,trim(squish(iter(PC NPC ITEM STRUCTURE REGION,if(cand(hastotem(%0,%i0),strlen(setr(!,u(FN.KEYWORDS_%i0,%0,%1),%q<res>[ibreak()])))),|,|),|),b,|),res)),%q<res>,name(%0))))
+@@ %0 target, %1 - viewer
+
+&GPFN.MYONAMEFORENACTOR #gfun=u(FN.ONAME_FOR,%@,%#)
 
 @startup #gfun=@attach #inc/REGISTER_FUNCTIONS

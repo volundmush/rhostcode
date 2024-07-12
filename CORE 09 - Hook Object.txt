@@ -13,16 +13,7 @@
 
 &SHOW_ERROR #hobj=pemit(%#,rest(v(ERROR)))
 
-&P_GOTO #hobj=[if(setr(!,gm_can_move(%#),res),1,0[set(%!,ERROR:%q<res>)])]
-&AF_GOTO #hobj=u(SHOW_ERROR)
 
-&P_INVENTORY #hobj=[if(setr(!,gm_can_see(%#),res),1,0[set(%!,ERROR:%q<res>)])]
-&AF_INVENTORY #hobj=u(SHOW_ERROR)
-
-&P_LOOK #hobj=[if(setr(!,gm_can_see(%#),res),1,0[set(%!,ERROR:%q<res>)])]
-&AF_LOOK #hobj=u(SHOW_ERROR)
-
-&HOOK.MUD #hobj=@dolist/inline score kill slay +players use={@hook/ignore %d0};@dolist/inline goto inventory look={@hook/permit %d0;@hook/fail %d0}
 
 &P_@password #hobj=0
 &AF_@password #hobj=[pemit(%#,ansi(hr,ALERT:) @password has no affect on our softcoded login system! Use [ansi(hw,@acc/password <old>=<new>)] to change your password!)]

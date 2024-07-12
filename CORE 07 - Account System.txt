@@ -1,6 +1,8 @@
 @@ Core
 @cmdquota me=99999
 
+@skip isdbref(tag(setr(1,acc_parent)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Account Parent,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE SAFE NO_COMMAND NO_MODIFY VISUAL;@tag/add %q1=%q0;@tel %q0=[tag(stor)]}
+
 @skip isdbref(tag(setr(1,acc)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(Account System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom()}
 
 &FN.LIST_ACCOUNTS #acc=searchngobjid(TOTEMS=A)
@@ -9,7 +11,7 @@
 &FN.VALID_ACCOUNT_NAME #acc=ofparse(3,if(strlen(%0),1,#-1 ACCOUNT NAMES CANNOT BE EMPTY),if(!strmatch(%0,@*),1,#-1 ACCOUNT NAMES MAY NOT START WITH @),if(lte(strlen(%0),25),1,#-1 ACCOUNT NAMES MUST BE LESS THAN 26 CHARACTERS),if(valid(name,%0),1,#-1 ACCOUNT NAME CONTAINS INVALID FORMATTING),if(words(setdiff(u(FN.FIND_ACCOUNT,stripansi(%0)),objid(%1))),#-1 ACCOUNT NAME IN USE,1))
 @@ %0 - name to check. %1 - A dbref to exclude when checking for duplicates.
 
-&FN.CREATE_ACCOUNT #acc=privatize(1,if(isdbref(setr(0,create(%0,,t))),[null([tel(%q0,%!,1)][totemset(%q0,ACCOUNT)][set(%q0,SAFE)][attrpass(%q0/_PASSWORD,%1,SET)][iter(lattr(%!/FN.CREATE_ACCOUNT_*),ulocal(%!/%i0,%0,%1))])][objid(%q0)],%q0))
+&FN.CREATE_ACCOUNT #acc=privatize(1,if(isdbref(setr(0,create(%0,,t))),[null([parent(%q0,#acc_parent)][tel(%q0,%!,1)][totemset(%q0,ACCOUNT)][set(%q0,SAFE)][attrpass(%q0/_PASSWORD,%1,SET)][iter(lattr(%!/FN.CREATE_ACCOUNT_*),ulocal(%!/%i0,%0,%1))])][objid(%q0)],%q0))
 @@ %0 - name to use. This should already have been validated. %1 - password to set. Also needs to have been used valid(password,%1) on it.
 
 &FN.SET_PASSWORD #acc=null(iter(%0 [u(FN.CHARACTERS,%0)],attrpass(%i0/_PASSWORD,%1,SET)))
@@ -61,28 +63,28 @@
 &CONFIG.INACTIVE.TYPE #acc=DURATION
 
 @@ Options section.
-&SW.OPTIONS #acc=@assert/inline isdbref(setr(!,get(%#/_ACCOUNT),acc))=@pemit %#=You have no account set!;@attach %!/CONFIG=%0,%1,%q<acc>
+&SW.OPTIONS #acc=@assert/inline isdbref(setr(!,get(%#/_ACCOUNT),acc))=@pemit %#=You have no account set!;@attach #inc/CONFIG=%0,%1,%q<acc>
 
-&CONFIG.TIMEZONE.DESC #acc=Timezone to use for accounts.
-&CONFIG.TIMEZONE.DEFAULT #acc=UTC
-&CONFIG.TIMEZONE.TYPE #acc=TIMEZONE
-&CONFIG.TIMEZONE.TRIGGER #acc=@dolist/inline u(FN.CHARACTERS,%2)=@set %d0=TIMEZONE:%1
+&CONFIG.TIMEZONE.DESC #acc_parent=Timezone to use for accounts.
+&CONFIG.TIMEZONE.DEFAULT #acc_parent=UTC
+&CONFIG.TIMEZONE.TYPE #acc_parent=TIMEZONE
+&CONFIG.TIMEZONE.TRIGGER #acc_parent=@dolist/inline u(FN.CHARACTERS,%2)={@set %d0=TIMEZONE:%1}
 
-&CONFIG.SCREENREADER.DESC #acc=Using a screenreader. Simplifies text output. Please contact staff if something isn't screenreader friendly.
-&CONFIG.SCREENREADER.DEFAULT #acc=0
-&CONFIG.SCREENREADER.TYPE #acc=BOOL
+&CONFIG.SCREENREADER.DESC #acc_parent=Using a screenreader. Simplifies text output. Please contact staff if something isn't screenreader friendly.
+&CONFIG.SCREENREADER.DEFAULT #acc_parent=0
+&CONFIG.SCREENREADER.TYPE #acc_parent=BOOL
 
-&CONFIG.BORDER.DESC #acc=Color for header/footer/boxes.
-&CONFIG.BORDER.DEFAULT #acc=
-&CONFIG.BORDER.TYPE #acc=COLOR
+&CONFIG.BORDER.DESC #acc_parent=Color for header/footer/boxes.
+&CONFIG.BORDER.DEFAULT #acc_parent=
+&CONFIG.BORDER.TYPE #acc_parent=COLOR
 
-&CONFIG.HDRSTAR.DESC #acc=Color for header *
-&CONFIG.HDRSTAR.DEFAULT #acc=
-&CONFIG.HDRSTAR.TYPE #acc=COLOR
+&CONFIG.HDRSTAR.DESC #acc_parent=Color for header *
+&CONFIG.HDRSTAR.DEFAULT #acc_parent=
+&CONFIG.HDRSTAR.TYPE #acc_parent=COLOR
 
-&CONFIG.HDRTEXT.DESC #acc=Color for header text
-&CONFIG.HDRTEXT.DEFAULT #acc=
-&CONFIG.HDRTEXT.TYPE #acc=COLOR
+&CONFIG.HDRTEXT.DESC #acc_parent=Color for header text
+&CONFIG.HDRTEXT.DEFAULT #acc_parent=
+&CONFIG.HDRTEXT.TYPE #acc_parent=COLOR
 
 @@ Account management switches.
 

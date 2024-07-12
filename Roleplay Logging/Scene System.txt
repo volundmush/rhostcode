@@ -1,11 +1,11 @@
 @skip isdbref(tag(setr(1,scene)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No global room set!;@assert/inline isdbref(setr(0,create(Scene System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=[globalroom()];@parent %q0=#info_lib}
 
-&CMD.SCENE #scene=$^(?s)(scene|scenes|plot|plots|rplog|rplogs|rpchan)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:th setq(!,switch(%1,scene,scene,scenes,scene,plot,plot,plots,plot,rplog,scene,rplogs,scene,rpchan,rpchan),family);@assert/inline isint(setr(!,u(FN.PREPENT,%#),ent))=@pemit %#=Couldn't create Entity: %q<ent>;@attach #inc/GET_SWITCH=%2,%q<family>;@attach %!/SW.%q<family>.[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
+&CMD.SCENE #scene=$^(?s)(?\:@|\+)?(scene|scenes|plot|plots|rplog|rplogs|rpchan)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:th setq(!,switch(%1,scene,scene,scenes,scene,plot,plot,plots,plot,rplog,scene,rplogs,scene,rpchan,rpchan),family);@assert/inline isint(setr(!,u(FN.PREPENT,%#),ent))=@pemit %#=Couldn't create Entity: %q<ent>;@attach #inc/GET_SWITCH=%2,%q<family>;@attach %!/SW.%q<family>.[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
 @set #scene/CMD.SCENE=regexp
 
-&SWITCHES.SCENE.0 #scene=CREATE|PITCH|OUTCOME|JOIN|LEAVE|START|PAUSE|FINISH|TAG|UNTAG|SCHEDULE|RESCHEDULE|UNDO|REDO|EDIT|UPCOMING|CALENDAR|OLD|ROLE
+&SWITCHES.SCENE.0 #scene=CREATE|TITLE|PITCH|OUTCOME|JOIN|LEAVE|START|PAUSE|FINISH|TAG|UNTAG|SCHEDULE|RESCHEDULE|UNDO|REDO|EDIT|UPCOMING|CALENDAR|OLD|ROLE
 
-&SWITCHES.PLOT.0 #plot=CREATE|ADDRUNNER|REMRUNNER|ADDHELPER|REMHELPER|TITLE|PITCH|OUTCOME|STARTED|ENDED|ADDSCENE|REMSCENE
+&SWITCHES.PLOT.0 #scene=CREATE|ADDRUNNER|REMRUNNER|ADDHELPER|REMHELPER|TITLE|PITCH|OUTCOME|STARTED|ENDED|ADDSCENE|REMSCENE
 
 &Q.PREPENT.SELECT #scene=SELECT entity_id FROM entity WHERE entity_objid=?
 &Q.PREPENT.INSERT #scene=INSERT INTO entity (entity_name,entity_objid) VALUES (?,?)
@@ -61,6 +61,7 @@
 &PITCHCOME #scene=@attach %!/FINDSCENE=%0,scene;@attach %!/CANCONTROL;@assert/inline strlen(%1)=@pemit %#=No %1 entered!;@attach #inc/DOSQL=UPDATE.SCENE.FIELD,scene_%1,stripansi(%2),%q<scene>;@attach #inc/DOSQL=UPDATE.SCENE.FIELD,scene_%1_color,%2,%q<scene>;@attach %!/MSG_SCENE=%0,0,,[capstr(%1)] updated!
 @@ %0 - scene, %1 - field, %2 - text
 
+&SW.SCENE.TITLE #scene=@attach %!/PITCHCOME=%0,title,%1;
 &SW.SCENE.PITCH #scene=@attach %!/PITCHCOME=%0,pitch,%1;
 &SW.SCENE.OUTCOME #scene=@attach %!/PITCHCOME=%0,outcome,%1;
 

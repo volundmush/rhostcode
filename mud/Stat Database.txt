@@ -5,7 +5,7 @@
 &GMFN.STAT #statdb=locate(%!,%0,Ti)
 &GMFN.NEWSTAT #statdb=privatize(1,if(strmatch(setr(0,locate(%!,%0,Ti)),#-1),if(isdbref(setr(0,create(%0,,t))),%q0[null([totemset(%q0,STAT)][parent(%q0,#stat_parent)][set(%q0,INDESTRUCTIBLE SAFE)])],%q0),%q0))
 
-&GMFN.GET_STAT_MODDED #statdb=if(hastotem(%1,STAT),u(%1CACHED,%0))
+&GMFN.GET_STAT_MODDED #statdb=if(hastotem(%1,STAT),u(%1/CACHED,%0))
 &GMFN.GET_STAT_BASE #statdb=if(hastotem(%1,STAT),u(%1/BASE,%0))
 @@ %0 - target, %1 stat dbref.
 

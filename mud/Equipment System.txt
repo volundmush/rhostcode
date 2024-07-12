@@ -2,10 +2,8 @@
 
 @skip isdbref(tag(setr(1,equip)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(Equip Database,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=SAFE INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=[globalroom()]}
 
-&CMD.EQUIP #equip=$^(?s)(equip|wear|wield|hold|unequip|rem|remove)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:th setq(!,switch(%1,equip,equip,wear,equip,hold,equip,wield,equip,unequip,unequip,remove,unequip,rem,unequip),cmdfam);@attach #inc/GET_SWITCH=%2,%q<cmdfam>;@attach %!/SW.%q<cmdfam>_[strfirstof(%q<switch>,MAIN)]=trim(%3),%4,%q<cmdfam>
+&CMD.EQUIP #equip=$^(?s)(equip|wear|wield|hold|unequip|rem|remove)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:th setq(!,switch(%1,equip,equip,wear,equip,hold,equip,wield,equip,unequip,unequip,remove,unequip,rem,unequip),cmdfam);@attach #inc/GET_SWITCH=%2,%q<cmdfam>;@attach %!/SW.%q<cmdfam>.[strfirstof(%q<switch>,MAIN)]=trim(%3),%4,%q<cmdfam>
 @set #equip/CMD.EQUIP=regexp
-
-&TARGET #equip=@assert/inline strlen(%0)=@pemit %#=%2 what?;@assert/inline isdbref(setr(!,objeval(%#,locate(%#,%0,Tia),3),%1))=@pemit %#=[if(strmatch(%q<obj>,#-2*),That was ambiguous.,Item not found.)]
 
 &IN_USE #equip=cor(hastoggle(%0,WIELDED),hastoggle(%0,WORN))
 
@@ -20,9 +18,9 @@
 &PERFORM_REMOVE #equip=th setq(!,get(%0/SLOT),slot);th setq(!,loc(%0),user);@set %q<user>=EQUIP.%q<slot>:;@set %0=SLOT;@toggle %0=!WIELDED !WORN;@skip [t(%1)]={@attach %!/ANNOUNCE_REMOVE=%0,%q<user>,%q<slot>};@skip [t(%2)]={@trigger %0/AREMOVE=%q<user>,%q<slot>}
 @@ %0 - object being removed. %1 - disable remove announces, %2 - disable triggers.
 
-&DO_EQUIP #equip=@attach %!/TARGET=%0,obj,Equip;@break/inline u(IN_USE,%q<obj>)=@pemit %#=[cname(%q<obj>)] is already equipped.;@assert/inline setr(!,udefault(%q<obj>/CAN_EQUIP,1,%#,%q<slot>),res)=@pemit %#=[rest(%q<res>)];@attach %!/PERFORM_EQUIP=%q<obj>,%:,%q<slot>
+&DO_EQUIP #equip=@assert/inline strlen(%0)=@pemit %#=Equip what?;@assert/inline isobjid(setr(!,u(#interact/FN.CHECK,%:,%0,CARRIED),obj))=@pemit %#=You're not carrying that!;@assert/inline setr(!,udefault(%q<obj>/CAN_EQUIP,1,%#,%q<slot>),res)=@pemit %#=[rest(%q<res>)];@attach %!/PERFORM_EQUIP=%q<obj>,%:,%q<slot>
 
-&DO_REMOVE #equip=@attach %!/TARGET=%0,obj,Remove;@assert/inline u(IN_USE,%q<obj>)=@pemit %#=[cname(%q<obj>)] is not equipped.;@assert/inline setr(!,udefault(%q<obj>/CAN_REMOVE,1,%#,%q<slot>),res)=@pemit %#=[rest(%q<res>)];@attach %!/PERFORM_REMOVE=%q<obj>
+&DO_REMOVE #equip=@assert/inline strlen(%0)=@pemit %#=Remove what?;@assert/inline isobjid(setr(!,u(#interact/FN.CHECK,%:,%0,EQUIPPED),obj))=@pemit %#=You're not using that!;@assert/inline setr(!,udefault(%q<obj>/CAN_REMOVE,1,%#,%q<slot>),res)=@pemit %#=[rest(%q<res>)];@attach %!/PERFORM_REMOVE=%q<obj>
 
 &FN.RENDER_SLOT #equip=privatize(1,[ansi(c,<)][ansi(hc,ljust(u(EQ.%1.LIST),20))][ansi(c,>)][if(isobjid(setr(!,get(%0/EQUIP.%1),obj)),%B[cname(%q<obj>)],%BNothing.)])
 @@ %0 - target, %1 - slot
@@ -31,7 +29,7 @@
 
 &LIST_EQUIP #equip=@pemit %#=Equipment Being Worn;@pemit %#=-------------------------------------;@pemit %#=u(FN.RENDER_EQUIP,%:)
 
-&SW.EQUIP_MAIN #equip=@if strlen(%0)={@attach %!/DO_EQUIP},{@attach %!/LIST_EQUIP}
+&SW.EQUIP.MAIN #equip=@if strlen(%0)={@attach %!/DO_EQUIP},{@attach %!/LIST_EQUIP}
 
 &SW.UNQUIP_MAIN #equip=@attach %!/DO_REMOVE
 
