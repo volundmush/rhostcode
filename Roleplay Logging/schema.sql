@@ -6,7 +6,6 @@ CREATE TABLE IF NOT EXISTS entity (
 
 CREATE TABLE IF NOT EXISTS plot (
     plot_id INT AUTO_INCREMENT PRIMARY KEY,
-    plot_name VARCHAR(255) NOT NULL,
     plot_title VARCHAR(255) UNIQUE,
     plot_pitch TEXT NULL,
     plot_pitch_color TEXT NULL,
@@ -17,7 +16,7 @@ CREATE TABLE IF NOT EXISTS plot (
 ) ENGINE=InnoDB;
 
 CREATE OR REPLACE VIEW plot_view AS
-         SELECT plot_id,plot_name,plot_title,plot_pitch,plot_pitch_color,plot_outcome,plot_outcome_color,
+         SELECT plot_id,plot_title,plot_pitch,plot_pitch_color,plot_outcome,plot_outcome_color,
                 plot_date_start,
                 UNIX_TIMESTAMP(plot_date_start) AS plot_date_start_secs,
                 plot_date_end,
@@ -143,7 +142,8 @@ CREATE TABLE IF NOT EXISTS pose (
     pose_is_deleted TINYINT UNSIGNED NOT NULL DEFAULT 0,
     pose_date_created DATETIME NOT NULL,
     pose_text TEXT NOT NULL,
-    pose_text_color TEXT NOT NULL,
+    pose_text_color TEXT NULL,
+    post_text_internal NULL,
     FOREIGN KEY (actrole_id) REFERENCES actrole(actrole_id) ON UPDATE CASCADE ON DELETE CASCADE,
     FOREIGN KEY (channel_id) REFERENCES channel(channel_id) ON UPDATE CASCADE ON DELETE CASCADE,
     INDEX(pose_date_created)
@@ -151,7 +151,7 @@ CREATE TABLE IF NOT EXISTS pose (
 
 CREATE OR REPLACE VIEW pose_view AS
        SELECT p.pose_id,p.pose_is_deleted,p.pose_date_created,UNIX_TIMESTAMP(p.pose_date_created) AS pose_date_created_secs,
-              p.pose_text,p.pose_text_color,
+              p.pose_text,p.pose_text_color,p.pose_text_internal,
               c.channel_id,c.channel_category,c.channel_type,c.channel_name,
               a.*
            FROM pose AS p

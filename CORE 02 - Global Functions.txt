@@ -180,26 +180,61 @@
 
 &GMFN.CAN_MOVE #gfun=ofparse(3,u(GMFN.CAN_ACT,%0),1)
 
-&FN.ONAME_PC #gfun=cname(%0)
-&FN.ONAME_ITEM #gfun=cname(%0)
-&FN.ONAME_NPC #gfun=cname(%0)
-&FN.ONAME_STRUCTURE #gfun=cname(%0)
-&FN.ONAME_REGION #gfun=cname(%0)
+&FN.ONAME.PC #gfun=cname(%0)
+&FN.ONAME.ITEM #gfun=cname(%0)
+&FN.ONAME.NPC #gfun=cname(%0)
+&FN.ONAME.STRUCTURE #gfun=cname(%0)
+&FN.ONAME.REGION #gfun=cname(%0)
 
-&GMFN.ONAME_FOR #gfun=privatize(1,if(cor(strmatch(num(%0),num(%1)),gtebittype(%1,2),!hastype(%1,PLAYER)),cname(%0),if(strlen(setr(!,trim(squish(iter(PC NPC ITEM STRUCTURE REGION,if(cand(hastotem(%0,%i0),strlen(setr(!,u(FN.ONAME_%i0,%0,%1),%q<res>[ibreak()])))),|,|),|),b,|),res)),%q<res>,cname(%0))))
+&GMFN.ONAME_FOR #gfun=privatize(1,if(cor(strmatch(num(%0),num(%1)),gtebittype(%1,2),!hastype(%1,PLAYER)),cname(%0),if(strlen(setr(!,trim(squish(iter(PC NPC ITEM STRUCTURE REGION,if(cand(hastotem(%0,%i0),strlen(setr(!,u(FN.ONAME.%i0,%0,%1)))),%q<res>[ibreak()]),|,|),|),b,|),res)),%q<res>,cname(%0))))
 @@ %0 target, %1 - viewer
 
 &GPFN.ONAME #gfun=oname_for(%0,%#)
 
-&FN.KEYWORDS_PC #gfun=name(%0)
-&FN.KEYWORDS_ITEM #gfun=name(%0)
-&FN.KEYWORDS_NPC #gfun=name(%0)
-&FN.KEYWORDS_STRUCTURE #gfun=name(%0)
-&FN.KEYWORDS_REGION #gfun=name(%0)
+&FN.KEYWORDS.PC #gfun=name(%0)
+&FN.KEYWORDS.ITEM #gfun=name(%0)
+&FN.KEYWORDS.NPC #gfun=name(%0)
+&FN.KEYWORDS.STRUCTURE #gfun=name(%0)
+&FN.KEYWORDS.REGION #gfun=name(%0)
 
-&GMFN.KEYWORDS_FOR #gfun=privatize(1,if(cor(strmatch(num(%0),num(%1)),gtebittype(%1,2),!hastype(%1,PLAYER)),name(%0),if(strlen(setr(!,trim(squish(iter(PC NPC ITEM STRUCTURE REGION,if(cand(hastotem(%0,%i0),strlen(setr(!,u(FN.KEYWORDS_%i0,%0,%1),%q<res>[ibreak()])))),|,|),|),b,|),res)),%q<res>,name(%0))))
+&GMFN.KEYWORDS_FOR #gfun=privatize(1,if(cor(strmatch(num(%0),num(%1)),gtebittype(%1,2),!hastype(%1,PLAYER)),name(%0),if(strlen(setr(!,trim(squish(iter(PC NPC ITEM STRUCTURE REGION,if(cand(hastotem(%0,%i0),strlen(setr(!,u(FN.KEYWORDS.%i0,%0,%1)))),%q<res>[ibreak()]),|,|),|),b,|),res)),%q<res>,name(%0))))
 @@ %0 target, %1 - viewer
+
+@@ Can items, vehicles, and locations have a sex/gender? Sure why not.
+&FN.SEX.PC #gfun=get(%0/SEX)
+&FN.SEX.ITEM #gfun=get(%0/SEX)
+&FN.SEX.NPC #gfun=get(%0/SEX)
+&FN.SEX.STRUCTURE #gfun=get(%0/SEX)
+&FN.SEX.REGION #gfun=get(%0/SEX)
+
+&GMFN.SEX_FOR #gfun=privatize(1,if(cor(strmatch(num(%0),num(%1)),gtebittype(%1,2),!hastype(%1,PLAYER)),get(%0/SEX),if(strlen(setr(!,trim(squish(iter(PC NPC ITEM STRUCTURE REGION,if(cand(hastotem(%0,%i0),strlen(setr(!,u(FN.SEX.%i0,%0,%1)))),%q<res>[ibreak()]),|,|),|),b,|),res)),%q<res>,get(%0/SEX))))
 
 &GPFN.MYONAMEFORENACTOR #gfun=u(FN.ONAME_FOR,%@,%#)
 
+&FMT._UPPER #gfun=privatize(1,if(isupper(setr(!,left(%2,1),first)),if(eq(0,comp(%0,%1)),ucstr(%2),creplace(%2,0,ucstr(%q<first>))),%2))
+
+&FMT.YOU #gfun=u(FMT._UPPER,%0,YOU,if(strmatch(setr(!,num(strfirstof(%1,%3)),target),num(%2)),you,gm_oname_for(%q<target>,%2)))
+
+&FMT.YOUR #gfun=u(FMT._UPPER,%0,YOUR,if(strmatch(setr(!,num(strfirstof(%1,%3)),target),num(%2)),your,gm_oname_for(%q<target>,%2)'s))
+@@ %0 function name, %1 argument, %2 recipient, %3 source
+
+&FMT.FANCYTIME #gfun=fancytime(elements(%1,1,|),elements(%1,2,|),%2)
+&FMT.ART #gfun=u(FMT._UPPER,%0,ART,art(%1))
+&FMT.AN #gfun=u(FMT._UPPER,%0,AN,art(%1,1))
+
+&FMT._GENDER #gfun=u(FMT._UPPER,%0,%1,if(strmatch(setr(!,num(strfirstof(%1,%3)),target),num(%2)),%4,[set(%!,SEX:[gm_sex_for(%q<target>,%2)])][strfunc(%5,%!)]))
+
+&FMT.POSS #gfun=u(FMT._GENDER,%0,POSS,%2,%3,your,poss)
+&FMT.APOSS #gfun=u(FMT._GENDER,%0,APOSS,%2,%3,yours,aposs)
+&FMT.SUBJ #gfun=u(FMT._GENDER,%0,SUBJ,%2,%3,you,subj)
+&FMT.OBJ #gfun=u(FMT._GENDER,%0,OBJ,%2,%3,you,obj)
+
+&FMT.ALT #gfun=u(FMT._UPPER,%0,ALT,elements(%1,if(strmatch(num(%2),num(%3)),1,2),|))
+
+&REG.FORMAT #gfun=(\$(\w+)(?:\((.*)\))?)
+
+&GMFN.FORMAT #gfun=regeditalli(%0,get(#gfun/REG.FORMAT),[setq(!,$0,all)][setq(!,$2,fn)][setq(!,$3,arg)][uldefault(#gfun/FMT.%q<fn>,%q<all>,%q<fn>,%q<arg>,%1,%2,%3,%4,%5,%6,%7,%8,%9)])
+@@ %0 - message, %1 - recipient, %2 - source, %3+, extra arguments?
+
 @startup #gfun=@attach #inc/REGISTER_FUNCTIONS
+

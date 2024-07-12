@@ -20,8 +20,6 @@
 &INSERT_POSE #scene=@attach #inc/DOSQL=INSERT.POSE/pose_id,%0,%1,stripansi(%2),strfirstof(%3,secs());@attach #inc/DOSQL=UPDATE.POSE.FIELD=pose_text_color,%2,%q<pose_id>
 @@ %0 - actrole (ID or NULL), %1 - channel id, %2 - text, %3 - optional timestamp
 
-&Q.INSERT.SCENE #scene=INSERT INTO scene (scene_title,scene_title_color,scene_pitch,scene_pitch_color,scene_date_created,scene_date_scheduled) VALUES (?,?,?,?,FROM_UNIXTIME(?),FROM_UNIXTIME(?))
-
 &Q.UPDATE.SCENE.FIELD #scene=UPDATE scene SET !=? WHERE scene_id=?
 &Q.UPDATE.SCENE.UNIXTIME #scene=UPDATE scene SET !=FROM_UNIXTIME(?) WHERE scene_id=?
 
@@ -32,10 +30,12 @@
 
 &Q.INSERT.ACTOR #scene=INSERT actor (scene_id,entity_id,actor_type,actor_date_created) VALUES (?,?,?,FROM_UNIXTIME(?))
 
-&MSG_SCENE #scene=@pemit/list [setunion(sql(SELECT entity_objid FROM actor WHERE scene_id=%0 AND actor_type>=%1),%2)]=[ansi(c,SCENE %0:)] [edit(%3,^^^,fancytime(%4,,##))]
+&MSG_SCENE #scene=@pemit/list [setunion(sql(SELECT entity_objid FROM actor WHERE scene_id=%0 AND actor_type>=%1),%2)]=[ansi(c,SCENE %0:)] [gm_format(%3,##,%:)]
 @@ %0 - scene id, %1 - minimum actor_type to display to, %2 - extra objids to send to. %3 - message. %4 timestamp data
 
-&SW.SCENE.CREATE #scene=@assert/inline strlen(%0)=@pemit %#=No name entered!;@attach #inc/DOSQL=INSERT.SCENE/scene,stripansi(%0),%0,stripansi(%1),%1,secs(),strfirstof(%2,secs());@attach #inc/DOSQL=INSERT.ACTOR,%q<scene>,%q<ent>,2,secs();@if strlen(%2)={@dolist/inline [lwho()]={@pemit %d0=[ansi(c,SCENE:)] Scene %q<scene>: '%1' has been Scheduled for [fancytime(%2,,%d0)]}},{@@ TODO: Announce and start local scene!}
+&Q.INSERT.SCENE #scene=INSERT INTO scene (scene_title,scene_title_color,scene_date_created,scene_date_scheduled) VALUES (?,?,?,?,FROM_UNIXTIME(?),FROM_UNIXTIME(?))
+
+&SW.SCENE.CREATE #scene=@assert/inline strlen(%0)=@pemit %#=No name entered!;@attach #inc/DOSQL=INSERT.SCENE/scene,stripansi(%0),%0,secs(),strfirstof(%2,secs());@if strlen(%1)={@attach #inc/DOSQL=UPDATE.SCENE.FIELD,scene_pitch,stripansi(%1),%q<scene>;@attach #inc/DOSQL=UPDATE.SCENE.FIELD,scene_pitch_color,%1,%q<scene>};@attach #inc/DOSQL=INSERT.ACTOR,%q<scene>,%q<ent>,2,secs();@if strlen(%2)={@attach %!/MSG_SCENE=%q<scene>,0,lwho(),Scheduled for $fancytime(%2) by $you()},{@@ MUST ANNOUNCE LOCALLY HERE}
 
 &SW.SCENE.SCHEDULE #scene=@attach #inc/VALID.FUTURE=before(%0,/);@attach %!/SW.SCENE.CREATE=after(%0,/),%1,%q<value>
 
