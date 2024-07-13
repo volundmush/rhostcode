@@ -68,9 +68,11 @@ CREATE TABLE IF NOT EXISTS scene (
     scene_date_scheduled DATETIME NULL,
     scene_date_started DATETIME NULL,
     scene_date_finished DATETIME NULL,
+    scene_date_activity DATETIME NULL,
     scene_status TINYINT DEFAULT 0,
     INDEX(scene_date_created),
-    INDEX(scene_date_scheduled,scene_status)
+    INDEX(scene_date_scheduled,scene_status),
+    INDEX(scene_status,scene_date_activity)
 ) ENGINE=InnoDB;
 
 CREATE OR REPLACE VIEW scene_view AS
@@ -116,6 +118,7 @@ CREATE TABLE IF NOT EXISTS actrole (
     actrole_id INT AUTO_INCREMENT PRIMARY KEY,
     actor_id INT NOT NULL,
     actrole_name VARCHAR(255) NOT NULL,
+    UNIQUE(actor_id,actrole_name),
     FOREIGN KEY (actor_id) REFERENCES actor(actor_id) ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
@@ -129,6 +132,7 @@ CREATE TABLE IF NOT EXISTS channel (
     channel_id INT AUTO_INCREMENT PRIMARY KEY,
     scene_id INT NOT NULL,
     channel_name VARCHAR(255) NOT NULL,
+    channel_objid VARCHAR(40) NULL,
     channel_category TINYINT UNSIGNED NOT NULL DEFAULT 0,
     channel_type TINYINT UNSIGNED NOT NULL DEFAULT 0,
     UNIQUE(scene_id,channel_category,channel_type),
@@ -143,7 +147,6 @@ CREATE TABLE IF NOT EXISTS pose (
     pose_date_created DATETIME NOT NULL,
     pose_text TEXT NOT NULL,
     pose_text_color TEXT NULL,
-    post_text_internal NULL,
     FOREIGN KEY (actrole_id) REFERENCES actrole(actrole_id) ON UPDATE CASCADE ON DELETE CASCADE,
     FOREIGN KEY (channel_id) REFERENCES channel(channel_id) ON UPDATE CASCADE ON DELETE CASCADE,
     INDEX(pose_date_created)
@@ -151,7 +154,7 @@ CREATE TABLE IF NOT EXISTS pose (
 
 CREATE OR REPLACE VIEW pose_view AS
        SELECT p.pose_id,p.pose_is_deleted,p.pose_date_created,UNIX_TIMESTAMP(p.pose_date_created) AS pose_date_created_secs,
-              p.pose_text,p.pose_text_color,p.pose_text_internal,
+              p.pose_text,p.pose_text_color,
               c.channel_id,c.channel_category,c.channel_type,c.channel_name,
               a.*
            FROM pose AS p

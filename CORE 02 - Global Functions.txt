@@ -127,7 +127,7 @@
 &GFN.ACCOUNT #gfun=privatize(1,if(hastotem(%0,ACCOUNT),objid(%0),if(isdbref(setr(!,get(%0/_ACCOUNT),acc)),account(%q<acc>))))
 @@ %0 - dbref of player or account.
 
-&GPFN.ACCOPTION #gfun=privatize(1,if(isdbref(setr(!,account(%0),acc)),default(%q<acc>/CONFIG.%1.VALUE,get(#acc/CONFIG.%1.DEFAULT)),get(#acc/CONFIG.%1.DEFAULT)))
+&GPFN.ACCOPTION #gfun=privatize(1,if(isdbref(setr(!,account(%0),acc)),default(%q<acc>/CONFIG.%1.VALUE,get(#acc_parent/CONFIG.%1.DEFAULT)),get(#acc_parent/CONFIG.%1.DEFAULT)))
 @@ %0 - Dbref of player or account. %1 - Option.
 
 &GPFN.LASTIDLE #gfun=switch(objeval(%#,conn(%0)),-1,ansi(hx,elementsmux(get(%0/last),2 3)),hideidle(%0))

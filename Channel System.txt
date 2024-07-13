@@ -130,7 +130,13 @@
 &FN.SEND_MESSAGES #chan_lib=iter(setdiff(get(%0/JOINED),get(%0/CHANINFO.[v(CHAN.GAG)])),u(FN.DISTRIBUTE,%i0,%0,%1,%2,%3,%4))
 @@ %0 - channel objid, %1 - message, %2 - sender
 
-&FN.PREP_SEND #chan_lib=u(FN.SEND_MESSAGES,%0,%1,%2,if(getconf(%0,TITLES),get(%2/CHANINFO.[edit(objid(%0),:,_)].TITLE)),if(getconf(%0,ALTEREGO),get(%2/CHANINFO.[edit(objid(%0),:,_)].ALTEREGO)))
+&Q.SCENE.ACTIVE #chan_lib=SELECT scene_id FROM scene WHERE scene_id=? AND scene_status=1
+
+
+
+&FN.SCENELOG #chan_lib=sort(if(isdbref(tag(scene)),),n)
+
+&FN.PREP_SEND #chan_lib=u(FN.SEND_MESSAGES,%0,%1,%2,if(getconf(%0,TITLES),get(%2/CHANINFO.[edit(objid(%0),:,_)].TITLE)),setr(!,if(getconf(%0,ALTEREGO),get(%2/CHANINFO.[edit(objid(%0),:,_)].ALTEREGO)),alterego),u(FN.SCENELOG,%0,%1,%2,%q<alterego>))
 
 &FN.CEMIT #chan_lib=privatize(1,ofparse(3,if(setr(!,u(FN.FIND_CHANNEL,setr(!,strfirstof(%2,%#),sender),%0),chan),1,%q<chan>),if(u(CHECK,%q<chan>,TalkLock,%q<sender>),1,#-1 PERMISSION DENIED),if(strlen(%1),1,#-1 NOTHING TO SEND),if(!strmatch(%1,|*),1,#-1 EMIT NOT ALLOWED),1[null(u(FN.PREP_SEND,%q<chan>,%1,%q<sender>))]))
 @@ %0 - channel name/dbref, %1 - message, %2 - sender (defaults to %#)

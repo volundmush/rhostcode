@@ -3,9 +3,9 @@
 &CMD.SCENE #scene=$^(?s)(?\:@|\+)?(scene|scenes|plot|plots|rplog|rplogs|rpchan)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:th setq(!,switch(%1,scene,scene,scenes,scene,plot,plot,plots,plot,rplog,scene,rplogs,scene,rpchan,rpchan),family);@assert/inline isint(setr(!,u(FN.PREPENT,%#),ent))=@pemit %#=Couldn't create Entity: %q<ent>;@attach #inc/GET_SWITCH=%2,%q<family>;@attach %!/SW.%q<family>.[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
 @set #scene/CMD.SCENE=regexp
 
-&SWITCHES.SCENE.0 #scene=CREATE|TITLE|PITCH|OUTCOME|JOIN|LEAVE|START|PAUSE|FINISH|TAG|UNTAG|SCHEDULE|RESCHEDULE|UNDO|REDO|EDIT|UPCOMING|CALENDAR|OLD|ROLE
 
-&SWITCHES.PLOT.0 #scene=CREATE|ADDRUNNER|REMRUNNER|ADDHELPER|REMHELPER|TITLE|PITCH|OUTCOME|STARTED|ENDED|ADDSCENE|REMSCENE
+@@ SCENE section
+&SWITCHES.SCENE.0 #scene=CREATE|TITLE|PITCH|OUTCOME|JOIN|LEAVE|START|PAUSE|FINISH|TAG|UNTAG|SCHEDULE|RESCHEDULE|UNDO|REDO|EDIT|UPCOMING|CALENDAR|OLD|ROLE
 
 &Q.PREPENT.SELECT #scene=SELECT entity_id FROM entity WHERE entity_objid=?
 &Q.PREPENT.INSERT #scene=INSERT INTO entity (entity_name,entity_objid) VALUES (?,?)
@@ -72,4 +72,65 @@
 &SW.SCENE.TAG #scene=@attach %!/FINDSCENE=%0,scene;@break/inline gt(mysql(SELECT.ACTOR.TYPE,%q<scene>,%q<ent>),0)=@pemit %#=You already tagged Scene %q<scene>: '%q<sname>'!;th setq(!,u(FN.PREPACT,%q<scene>,%:),actor);@attach #inc/DOSQL=UPDATE.ACTOR.FIELD,actor_type,1,%q<actor>;@attach %!/MSG_SCENE=%0,0,%k tagged the scene!
 
 &SW.SCENE.UNTAG #scene=@attach %!/FINDSCENE=%0,scene;@assert/inline eq(mysql(SELECT.ACTOR.TYPE,%q<scene>,%q<ent>),1)=@pemit %#=You haven't tagged Scene %q<scene>: '%q<sname>'!;th setq(!,u(FN.PREPACT,%q<scene>,%:),actor);@attach %!/MSG_SCENE=%0,0,%k un-tagged the scene!;@attach #inc/DOSQL=UPDATE.ACTOR.FIELD,actor_type,0,%q<actor>
+
+@@ PLOT Section
+&SWITCHES.PLOT.0 #scene=CREATE|ADDRUNNER|REMRUNNER|ADDHELPER|REMHELPER|TITLE|PITCH|OUTCOME|STARTED|ENDED|ADDSCENE|REMSCENE
+
+@@ RPCHAN
+&SWITCHES.RPCHAN.0 #scene=ADDRADIO|ADDCHANNEL|REMCHANNEL|REMRADIO
+
+&SW.RPCHAN.ADDRADIO #scene=
+&SW.RPCHAN.ADDCHANNEL #scene=
+&SW.RPCHAN.REMRADIO #scene=
+&SW.RPCHAN.REMCHANNEL #scene=
+
+@@ Pose Recording
+
+&I_@EMIT #hobj=[not(isdbref(tag(scene)))]
+&I_SAY #hobj=[not(isdbref(tag(scene)))]
+&I_POSE #hobj=[not(isdbref(tag(scene)))]
+&I_P #hobj=[not(isdbref(tag(scene)))]
+&I_S #hobj=[not(isdbref(tag(scene)))]
+
+&HOOK.SCENE #hobj=@dolist/inline @emit say pose={@hook/ignore %d0}
+
+&CMD.OVERRIDE #scene=$^(?s)(pose|semipose|say|@emit)(?\:/noeval)?(?\: +(.*))?$:@attach %!/OVERRIDE=%1,%2
+@set #scene/CMD.OVERRIDE=regexp
+
+&CMD.OVERRIDE2 #scene=$\:*:@attach %!/OVERRIDE=pose,%0
+&CMD.OVERRIDE3 #scene=$\;*:@attach %!/OVERRIDE=semipose,%0
+&CMD.OVERRIDE4 #scene=$"*:@attach %!/OVERRIDE=say,%0
+&CMD.OVERRIDE5 #scene=$|*:@attach %!/OVERRIDE=@emit,%0
+
+&Q.SELECT.SCENE_ACTIVE #scene=SELECT scene_id FROM scene WHERE scene_id=? AND scene_status=1
+
+&CONFIG.SCENEBORDER.DESC #acc_parent=Show full header/footer around a recorded pose in SceneSys?
+&CONFIG.SCENEBORDER.DEFAULT #acc_parent=1
+&CONFIG.SCENEBORDER.TYPE #acc_parent=BOOL
+
+&Q.INSERT.CHANNEL #scene=INSERT INTO channel (scene_id,channel_name,channel_objid,channel_category,channel_type) VALUES (?,?,!,?,?)
+
+&Q.SELECT.CHANNEl #scene=SELECT ! FROM channel WHERE scene_id=? AND channel_category=? AND channel_type=?
+
+&Q.SELECT.ACTROLE #scene=SELECT actrole_id FROM actrole WHERE actor_id=? AND actrole_name=?
+
+&Q.INSERT.ACTROLE #scene=INSERT INTO actrole (actor_id,actrole_name) VALUES (?,?)
+
+&Q.INSERT.POSE #scene=INSERT INTO pose (actrole_id,channel_id,pose_date_created,pose_text) VALUES (?,?,FROM_UNIXTIME(?),?)
+
+&Q.UPDATE.POSE #scene=UPDATE pose SET !=? WHERE pose_id=?
+
+&Q.INCREMENT.ACTION_COUNT #scene=UPDATE actor SET action_count=action_count+1 WHERE actor_id=?
+
+&HANDLE_RECORD #scene=@skip isint(setr(!,mysql(SELECT.CHANNEL,channel_id,%0,0,0),chan_id))={@attach #inc/DOSQL=INSERT.CHANNEL/chan_id,%0,Actions,NULL,0,0};th setq(!,u(FN.PREPACT,%0,%1),actor);@skip isint(setr(!,mysql(SELECT.ACTROLE,%q<actor>,setr(!,strfirstof(stripansi(setr(!,get(%1/GAME.SCENE.ROLE),setrole)),name(%1)),actname)),role_id))={@attach #inc/DOSQL=INSERT.ACTROLE/role_id,%q<actor>,%q<actname>};@attach #inc/DOSQL=INSERT.POSE/pose_id,%q<role_id>,%q<chan_id>,secs(),stripansi(%2);@attach #inc/DOSQL=UPDATE.POSE,pose_text_color,%2,%q<pose_id>;@attach #inc/DOSQL=INCREMENT.ACTION_COUNT,%q<actor>;@attach #inc/DOSQL=UPDATE.SCENE.UNIXTIME,scene_date_activity,secs(),%q<scene>;
+
+&SCENE_HEADER #scene=th setq(!,cname(%1)[if(strlen(%q<setrole>),%B\(as %q<setrole>\))],dname);th setq(!,[chr(91)][ansi(hg,Scene %0)][chr(93)] %q<dname>'s Pose [chr(91)][ansi(hg,%q<pose_id>)][chr(93)]%B>,disp);th setq(!,printf($^78s,%q<disp>),minimal);@dolist/inline setr(!,lcon(%l,CONNECT),recip)={@if accoption(%d0,SCENEBORDER)={@pemit %d0=subheader(%q<disp>,%d0)},{@pemit %d0=%q<minimal>}}
+
+&SCENE_FOOTER #scene=@dolist/inline %q<recip>={@if accoption(%d0,SCENEBORDER)={@pemit %d0=footer(,%d0)}}
+
+&OVERRIDE #scene=@assert/inline elock(%l/SpeechLock,%#)=@pemit %#=You may not express yourself here.;th setq(!,u(FN.OVERRIDE,%0,%1,%:),pose);@if setr(!,cand(isint(setr(!,get(%l/GAME.SCENE),scene)),mysql(SELECT.SCENE_ACTIVE,%q<scene>)),sceneactive)={@attach %!/HANDLE_RECORD=%q<scene>,%:,%q<pose>;@attach %!/SCENE_HEADER=%q<scene>,%:};@remit %l=%q<pose>;@if t(%q<sceneactive>)={@attach %!/SCENE_FOOTER=%q<scene>,%:}
+
+&FN.OVERRIDE #scene=parsestr(switch(%0,pose,:%1,semipose,;%1,say,"%1,@emit,|%1),%0,",",,&[cname(%2)])
+@@ %0 type, %1 - message, %2 actor objid
+
 
