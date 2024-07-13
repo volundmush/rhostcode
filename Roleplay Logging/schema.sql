@@ -75,19 +75,6 @@ CREATE TABLE IF NOT EXISTS scene (
     INDEX(scene_status,scene_date_activity)
 ) ENGINE=InnoDB;
 
-CREATE OR REPLACE VIEW scene_view AS
-    SELECT scene_id,scene_title,scene_title_color,scene_pitch,scene_pitch_color,scene_outcome,scene_outcome_color,
-           scene_date_created,
-           UNIX_TIMESTAMP(scene_date_created) AS scene_date_created_secs,
-           scene_date_scheduled,
-           UNIX_TIMESTAMP(scene_date_scheduled) AS scene_date_scheduled_secs,
-           scene_date_started,
-           UNIX_TIMESTAMP(scene_date_started) AS scene_date_started_secs,
-           scene_date_finished,
-           UNIX_TIMESTAMP(scene_date_finished) AS scene_date_finished_secs,
-           scene_status
-    FROM scene;
-
 CREATE TABLE IF NOT EXISTS scene_plot (
     PRIMARY KEY(plot_id,scene_id),
     plot_id INT NOT NULL,
@@ -113,6 +100,25 @@ CREATE OR REPLACE VIEW actor_view AS
            e.entity_name,e.entity_objid
     FROM actor AS a
     LEFT JOIN entity AS e ON a.entity_id = e.entity_id;
+
+CREATE OR REPLACE VIEW scene_view AS
+SELECT s.scene_id,s.scene_title,s.scene_title_color,s.scene_pitch,s.scene_pitch_color,s.scene_outcome,s.scene_outcome_color,
+       s.scene_date_created,
+       UNIX_TIMESTAMP(s.scene_date_created) AS scene_date_created_secs,
+       s.scene_date_scheduled,
+       UNIX_TIMESTAMP(s.scene_date_scheduled) AS scene_date_scheduled_secs,
+       s.scene_date_started,
+       UNIX_TIMESTAMP(s.scene_date_started) AS scene_date_started_secs,
+       s.scene_date_finished,
+       UNIX_TIMESTAMP(s.scene_date_finished) AS scene_date_finished_secs,
+       s.scene_date_activity,
+       UNIX_TIMESTAMP(s.scene_date_activity) AS scene_date_activity_secs,
+       s.scene_status,
+       a.entity_id as owner_id,
+       a.entity_name as owner_name,
+       a.entity_objid as owner_objid
+    FROM scene AS s
+    LEFT JOIN actor_view as a ON a.scene_id=s.scene_ID AND a.actor_type=2;
 
 CREATE TABLE IF NOT EXISTS actrole (
     actrole_id INT AUTO_INCREMENT PRIMARY KEY,

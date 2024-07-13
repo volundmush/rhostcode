@@ -212,9 +212,67 @@ function ansiToSpans($text) {
     return $ret;
 }
 
+$patterns = [
+        '/%cf/' => "\e[5m",    // flash
+        '/%ci/' => "\e[7m",    // inverse
+        '/%ch/' => "\e[1m",    // hilite (bold)
+        '/%cn/' => "\e[0m",    // normal (reset)
+        '/%cu/' => "\e[4m",    // underscore
+
+        '/%cx/' => "\e[30m",   // black foreground
+        '/%cX/' => "\e[40m",   // black background
+        '/%cr/' => "\e[31m",   // red foreground
+        '/%cR/' => "\e[41m",   // red background
+        '/%cg/' => "\e[32m",   // green foreground
+        '/%cG/' => "\e[42m",   // green background
+        '/%cy/' => "\e[33m",   // yellow foreground
+        '/%cY/' => "\e[43m",   // yellow background
+        '/%cb/' => "\e[34m",   // blue foreground
+        '/%cB/' => "\e[44m",   // blue background
+        '/%cm/' => "\e[35m",   // magenta foreground
+        '/%cM/' => "\e[45m",   // magenta background
+        '/%cc/' => "\e[36m",   // cyan foreground
+        '/%cC/' => "\e[46m",   // cyan background
+        '/%cw/' => "\e[37m",   // white foreground
+        '/%cW/' => "\e[47m"    // white background
+];
+
+function markupToANSI($line) {
+    global $patterns;
+    $line = preg_replace(array_keys($patterns), array_values($patterns), $line);
+
+    // Handle xterm256 colors
+    $line = preg_replace_callback('/%cx([0-9A-F]{2})/', function ($matches) {
+        return "\e[38;5;" . hexdec($matches[1]) . "m";
+    }, $line);
+
+    $line = preg_replace_callback('/%c0X([0-9A-F]{2})/', function ($matches) {
+        return "\e[48;5;" . hexdec($matches[1]) . "m";
+    }, $line);
+
+    // Handle unicode
+    $line = preg_replace_callback('/%<u([0-9A-F]{4})>/', function ($matches) {
+        return mb_convert_encoding('&#x' . $matches[1] . ';', 'UTF-8', 'HTML-ENTITIES');
+    }, $line);
+
+    return $line;
+}
+
+
+
 class MUSH {
 
-	public static function MUSHParse( &$parser, $line)  {
+    public static function MUSHParse( &$parser, $line)  {
+
+        $ansioutput = markupToANSI($line);
+
+        // run the output through ansiToSpans...
+        $output = ansiToSpans($ansioutput);
+
+        return $output;
+    }
+
+	public static function oldMUSHParse( &$parser, $line)  {
         global $wgRhost;
 
         // Ensure the path is set
