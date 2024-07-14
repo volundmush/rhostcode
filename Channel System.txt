@@ -114,36 +114,51 @@
 &CHECK #chan_lib=localize(if(u(CHANNEL_ADMIN,%0,%2),1,cand(cor(elock(%0/user|%1,num(%2)),u(CHECK.%1,%0,%2)),u(CHECK_HELPER_EXTRA,%0,%1,%2))))
 @@ %0 - channel, %1 - permission, %2 - object
 
-&BASE_FORMAT #chan_lib=<[cname(%1)]> [if(strlen(%4),%4%B)][parsestr(%2,%0,",",,&[if(strlen(%5),%5 [chr(40)][cname(%3)][chr(41)],cname(%3))])]
-@@ %0 - recipient, %1 - channel dbref, %2 - message, %3 - sender, %4 - title if enabled and set, %5 - altego if enabled and set
+&BASE_FORMAT #chan_lib=<[cname(%1)][if(strlen(%6),:%B[ansi(hg,%6)])]> [if(strlen(%4),%4%B)][parsestr(%2,%0,",",,&[if(strlen(%5),%5 [chr(40)][cname(%3)][chr(41)],cname(%3))])]
+@@ %0 - recipient, %1 - channel dbref, %2 - message, %3 - sender, %4 - title if enabled and set, %5 - altego if enabled and set, %6 - scene ids
 
 &CUSTOM_FORMATTER #chan_lib=CHATFORMAT
 @@ %0 - original message without custom formatter, %1 - channel dbref, %3 - message, %4 - sender
 
-&FORMAT_MESSAGE #chan_lib=uldefault(%0/[v(CUSTOM_FORMATTER)],u(BASE_FORMAT,,%1,%2,%3,%4,%5),u(BASE_FORMAT,,%1,%2,%3,%4,%5),%1,%2,%3,%4,%5)
-@@ %0 - recipient, %1 - channel dbref, %2 - message, %3 - sender, %4 - title if enabled and set, %5 - altego if enabled and set
+&FORMAT_MESSAGE #chan_lib=uldefault(%0/[v(CUSTOM_FORMATTER)],u(BASE_FORMAT,,%1,%2,%3,%4,%5,%6),u(BASE_FORMAT,,%1,%2,%3,%4,%5,%6),%1,%2,%3,%4,%5,%6)
+@@ %0 - recipient, %1 - channel dbref, %2 - message, %3 - sender, %4 - title if enabled and set, %5 - altego if enabled and set, %6 - scene ids in use
 
 &CUSTOM_IGNORE #chan_lib=CHATIGNORE
-&FN.DISTRIBUTE #chan_lib=localize([if(!match(get(%0/[v(CUSTOM_IGNORE)],objid(%2))),pemit(%0,u(FORMAT_MESSAGE,%0,%1,%2,%3,%4,%5)))])
+&FN.DISTRIBUTE #chan_lib=localize([if(!match(get(%0/[v(CUSTOM_IGNORE)],objid(%2))),pemit(%0,u(FORMAT_MESSAGE,%0,%1,%2,%3,%4,%5,%6)))])
 @@ %0 - target, %1 - channel objid, %2 - message, %3 - sender
 
-&FN.SEND_MESSAGES #chan_lib=iter(setdiff(get(%0/JOINED),get(%0/CHANINFO.[v(CHAN.GAG)])),u(FN.DISTRIBUTE,%i0,%0,%1,%2,%3,%4))
-@@ %0 - channel objid, %1 - message, %2 - sender
+&FN.SEND_MESSAGES #chan_lib=iter(setdiff(get(%0/JOINED),get(%0/CHANINFO.[v(CHAN.GAG)])),u(FN.DISTRIBUTE,%i0,%0,%1,%2,%3,%4,%5))
+@@ %0 - channel objid, %1 - message, %2 - sender, %3 - alterego, %4 - title, %5 - scene ids
 
-&Q.SCENE.ACTIVE #chan_lib=SELECT scene_id FROM scene WHERE scene_id=? AND scene_status=1
+&Q.SCENE.ACTIVE #chan_lib=SELECT channel_id,scene_id FROM channel_scene WHERE channel_objid=? AND channel_active=1 AND scene_status=1
 
+&Q.SELECT.ACTROLE #chan_lib=SELECT actrole_id FROM actrole WHERE actor_id=? AND actrole_name=?
 
+&Q.INSERT.ACTROLE #chan_lib=INSERT INTO actrole (actor_id,actrole_name) VALUES (?,?)
 
-&FN.SCENELOG #chan_lib=sort(if(isdbref(tag(scene)),),n)
+&Q.INSERT.POSE #chan_lib=INSERT INTO pose (actrole_id,channel_id,pose_date_created,pose_text) VALUES (?,?,FROM_UNIXTIME(?),?)
 
-&FN.PREP_SEND #chan_lib=u(FN.SEND_MESSAGES,%0,%1,%2,if(getconf(%0,TITLES),get(%2/CHANINFO.[edit(objid(%0),:,_)].TITLE)),setr(!,if(getconf(%0,ALTEREGO),get(%2/CHANINFO.[edit(objid(%0),:,_)].ALTEREGO)),alterego),u(FN.SCENELOG,%0,%1,%2,%q<alterego>))
+&Q.UPDATE.POSE #chan_lib=UPDATE pose SET !=? WHERE pose_id=?
+
+&Q.UPDATE.SCENE.UNIXTIME #chan_lib=UPDATE scene SET !=FROM_UNIXTIME(?) WHERE scene_id=?
+
+&Q.INCREMENT.ACTION_COUNT #chan_lib=UPDATE actor SET action_count=action_count+1 WHERE actor_id=?
+
+&FN.LOG_FORMAT #chan_lib=[if(strlen(%3),%3%B)][parsestr(%0,%0,",",,&[if(strlen(%2),%2 [chr(40)][cname(%1)][chr(41)],cname(%1))])]
+
+&FN.LOG_MESSAGE #chan_lib=[if(!isint(setr(!,mysql(SELECT.ACTROLE,setr(!,u(#scene/FN.PREPACT,%4,%2),actor),setr(!,strfirstof(stripansi(setr(!,%3,setrole)),name(%2)),actname)),role_id)),[mysql(INSERT.ACTROLE,%q<actor>,%q<actname>)][setq(!,sql(SELECT last_insert_id[chr(40)][chr(41)]),role_id)])][setq(!,u(FN.LOG_FORMAT,%1,%2,%3,%5),msg)][mysql(INSERT.POSE,%q<role_id>,%0,secs(),stripansi(%q<msg>))][mysql(UPDATE.POSE,pose_text_color,%q<msg>,sql(SELECT last_insert_id[chr(40)][chr(41)]))][mysql(INCREMENT.ACTION_COUNT,%q<actor>)][mysql(UPDATE.SCENE.UNIXTIME,scene_date_activity,secs(),%4)]
+@@ %0 - channel_id, %1 message, %2 - sender, %3 - alterego, %4 - scene id, %5 - title
+
+&FN.SCENELOG #chan_lib=privatize(1,if(cand(isdbref(tag(scene)),words(setr(!,mysql2(SCENE.ACTIVE,%0),scenes),|)),iter(%q<scenes>,elements(%i0,2,^),|,%B)[null(iter(%q<scenes>,u(FN.LOG_MESSAGE,elements(%i0,1,^),%1,%2,%3,elements(%i0,2,^),%4)))]))
+
+&FN.PREP_SEND #chan_lib=u(FN.SEND_MESSAGES,%0,%1,%2,setr(!,if(getconf(%0,TITLES),get(%2/CHANINFO.[edit(objid(%0),:,_)].TITLE)),title),setr(!,if(getconf(%0,ALTEREGO),get(%2/CHANINFO.[edit(objid(%0),:,_)].ALTEREGO)),alterego),u(FN.SCENELOG,%0,%1,%2,%q<alterego>,%q<title>))
 
 &FN.CEMIT #chan_lib=privatize(1,ofparse(3,if(setr(!,u(FN.FIND_CHANNEL,setr(!,strfirstof(%2,%#),sender),%0),chan),1,%q<chan>),if(u(CHECK,%q<chan>,TalkLock,%q<sender>),1,#-1 PERMISSION DENIED),if(strlen(%1),1,#-1 NOTHING TO SEND),if(!strmatch(%1,|*),1,#-1 EMIT NOT ALLOWED),1[null(u(FN.PREP_SEND,%q<chan>,%1,%q<sender>))]))
 @@ %0 - channel name/dbref, %1 - message, %2 - sender (defaults to %#)
 
 @startup #chan_lib=@trigger %!/CHANNEL_CLEANER
 
-&CHANNEL_CLEANER #chan=@dolist u(FN.CHANNELS)={@attach %!/CLEAN=##};@wait 3600=@trigger %!/CHANNEL_CLEANER
+&CHANNEL_CLEANER #chan_lib=@dolist u(FN.CHANNELS)={@attach %!/CLEAN=##};@wait 3600=@trigger %!/CHANNEL_CLEANER
 
 &CLEAN #chan_lib=@attach %!/CLEAN_GAGS=%0;
 
@@ -181,6 +196,7 @@
 @set #chan/CMD.@CHANNEL=regexp
 
 &CHAN_PARENT #chan=tag(chan_parent)
+&CHAN_CATEGORY #chan=3
 
 &GPFN.CEMIT #chan=privatize(1,u(FN.CEMIT,%0,%1))
 

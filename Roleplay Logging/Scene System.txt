@@ -108,9 +108,9 @@
 &CONFIG.SCENEBORDER.DEFAULT #acc_parent=1
 &CONFIG.SCENEBORDER.TYPE #acc_parent=BOOL
 
-&Q.INSERT.CHANNEL #scene=INSERT INTO channel (scene_id,channel_name,channel_objid,channel_category,channel_type) VALUES (?,?,!,?,?)
+&Q.INSERT.CHANNEL #scene=INSERT INTO channel (scene_id,channel_name,channel_objid,channel_category) VALUES (?,?,!,?)
 
-&Q.SELECT.CHANNEl #scene=SELECT ! FROM channel WHERE scene_id=? AND channel_category=? AND channel_type=?
+&Q.SELECT.CHANNEl #scene=SELECT ! FROM channel WHERE scene_id=? AND channel_category=? AND channel_name=?
 
 &Q.SELECT.ACTROLE #scene=SELECT actrole_id FROM actrole WHERE actor_id=? AND actrole_name=?
 
@@ -122,15 +122,24 @@
 
 &Q.INCREMENT.ACTION_COUNT #scene=UPDATE actor SET action_count=action_count+1 WHERE actor_id=?
 
-&HANDLE_RECORD #scene=@skip isint(setr(!,mysql(SELECT.CHANNEL,channel_id,%0,0,0),chan_id))={@attach #inc/DOSQL=INSERT.CHANNEL/chan_id,%0,Actions,NULL,0,0};th setq(!,u(FN.PREPACT,%0,%1),actor);@skip isint(setr(!,mysql(SELECT.ACTROLE,%q<actor>,setr(!,strfirstof(stripansi(setr(!,get(%1/GAME.SCENE.ROLE),setrole)),name(%1)),actname)),role_id))={@attach #inc/DOSQL=INSERT.ACTROLE/role_id,%q<actor>,%q<actname>};@attach #inc/DOSQL=INSERT.POSE/pose_id,%q<role_id>,%q<chan_id>,secs(),stripansi(%2);@attach #inc/DOSQL=UPDATE.POSE,pose_text_color,%2,%q<pose_id>;@attach #inc/DOSQL=INCREMENT.ACTION_COUNT,%q<actor>;@attach #inc/DOSQL=UPDATE.SCENE.UNIXTIME,scene_date_activity,secs(),%q<scene>;
+&HANDLE_RECORD #scene=@skip isint(setr(!,mysql(SELECT.CHANNEL,channel_id,%0,0,Actions),chan_id))={@attach #inc/DOSQL=INSERT.CHANNEL/chan_id,%0,Actions,NULL,0};th setq(!,u(FN.PREPACT,%0,%1),actor);@skip isint(setr(!,mysql(SELECT.ACTROLE,%q<actor>,setr(!,strfirstof(stripansi(setr(!,get(%1/GAME.SCENE.ROLE),setrole)),name(%1)),actname)),role_id))={@attach #inc/DOSQL=INSERT.ACTROLE/role_id,%q<actor>,%q<actname>};@attach #inc/DOSQL=INSERT.POSE/pose_id,%q<role_id>,%q<chan_id>,secs(),stripansi(%2);@attach #inc/DOSQL=UPDATE.POSE,pose_text_color,%2,%q<pose_id>;@attach #inc/DOSQL=INCREMENT.ACTION_COUNT,%q<actor>;@attach #inc/DOSQL=UPDATE.SCENE.UNIXTIME,scene_date_activity,secs(),%q<scene>;
 
 &SCENE_HEADER #scene=th setq(!,cname(%1)[if(strlen(%q<setrole>),%B\(as %q<setrole>\))],dname);th setq(!,[chr(91)][ansi(hg,Scene %0)][chr(93)] %q<dname>'s Pose [chr(91)][ansi(hg,%q<pose_id>)][chr(93)]%B>,disp);th setq(!,printf($^78s,%q<disp>),minimal);@dolist/inline setr(!,lcon(%l,CONNECT),recip)={@if accoption(%d0,SCENEBORDER)={@pemit %d0=subheader(%q<disp>,%d0)},{@pemit %d0=%q<minimal>}}
 
 &SCENE_FOOTER #scene=@dolist/inline %q<recip>={@if accoption(%d0,SCENEBORDER)={@pemit %d0=footer(,%d0)}}
 
-&OVERRIDE #scene=@assert/inline elock(%l/SpeechLock,%#)=@pemit %#=You may not express yourself here.;th setq(!,u(FN.OVERRIDE,%0,%1,%:),pose);@if setr(!,cand(isint(setr(!,get(%l/GAME.SCENE),scene)),mysql(SELECT.SCENE_ACTIVE,%q<scene>)),sceneactive)={@attach %!/HANDLE_RECORD=%q<scene>,%:,%q<pose>;@attach %!/SCENE_HEADER=%q<scene>,%:};@remit %l=%q<pose>;@if t(%q<sceneactive>)={@attach %!/SCENE_FOOTER=%q<scene>,%:}
+&OVERRIDE #scene=@assert/inline elock(%l/SpeechLock,%#)=@pemit %#=You may not express yourself here.;th setq(!,cand(isint(setr(!,get(%l/GAME.SCENE),scene)),mysql(SELECT.SCENE_ACTIVE,%q<scene>)),sceneactive);th setq(!,u(FN.OVERRIDE,%0,%1,%:,if(%q<sceneactive>,get(%#/GAME.SCENE.ROLE))),pose);@if %q<sceneactive>={@attach %!/HANDLE_RECORD=%q<scene>,%:,%q<pose>;@attach %!/SCENE_HEADER=%q<scene>,%:};@remit %l=%q<pose>;@if t(%q<sceneactive>)={@attach %!/SCENE_FOOTER=%q<scene>,%:}
 
-&FN.OVERRIDE #scene=parsestr(switch(%0,pose,:%1,semipose,;%1,say,"%1,@emit,|%1),%0,",",,&[cname(%2)])
+&FN.OVERRIDE #scene=parsestr(switch(%0,pose,:%1,semipose,;%1,say,"%1,@emit,|%1),%0,",",,&[if(strlen(%3),%3,cname(%2))])
 @@ %0 type, %1 - message, %2 actor objid
 
+&CMD.OSAY #scene=$^(?s)(?\:@|\+)?(osay|ooc)(?\: +(.*))?$:@attach %!/OSAY=%2
+@set #scene/CMD.OSAY=regexp
 
+&OSAY_RECORD #scene=@skip isint(setr(!,mysql(SELECT.CHANNEL,channel_id,%0,1,OOC),chan_id))={@attach #inc/DOSQL=INSERT.CHANNEL/chan_id,%0,OOC,NULL,1};th setq(!,u(FN.PREPACT,%0,%:),actor);@skip isint(setr(!,mysql(SELECT.ACTROLE,%q<actor>,setr(!,name(%:),actname)),role_id))={@attach #inc/DOSQL=INSERT.ACTROLE/role_id,%q<actor>,%q<actname>};@attach #inc/DOSQL=INSERT.POSE/pose_id,%q<role_id>,%q<chan_id>,secs(),stripansi(%1);@attach #inc/DOSQL=UPDATE.POSE,pose_text_color,%1,%q<pose_id>;@attach #inc/DOSQL=UPDATE.SCENE.UNIXTIME,scene_date_activity,secs(),%q<scene>
+
+&FN.OSAY #scene=parsestr(%0,%0,",",,&[cname(%1)])
+
+&FN.OSAY_HEADER #scene=[ansi(hx,-<)][ansi(hr,OOC)][if(%0,[ansi(hx,:)]%B[ansi(hg,%1)])][ansi(hx,>-)]
+
+&OSAY #scene=@assert/inline elock(%l/SpeechLock,%#)=@pemit %#=You may not express yourself here.;@assert/inline strlen(%0)=@pemit %#=Osay what?;@break/inline strmatch(%0,|*)=@pemit %#=Emits are disabled for osay.;th setq(!,u(FN.OSAY,%0,%:),pose);@if setr(!,cand(isint(setr(!,get(%l/GAME.SCENE),scene)),mysql(SELECT.SCENE_ACTIVE,%q<scene>)),sceneactive)={@attach %!/OSAY_RECORD=%q<scene>,%q<pose>};@remit %l=[u(FN.OSAY_HEADER,%q<sceneactive>,%q<scene>)] %q<pose>

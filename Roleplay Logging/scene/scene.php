@@ -11,7 +11,9 @@
 		$scene_data = $scenedb->get('scene_view', ['owner_name', 'owner_id', 'scene_title_color', 'scene_outcome_color',
 		 'scene_status', 'scene_date_created'], ['scene_id'=>$num]);
 
-		$pose_list = $scenedb->select('pose_view', ['display_name', 'entity_id', 'pose_text_color'], ['AND'=>['pose_is_deleted'=>0, 'scene_id'=>$num]]);
+		$pose_list = $scenedb->select('pose_view', ['entity_id', 'channel_category_name',
+                         'display_name', 'pose_text_color'],
+                        ['AND' => ['pose_is_deleted' => 0, 'scene_id' => $num]]);
 		$pose_data = array();
 		$log_data = "";
 		$poser_ids = array();
@@ -21,7 +23,9 @@
 			$scene_text = str_replace("\n", "<br>", $scene_text);
 			$scene_text = str_replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;", $scene_text);
 			$scene_text = str_replace("  ", "&nbsp;&nbsp;", $scene_text);
-			$pose_data[] = ["owner"=>$indiv['entity_id'], "owner_name"=>$indiv['display_name'], "text"=>$scene_text];
+			$pose_data[] = ["owner_id" => $indiv['entity_id'], "channel_category" => $indiv['channel_category_name'],
+                        "display_name" => $indiv['display_name'], "has_owner" => !is_null($indiv['entity_id']) ? true : false,
+                        "text" => $scene_text];
 			$poser_ids[] = $indiv['entity_id'];
 		}
 		

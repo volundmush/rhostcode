@@ -140,10 +140,30 @@ CREATE TABLE IF NOT EXISTS channel (
     channel_name VARCHAR(255) NOT NULL,
     channel_objid VARCHAR(40) NULL,
     channel_category TINYINT UNSIGNED NOT NULL DEFAULT 0,
-    channel_type TINYINT UNSIGNED NOT NULL DEFAULT 0,
-    UNIQUE(scene_id,channel_category,channel_type),
+    channel_active TINYINT UNSIGNED NOT NULL DEFAULT 1,
+    UNIQUE(scene_id,channel_category,channel_name),
     FOREIGN KEY (scene_id) REFERENCES scene(scene_id) ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB;
+-- channel_category 0 is local actions, 1 is local OOC, 2 is system messages, 3 is Channel, 4 is Radio.
+-- channel type is always 0 except for 3 and 4 where it differentiates between Channels.
+
+CREATE OR REPLACE VIEW channel_view AS
+    SELECT c.channel_id,c.channel_name,c.channel_objid,c.channel_category,
+           CASE c.channel_category
+               WHEN 0 THEN 'Action'
+               WHEN 1 THEN 'OOC'
+               WHEN 2 THEN CONCAT('System: ',c.channel_name)
+               WHEN 3 THEN CONCAT('Channel: ',c.channel_name)
+               WHEN 4 THEN CONCAT('Radio: ',c.channel_name)
+               ELSE 'Unknown'
+           END AS channel_category_name
+    FROM channel AS c;
+
+CREATE OR REPLACE VIEW channel_scene AS
+    SELECT c.channel_id,c.channel_name,c.channel_objid,c.channel_category,
+           s.*
+    FROM channel AS c
+    LEFT JOIN scene_view AS s ON c.scene_id = s.scene_id;
 
 CREATE TABLE IF NOT EXISTS pose (
     pose_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -161,8 +181,8 @@ CREATE TABLE IF NOT EXISTS pose (
 CREATE OR REPLACE VIEW pose_view AS
        SELECT p.pose_id,p.pose_is_deleted,p.pose_date_created,UNIX_TIMESTAMP(p.pose_date_created) AS pose_date_created_secs,
               p.pose_text,p.pose_text_color,
-              c.channel_id,c.channel_category,c.channel_type,c.channel_name,
+              c.channel_id,c.channel_category,c.channel_category_name,c.channel_name,
               a.*
            FROM pose AS p
-       LEFT JOIN channel AS c ON p.channel_id = c.channel_id
+       LEFT JOIN channel_view AS c ON p.channel_id = c.channel_id
        LEFT JOIN actrole_view as a ON p.actrole_id = a.actrole_id;
