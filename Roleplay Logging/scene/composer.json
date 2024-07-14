@@ -1,0 +1,24 @@
+{
+  "name": "volundmush/scenesys",
+  "description": "PHP wizardry to make SceneSys logs appear in web-land.",
+  "minimum-stability": "stable",
+  "license": "open",
+  "authors": [
+    {
+      "name": "Andrew 'Volund' Bastien",
+      "email": "volundmush@gmail.com"
+    }
+  ],
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/volundmush/mudstring-php"
+    }
+  ],
+  "require": {
+    "php": ">=8.1",
+    "ext-pdo_mysql": "*",
+    "smarty/smarty": "5.3.1",
+    "catfan/medoo": "v2.1.12"
+  }
+}
