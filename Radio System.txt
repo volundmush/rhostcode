@@ -16,8 +16,8 @@
 &CHANNEL_ADMIN #radio=cor(u(parent(%!)/CHANNEL_ADMIN,%0,%1),match(setunion(get(%0/ADMINS),get(%0/OWNER)),objid(%1)))
 
 @@ TODO: Alter this.
-&BASE_FORMAT #radio==<[cname(%1)]>= [if(strlen(%4),%4%B)][parsestr(%2,%0,",",,&[if(strlen(%5),%5 [chr(40)][cname(%3)][chr(41)],cname(%3))])]
-@@ %0 - recipient, %1 - channel dbref, %2 - message, %3 - sender, %4 - title if enabled and set, %5 - altego if enabled and set
+&BASE_FORMAT #radio==<[cname(%1)][if(strlen(%6),:%B[ansi(hg,%6)])]>= [if(%7,%2,[if(strlen(%4),%4%B)][parsestr(%2,%0,",",,&[if(strlen(%5),%5 [chr(40)][cname(%3)][chr(41)],cname(%3))])])]
+@@ %0 - recipient, %1 - channel dbref, %2 - message, %3 - sender, %4 - title if enabled and set, %5 - altego if enabled and set, %6 - scene ids,  %7 - system message
 
 &SWITCHES #radio=setunion(u(parent(%!)/SWITCHES),CHOWN)
 
@@ -44,6 +44,8 @@
 @lock/user #radio_parent|TalkLock=LK.MEMBER/1
 @lock/user #radio_parent|ModerateLock=LK.MODERATE/1
 @lock/user #radio_parent|AdminLock=LK.ADMIN/1
+
+&CONFIG.CANLOG.DEFAULT #chan_parent=1
 
 +help/add Communications/@radio=#radio/HLP_RADIO
 &HLP_RADIO #radio=[ansi(hw,Command Aliases:)] +rad, +radio, @rad, @radio%R%RThe Radio System is a player-run channel system which co-exists with public channels. It shares most of its code with the Public Channels. Its commands/switches are the same as in [ansi(hw,+help @channel)]. Below are the additions/differences.%R%R[ansi(hc,Sending Messages)]%R%RYou can send messages by typing [ansi(hw,.<channel> <message>)], where <channel> is able to partial match by prefix. For example, to speak on a channel named MyRadio, you could use [ansi(hw,.MyRadio hello!)] or [ansi(hw,.my yo!)]%R%R[ansi(hc,Permissions and Membership)]%RThe OWNER of a Radio Channel is considered a super-admin of the channel, as if they were a Wizard.%R[ansi(hw,@rad/chown <channel>=<player>)]%R%TTo transfer ownership.%R%R[ansi(hc,Lock Keys)]%RIn addition to the Channel Special locks...%R[ansi(hw,LK.OWNER/1)]%R%TEvals true if checker is the owner.%R%R[ansi(hc,Default Radio Locks)]%R[iter(TalkLock ModerateLock AdminLock,[ansi(hw,%i0)]: [lock(#radio_parent/user|%i0)],%B,%R)]

@@ -12,10 +12,12 @@
 @skip isdbref(tag(setr(1,interact)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(Interaction System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom()}
 
 @@ Commands and stuff.
-&I_LOOK #hobj=[cor(default(%!/I_LOOK.BYPASS,0),not(strlen(rest(%-m))),isobjid(rest(%-m)))]
+&TARGET #hobj=cor(default(%!/I_%0.BYPASS,0),not(strlen(%1)),isobjid(%1),isdbref(%1),istag(%1))
+
+&I_LOOK #hobj=[u(TARGET,LOOK,rest(%-m))]
 &I_GIVE #hobj=
-&I_GET #hobj=[cor(default(%!/I_GET.BYPASS,0),not(strlen(rest(%-m))),isobjid(rest(%-m)))]
-&I_DROP #hobj=[cor(default(%!/I_DROP.BYPASS,0),not(strlen(rest(%-m))),isobjid(rest(%-m)))]
+&I_GET #hobj=[u(TARGET,GET,rest(%-m))]
+&I_DROP #hobj=[u(TARGET,DROP,rest(%-m))]
 
 &CMD.INTERACT #interact=$^(?s)(?\:@|\+)?(look|give|get|drop)(?\:/(\\S+)?)?(?\: +(.+?))?$:@set #hobj=I_%1.BYPASS:1;@attach #inc/GET_SWITCH=%2,%1;@attach/nobreak %!/SW.%1.[strfirstof(%q<switch>,MAIN)]=%3;@set #hobj=I_%1.BYPASS:0
 @set #interact/CMD.INTERACT=regexp

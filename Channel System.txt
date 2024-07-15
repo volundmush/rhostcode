@@ -4,7 +4,7 @@
 @@ the chan_lib is the parent of all channel-like systems.
 @skip isdbref(tag(setr(1,chan_lib)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Channel System Library,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE NO_COMMAND;@tag/add %q1=%q0;@tel %q0=#stor}
 
-&SWITCHES #chan_lib=setunion(LIST|WHO|ON|OFF|GAG|UNGAG|JOIN|LEAVE|RESTRICT|UNRESTRICT|TITLE|OPTIONS|ALTEREGO,CREATE|RENAME|DELETE|EXAMINE|LOCK|UNLOCK|CONFIG|MEMADD|MEMREM|MODADD|MODREM|ADMADD|ADMREM,|,|)
+&SWITCHES #chan_lib=setunion(LIST|WHO|ON|OFF|GAG|UNGAG|JOIN|LEAVE|RESTRICT|UNRESTRICT|TITLE|OPTIONS|ALTEREGO,CREATE|RENAME|DELETE|EXAMINE|LOCK|UNLOCK|CONFIG|MEMADD|MEMREM|MODADD|MODREM|ADMADD|ADMREM[if(isdbref(tag(scene)),|LOG|STOPLOG)],|,|)
 
 &CHAN.TYPE #chan_lib=CHANNELS
 &CHAN.GAG #chan_lib=GAGGED
@@ -114,21 +114,21 @@
 &CHECK #chan_lib=localize(if(u(CHANNEL_ADMIN,%0,%2),1,cand(cor(elock(%0/user|%1,num(%2)),u(CHECK.%1,%0,%2)),u(CHECK_HELPER_EXTRA,%0,%1,%2))))
 @@ %0 - channel, %1 - permission, %2 - object
 
-&BASE_FORMAT #chan_lib=<[cname(%1)][if(strlen(%6),:%B[ansi(hg,%6)])]> [if(strlen(%4),%4%B)][parsestr(%2,%0,",",,&[if(strlen(%5),%5 [chr(40)][cname(%3)][chr(41)],cname(%3))])]
-@@ %0 - recipient, %1 - channel dbref, %2 - message, %3 - sender, %4 - title if enabled and set, %5 - altego if enabled and set, %6 - scene ids
+&BASE_FORMAT #chan_lib=<[cname(%1)][if(strlen(%6),:%B[ansi(hg,%6)])]> [if(%7,%2,[if(strlen(%4),%4%B)][parsestr(%2,%0,",",,&[if(strlen(%5),%5 [chr(40)][cname(%3)][chr(41)],cname(%3))])])]
+@@ %0 - recipient, %1 - channel dbref, %2 - message, %3 - sender, %4 - title if enabled and set, %5 - altego if enabled and set, %6 - scene ids,  %7 - system message
 
 &CUSTOM_FORMATTER #chan_lib=CHATFORMAT
 @@ %0 - original message without custom formatter, %1 - channel dbref, %3 - message, %4 - sender
 
-&FORMAT_MESSAGE #chan_lib=uldefault(%0/[v(CUSTOM_FORMATTER)],u(BASE_FORMAT,,%1,%2,%3,%4,%5,%6),u(BASE_FORMAT,,%1,%2,%3,%4,%5,%6),%1,%2,%3,%4,%5,%6)
-@@ %0 - recipient, %1 - channel dbref, %2 - message, %3 - sender, %4 - title if enabled and set, %5 - altego if enabled and set, %6 - scene ids in use
+&FORMAT_MESSAGE #chan_lib=uldefault(%0/[v(CUSTOM_FORMATTER)],u(BASE_FORMAT,,%1,%2,%3,%4,%5,%6,%7),u(BASE_FORMAT,,%1,%2,%3,%4,%5,%6),%1,%2,%3,%4,%5,%6,%7)
+@@ %0 - recipient, %1 - channel dbref, %2 - message, %3 - sender, %4 - title if enabled and set, %5 - altego if enabled and set, %6 - scene ids in use, %7 system message
 
 &CUSTOM_IGNORE #chan_lib=CHATIGNORE
-&FN.DISTRIBUTE #chan_lib=localize([if(!match(get(%0/[v(CUSTOM_IGNORE)],objid(%2))),pemit(%0,u(FORMAT_MESSAGE,%0,%1,%2,%3,%4,%5,%6)))])
+&FN.DISTRIBUTE #chan_lib=localize([if(!match(get(%0/[v(CUSTOM_IGNORE)],objid(%2))),pemit(%0,u(FORMAT_MESSAGE,%0,%1,%2,%3,%4,%5,%6,%7)))])
 @@ %0 - target, %1 - channel objid, %2 - message, %3 - sender
 
-&FN.SEND_MESSAGES #chan_lib=iter(setdiff(get(%0/JOINED),get(%0/CHANINFO.[v(CHAN.GAG)])),u(FN.DISTRIBUTE,%i0,%0,%1,%2,%3,%4,%5))
-@@ %0 - channel objid, %1 - message, %2 - sender, %3 - alterego, %4 - title, %5 - scene ids
+&FN.SEND_MESSAGES #chan_lib=iter(setdiff(get(%0/JOINED),get(%0/CHANINFO.[v(CHAN.GAG)])),u(FN.DISTRIBUTE,%i0,%0,%1,%2,%3,%4,%5,%6))
+@@ %0 - channel objid, %1 - message, %2 - sender, %3 - alterego, %4 - title, %5 - scene ids, %6 - system message marker.
 
 &Q.SCENE.ACTIVE #chan_lib=SELECT channel_id,scene_id FROM channel_scene WHERE channel_objid=? AND channel_active=1 AND scene_status=1
 
@@ -144,17 +144,29 @@
 
 &Q.INCREMENT.ACTION_COUNT #chan_lib=UPDATE actor SET action_count=action_count+1 WHERE actor_id=?
 
-&FN.LOG_FORMAT #chan_lib=[if(strlen(%3),%3%B)][parsestr(%0,%0,",",,&[if(strlen(%2),%2 [chr(40)][cname(%1)][chr(41)],cname(%1))])]
+&FN.LOG_FORMAT #chan_lib=if(%4,%0,[if(strlen(%3),%3%B)][parsestr(%0,%0,",",,&[if(strlen(%2),%2 [chr(40)][cname(%1)][chr(41)],cname(%1))])])
 
-&FN.LOG_MESSAGE #chan_lib=[if(!isint(setr(!,mysql(SELECT.ACTROLE,setr(!,u(#scene/FN.PREPACT,%4,%2),actor),setr(!,strfirstof(stripansi(setr(!,%3,setrole)),name(%2)),actname)),role_id)),[mysql(INSERT.ACTROLE,%q<actor>,%q<actname>)][setq(!,sql(SELECT last_insert_id[chr(40)][chr(41)]),role_id)])][setq(!,u(FN.LOG_FORMAT,%1,%2,%3,%5),msg)][mysql(INSERT.POSE,%q<role_id>,%0,secs(),stripansi(%q<msg>))][mysql(UPDATE.POSE,pose_text_color,%q<msg>,sql(SELECT last_insert_id[chr(40)][chr(41)]))][mysql(INCREMENT.ACTION_COUNT,%q<actor>)][mysql(UPDATE.SCENE.UNIXTIME,scene_date_activity,secs(),%4)]
-@@ %0 - channel_id, %1 message, %2 - sender, %3 - alterego, %4 - scene id, %5 - title
+&FN.LOG_MESSAGE #chan_lib=[if(!isint(setr(!,mysql(SELECT.ACTROLE,setr(!,u(#scene/FN.PREPACT,%4,%2),actor),setr(!,strfirstof(stripansi(setr(!,%3,setrole)),name(%2)),actname)),role_id)),[mysql(INSERT.ACTROLE,%q<actor>,%q<actname>)][setq(!,sql(SELECT last_insert_id[chr(40)][chr(41)]),role_id)])][setq(!,u(FN.LOG_FORMAT,%1,%2,%3,%5,%6),msg)][mysql(INSERT.POSE,%q<role_id>,%0,secs(),stripansi(%q<msg>))][mysql(UPDATE.POSE,pose_text_color,%q<msg>,sql(SELECT last_insert_id[chr(40)][chr(41)]))][mysql(INCREMENT.ACTION_COUNT,%q<actor>)][mysql(UPDATE.SCENE.UNIXTIME,scene_date_activity,secs(),%4)]
+@@ %0 - channel_id, %1 message, %2 - sender, %3 - alterego, %4 - scene id, %5 - title, %6 - system message
 
-&FN.SCENELOG #chan_lib=privatize(1,if(cand(isdbref(tag(scene)),words(setr(!,mysql2(SCENE.ACTIVE,%0),scenes),|)),iter(%q<scenes>,elements(%i0,2,^),|,%B)[null(iter(%q<scenes>,u(FN.LOG_MESSAGE,elements(%i0,1,^),%1,%2,%3,elements(%i0,2,^),%4)))]))
+&FN.SCENELOG #chan_lib=privatize(1,if(cand(isdbref(tag(scene)),words(setr(!,mysql2(SCENE.ACTIVE,%0),scenes),|)),iter(%q<scenes>,elements(%i0,2,^),|,%B)[null(iter(%q<scenes>,u(FN.LOG_MESSAGE,elements(%i0,1,^),%1,%2,%3,elements(%i0,2,^),%4,%5)))]))
+@@ %0 - channel objid, %1 message %2 sender, %3 alterego, %4 title, %5 sys message
 
-&FN.PREP_SEND #chan_lib=u(FN.SEND_MESSAGES,%0,%1,%2,setr(!,if(getconf(%0,TITLES),get(%2/CHANINFO.[edit(objid(%0),:,_)].TITLE)),title),setr(!,if(getconf(%0,ALTEREGO),get(%2/CHANINFO.[edit(objid(%0),:,_)].ALTEREGO)),alterego),u(FN.SCENELOG,%0,%1,%2,%q<alterego>,%q<title>))
+&FN.PREP_SEND #chan_lib=u(FN.SEND_MESSAGES,%0,%1,%2,setr(!,if(getconf(%0,TITLES),get(%2/CHANINFO.[edit(objid(%0),:,_)].TITLE)),title),setr(!,if(getconf(%0,ALTEREGO),get(%2/CHANINFO.[edit(objid(%0),:,_)].ALTEREGO)),alterego),u(FN.SCENELOG,%0,%1,%2,%q<alterego>,%q<title>,%3),%3)
 
-&FN.CEMIT #chan_lib=privatize(1,ofparse(3,if(setr(!,u(FN.FIND_CHANNEL,setr(!,strfirstof(%2,%#),sender),%0),chan),1,%q<chan>),if(u(CHECK,%q<chan>,TalkLock,%q<sender>),1,#-1 PERMISSION DENIED),if(strlen(%1),1,#-1 NOTHING TO SEND),if(!strmatch(%1,|*),1,#-1 EMIT NOT ALLOWED),1[null(u(FN.PREP_SEND,%q<chan>,%1,%q<sender>))]))
-@@ %0 - channel name/dbref, %1 - message, %2 - sender (defaults to %#)
+&FN.CEMIT #chan_lib=privatize(1,ofparse(3,if(setr(!,u(FN.FIND_CHANNEL,setr(!,strfirstof(%2,%#),sender),%0),chan),1,%q<chan>),if(u(CHECK,%q<chan>,TalkLock,%q<sender>),1,#-1 PERMISSION DENIED),if(t(%3),if(u(CHECK,%q<chan>,AdminLock,%q<sender>),1,#-1 PERMISSION DENIED),1),if(strlen(%1),1,#-1 NOTHING TO SEND),if(!strmatch(%1,|*),1,#-1 EMIT NOT ALLOWED),1[null(u(FN.PREP_SEND,%q<chan>,%1,%q<sender>,%3))]))
+@@ %0 - channel name/dbref, %1 - message, %2 - sender (defaults to %#), %3 - system message
+
+&Q.SELECT.SCENE #chan_lib=SELECT ! FROM scene WHERE scene_id=?
+
+&Q.SELECT.CHANNEL_LOG #chan_lib=SELECT channel_id,channel_active FROM channel WHERE channel_objid=? AND scene_id=?
+&Q.INSERT.CHANNEL_LOG #chan_lib=INSERT INTO channel (scene_id,channel_name,channel_objid,channel_category) VALUES (?,?,?,?)
+&Q.UPDATE.CHANNEL_LOG #chan_lib=UPDATE channel SET !=? WHERE channel_id=?
+
+&SW.LOG #chan_lib=@attach %!/INC.FIND;@assert/inline getconf(%q<chan>,CANLOG)=@pemit %#=That channel doesn't support logging!;@attach #scene/FINDSCENE=%1,scene;@assert/inline eq(1,mysql(SELECT.SCENE,scene_status,%q<scene>))=@pemit %#=That scene isn't active!;@if strlen(setr(!,mysql2(SELECT.CHANNEL_LOG,objid(%q<chan>),%q<scene>),exist))={@break/inline elements(%q<exist>,2,^)=@pemit %#=It's already being logged!;@attach #inc/DOSQL=UPDATE.CHANNEL_LOG,channel_active,1,elements(%q<exist>,1,^)},{@attach #inc/DOSQL=INSERT.CHANNEL_LOG,%q<scene>,name(%q<chan>),objid(%q<chan>),v(CHAN_CATEGORY)};@attach #scene/MSG_SCENE=%q<scene>,0,%:,Now logging [u(FN.SYS_NAME)] Channel: [cname(%q<chan>)];th u(FN.CEMIT,%q<chan>,Now Logging to Scene: %q<scene>,,1)
+
+&SW.STOPLOG #chan_lib=@attach %!/INC.FIND;@attach #scene/FINDSCENE=%1,scene;@assert/inline eq(1,mysql(SELECT.SCENE,scene_status,%q<scene>))=@pemit %#=That scene isn't active!;@assert/inline strlen(setr(!,mysql2(SELECT.CHANNEL_LOG,objid(%q<chan>),%q<scene>),exist))=@pemit %#=It's not being logged!;@assert/inline elements(%q<exist>,2,^)=@pemit %#=It's not being logged!;@attach #scene/MSG_SCENE=%q<scene>,0,%:,Stopped logging [u(FN.SYS_NAME)] Channel: [cname(%q<chan>)];th u(FN.CEMIT,%q<chan>,No longer Logging to Scene: %q<scene>,,1);@attach #inc/DOSQL=UPDATE.CHANNEL_LOG,channel_active,0,elements(%q<exist>,1,^);
+
 
 @startup #chan_lib=@trigger %!/CHANNEL_CLEANER
 
@@ -192,6 +204,10 @@
 &CONFIG.ALTEREGO.DEFAULT #chan_parent=1
 &CONFIG.ALTEREGO.TYPE #chan_parent=BOOL
 
+&CONFIG.CANLOG.DESC #chan_parent=Can this channel be used with SceneSys logs?
+&CONFIG.CANLOG.DEFAULT #chan_parent=0
+&CONFIG.CANLOG.TYPE #chan_parent=BOOL
+
 &CMD.@CHANNEL #chan=$^(?s)(?\:@|\+)?(chan|channel)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2;@attach %!/SW.[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
 @set #chan/CMD.@CHANNEL=regexp
 
@@ -209,4 +225,4 @@
 &ERR.CHANNEL #eobj=privatize(1,if(strlen(setr(!,after(%0,+),aplus)),if(strlen(setr(!,objeval(%#,%q<aplus>),feval)),u(#chan/FN.ERR_CHANNEL,%#,stripansi(first(%q<aplus>)),rest(%q<aplus>)),0),0))
 
 +help/add Communications/@channel=#chan/HLP_CHANNELS
-&HLP_CHANNELS #chan=[ansi(hw,Command Aliases:)] +chan, +channel, @chan, @channel%R%RThe Channels System provides global chat channels with unique names and a straightforward permissions and moderation system.%R%R[ansi(hc,Commands)]%R%R[ansi(hw,@chan)]%R%TDisplay all channels you can see.%R%R[ansi(hw,@chan/join <channel>)]%R%TJoin a channel.%R%R[ansi(hw,@chan/leave <channel>)]%R%TLeave a channel.%R%R[ansi(hw,@chan/gag <channel>)]%R%TSquelch output from a channel. You won't hear it until you /ungag. Clears at logout.%R%R[ansi(hw,@chan/ungag <channel>)]%R%TReleases a gag. Hear messages again.%R%R[ansi(hc,Sending Messages)]%R%RYou can send messages by typing [ansi(hw,+<channel> <message>)], where <channel> is able to partial match by prefix. For example, to speak on a channel named Public, you could use [ansi(hw,+p hello!)] or [ansi(hw,+pub yo!)]%R%R[ansi(hc,Moderator Commands)]%R%R[ansi(hw,@chan/restrict <channel>=<player>/<duration>)]%R%TApply a duration-based send block. Duration example: 30d 5h 40m for 30 days, 5 hours, and 40 minutes.%R%R[ansi(hw,@chan/unrestrict <channel>=<player>)]%R%TRelease a ban early.%R%R[ansi(hc,Administrator Commands)]%R%R[ansi(hw,@chan/create <channel>)]%R%TCreates a new channel. use the ansi%(%) function to create one with a colored name!%R%R[ansi(hw,@chan/rename <old name>=<new name>)]%R%TRename a channel. Can rename to itself to fix case or color.%R%R[ansi(hw,@chan/delete <channel>=<verify>)]%R%TDelete a channel. Must enter the full name in <verify> to confirm.%R%R[ansi(hw,@chan/lock <channel>/<lock>=<lockkey>)]%R%TSet a MUSHcode lock string to one of the channel locks. See more below.%R%R[ansi(hw,@chan/unlock <channel>/<lock>)]%R%TRelease a lock back to defaults.%R%R[ansi(hw,@chan/options <channel>\[/<op>=<value>\])]%R%TView or change a Channel's options.%R%R[ansi(hc,Permissions and Membership)]%RChannels each have three lists for privileges: members, moderators, and admins. These lists can be modified using the switches:%R[ansi(hw,/memadd /memrem /modadd /modrem /admadd /admrem)]%RExample:%R[ansi(hw,@rad/memadd <channel>=<player>)]%R%RA Wizard/Owner can appoint Admins. Admins may appoint Moderators and use /options. Moderators may add and remove members and use the /restrict feature. Members can join and speak on the channel. Higher permissions imply all lower privileges: IE, moderators can always talk whether or not they're on the member list.%R%RThe [ansi(hw,AdminLock)], [ansi(hw,ModeratorLock)], and [ansi(hw,TalkLock)] offer an alternate approach for granting permission, which CO-EXISTS with the above lists. IE: Moderator privileges are gained by EITHER passing the lock OR being in the Moderators list.%R%R[ansi(hc,Lock Keys)]%RChannels have access to special eval locks.%R[ansi(hw,LK.ADMIN/1)]%R%TEvals true if checker is on the admins list.%R[ansi(hw,LK.MODERATE/1)]%R%TEvals true if checker is on the moderators list.%R[ansi(hw,LK.MEMBER/1)]%R%TEvals true if checker is on the member list.%R%R[ansi(hc,Default Channel Locks)]%R[iter(TalkLock ModerateLock AdminLock,[ansi(hw,%i0)]: [lock(#chan_parent/user|%i0)],%B,%R)]
+&HLP_CHANNELS #chan=[ansi(hw,Command Aliases:)] +chan, +channel, @chan, @channel%R%RThe Channels System provides global chat channels with unique names and a straightforward permissions and moderation system.%R%R[ansi(hc,Commands)]%R%R[ansi(hw,@chan)]%R%TDisplay all channels you can see.%R%R[ansi(hw,@chan/join <channel>)]%R%TJoin a channel.%R%R[ansi(hw,@chan/leave <channel>)]%R%TLeave a channel.%R%R[ansi(hw,@chan/gag <channel>)]%R%TSquelch output from a channel. You won't hear it until you /ungag. Clears at logout.%R%R[ansi(hw,@chan/ungag <channel>)]%R%TReleases a gag. Hear messages again.%R%R[if(isdbref(tag(scene)),[ansi(hc,Roleplay Logging)]%RThe following commands integrate with the Roleplay Logging system. See [ansi(hw,+help @scene)]. The indication that a Channel is being logged is a sequence of numbers after its name.%R%R[ansi(hw,@chan/log <channel>=<SceneId>)]%R%TBegin logging to a given Scene.%R%R[ansi(hw,@chan/stoplog <channel>=<SceneID>)]%R%TStop further messages from being logged to that Scene.%R%R)][ansi(hc,Sending Messages)]%R%RYou can send messages by typing [ansi(hw,+<channel> <message>)], where <channel> is able to partial match by prefix. For example, to speak on a channel named Public, you could use [ansi(hw,+p hello!)] or [ansi(hw,+pub yo!)]%R%R[ansi(hc,Moderator Commands)]%R%R[ansi(hw,@chan/restrict <channel>=<player>/<duration>)]%R%TApply a duration-based send block. Duration example: 30d 5h 40m for 30 days, 5 hours, and 40 minutes.%R%R[ansi(hw,@chan/unrestrict <channel>=<player>)]%R%TRelease a ban early.%R%R[ansi(hc,Administrator Commands)]%R%R[ansi(hw,@chan/create <channel>)]%R%TCreates a new channel. use the ansi%(%) function to create one with a colored name!%R%R[ansi(hw,@chan/rename <old name>=<new name>)]%R%TRename a channel. Can rename to itself to fix case or color.%R%R[ansi(hw,@chan/delete <channel>=<verify>)]%R%TDelete a channel. Must enter the full name in <verify> to confirm.%R%R[ansi(hw,@chan/lock <channel>/<lock>=<lockkey>)]%R%TSet a MUSHcode lock string to one of the channel locks. See more below.%R%R[ansi(hw,@chan/unlock <channel>/<lock>)]%R%TRelease a lock back to defaults.%R%R[ansi(hw,@chan/options <channel>\[/<op>=<value>\])]%R%TView or change a Channel's options.%R%R[ansi(hc,Permissions and Membership)]%RChannels each have three lists for privileges: members, moderators, and admins. These lists can be modified using the switches:%R[ansi(hw,/memadd /memrem /modadd /modrem /admadd /admrem)]%RExample:%R[ansi(hw,@rad/memadd <channel>=<player>)]%R%RA Wizard/Owner can appoint Admins. Admins may appoint Moderators and use /options. Moderators may add and remove members and use the /restrict feature. Members can join and speak on the channel. Higher permissions imply all lower privileges: IE, moderators can always talk whether or not they're on the member list.%R%RThe [ansi(hw,AdminLock)], [ansi(hw,ModeratorLock)], and [ansi(hw,TalkLock)] offer an alternate approach for granting permission, which CO-EXISTS with the above lists. IE: Moderator privileges are gained by EITHER passing the lock OR being in the Moderators list.%R%R[ansi(hc,Lock Keys)]%RChannels have access to special eval locks.%R[ansi(hw,LK.ADMIN/1)]%R%TEvals true if checker is on the admins list.%R[ansi(hw,LK.MODERATE/1)]%R%TEvals true if checker is on the moderators list.%R[ansi(hw,LK.MEMBER/1)]%R%TEvals true if checker is on the member list.%R%R[ansi(hc,Default Channel Locks)]%R[iter(TalkLock ModerateLock AdminLock,[ansi(hw,%i0)]: [lock(#chan_parent/user|%i0)],%B,%R)]

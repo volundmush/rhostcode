@@ -1,6 +1,6 @@
 @skip isdbref(tag(setr(1,scene)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No global room set!;@assert/inline isdbref(setr(0,create(Scene System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=[globalroom()];@parent %q0=#info_lib}
 
-&CMD.SCENE #scene=$^(?s)(?\:@|\+)?(scene|scenes|plot|plots|rplog|rplogs|rpchan)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:th setq(!,switch(%1,scene,scene,scenes,scene,plot,plot,plots,plot,rplog,scene,rplogs,scene,rpchan,rpchan),family);@assert/inline isint(setr(!,u(FN.PREPENT,%#),ent))=@pemit %#=Couldn't create Entity: %q<ent>;@attach #inc/GET_SWITCH=%2,%q<family>;@attach %!/SW.%q<family>.[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
+&CMD.SCENE #scene=$^(?s)(?\:@|\+)?(scene|scenes|plot|plots|rplog|rplogs)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:th setq(!,switch(%1,scene,scene,scenes,scene,plot,plot,plots,plot,rplog,scene,rplogs,scene),family);@assert/inline isint(setr(!,u(FN.PREPENT,%#),ent))=@pemit %#=Couldn't create Entity: %q<ent>;@attach #inc/GET_SWITCH=%2,%q<family>;@attach %!/SW.%q<family>.[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
 @set #scene/CMD.SCENE=regexp
 
 
@@ -31,7 +31,7 @@
 &Q.INSERT.ACTOR #scene=INSERT actor (scene_id,entity_id,actor_type,actor_date_created) VALUES (?,?,?,FROM_UNIXTIME(?))
 
 &MSG_SCENE #scene=@pemit/list [setunion(sql(SELECT entity_objid FROM actor WHERE scene_id=%0 AND actor_type>=%1),%2)]=[ansi(c,SCENE %0:)] [gm_format(%3,##,%:)]
-@@ %0 - scene id, %1 - minimum actor_type to display to, %2 - extra objids to send to. %3 - message. %4 timestamp data
+@@ %0 - scene id, %1 - minimum actor_type to display to, %2 - extra objids to send to. %3 - message.
 
 &Q.INSERT.SCENE #scene=INSERT INTO scene (scene_title,scene_title_color,scene_date_created,scene_date_scheduled) VALUES (?,?,?,?,FROM_UNIXTIME(?),FROM_UNIXTIME(?))
 
@@ -74,15 +74,75 @@
 &SW.SCENE.UNTAG #scene=@attach %!/FINDSCENE=%0,scene;@assert/inline eq(mysql(SELECT.ACTOR.TYPE,%q<scene>,%q<ent>),1)=@pemit %#=You haven't tagged Scene %q<scene>: '%q<sname>'!;th setq(!,u(FN.PREPACT,%q<scene>,%:),actor);@attach %!/MSG_SCENE=%0,0,%k un-tagged the scene!;@attach #inc/DOSQL=UPDATE.ACTOR.FIELD,actor_type,0,%q<actor>
 
 @@ PLOT Section
-&SWITCHES.PLOT.0 #scene=CREATE|ADDRUNNER|REMRUNNER|ADDHELPER|REMHELPER|TITLE|PITCH|OUTCOME|STARTED|ENDED|ADDSCENE|REMSCENE
+&SWITCHES.PLOT.0 #scene=ADDHELPER|REMHELPER|ADDSCENE|REMSCENE|STARTED|ENDED
 
-@@ RPCHAN
-&SWITCHES.RPCHAN.0 #scene=ADDRADIO|ADDCHANNEL|REMCHANNEL|REMRADIO
+&SWITCHES.PLOT.5 #scene=CREATE|ADDRUNNER|REMRUNNER|TITLE|PITCH|OUTCOME
 
-&SW.RPCHAN.ADDRADIO #scene=
-&SW.RPCHAN.ADDCHANNEL #scene=
-&SW.RPCHAN.REMRADIO #scene=
-&SW.RPCHAN.REMCHANNEL #scene=
+&Q.SELECT.PLOT #scene=SELECT ! FROM plot_view WHERE plot_id=?
+&Q.SELECT.PLOT_SCENES #scene=SELECT scene_id FROM scene_plot WHERE plot_id=?
+&Q.SELECT.SCENE_VIEW #scene=SELECT ! FROM scene_view WHERE scene_id=?
+
+&FINDPLOT #scene=@assert/inline strlen(%0)=@pemit %#=No Plot ID entered!;@assert/inline isint(setr(!,mysql(SELECT.PLOT,plot_id,%0),%1))=@pemit %#=That isn't a valid Plot ID!;th setq(!,mysql(SELECT.PLOT,plot_title,%0),pname);
+
+&FN.PLOTSCENE.COLUMNS #scene=printf($-4s $-20s $-10s $-15s $-15s,ID,Title,Status,Started,Finished)
+&FN.PLOTSCENE.ROW #scene=printf($-4s $-20s $-10s $-15s $-15s,%0,mysql(SELECT.SCENE_VIEW,scene_title_color,%0),elements(setr(!,mysql(SELECT.SCENE_VIEW,scene_status_name[chr(44)]scene_date_started_secs[chr(44)]scene_date_activity_secs,%0),data),1,|),fancytime(elements(%q<data>,2,|)),fancytime(elements(%q<data>,3,|)))
+
+&Q.SELECT.RUNNERS #scene=SELECT entity_objid,entity_name,runner_type_name FROM plot_runner_view WHERE plot_id=? ORDER BY runner_type ASC
+
+&FN.PLOTRUNNER.COLUMNS #scene=printf($-30s $-20s,Name,Status)
+&FN.PLOTRUNNER.ROW #scene=printf($-30s $-20s,if(isobjid(elements(%0,1,^)),cname(elements(%0,1,^)),elements(%0,2,^)%B\(Deleted\)),elements(%0,3,^))
+
+&INC.PLOT.DISPLAY #scene=@attach %!/FINDPLOT=%0,plot;@pemit %#=header(Plot %q<plot>: '%q<pname>');@dolist/inline Start End={@if isint(setr(!,mysql(SELECT.PLOT,plot_date_[lcstr(%d0)]_secs,%q<plot>),timestamp))={@pemit %#=[ansi(hw,%d0 Date:)]%b[fancytime(%q<timestamp>)]}};@if strlen(setr(!,mysql2(SELECT.RUNNERS,%q<plot>),runners))={@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.PLOTRUNNER.COLUMNS));@dolist/inline/delimit | %q<runners>={@pemit %#=u(FN.PLOTRUNNER.ROW,%d0)}};@dolist/inline Pitch Outcome={@if strlen(setr(!,mysql(SELECT.PLOT,plot_[lcstr(%d0)]_color,%q<plot>),text))={@pemit %#=separator(%d0);@pemit %#=%q<text>}};@if words(setr(!,mysql(SELECT.PLOT_SCENES,%q<plot>),scenes))={@pemit %#=separator(Related Scenes);@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.PLOTSCENE.COLUMNS));@dolist/inline %q<scenes>={@pemit %#=u(FN.PLOTSCENE.ROW,%d0)}};@pemit %#=footer()
+
+&FN.PLOT.COLUMNS #scene=printf($-5s $-40s,ID,Title)
+&FN.PLOT.ROW #scene=printf($-5s $-40s,%0,mysql(SELECT.PLOT,plot_title,%0))
+
+&Q.SELECT.PLOTS #scene=SELECT plot_id FROM plot
+
+&INC.PLOT.LIST #scene=@pemit %#=header(Plots);@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.PLOT.COLUMNS));@if words(setr(!,mysql(SELECT.PLOTS),plots))={@dolist/inline %q<plots>={@pemit %#=u(FN.PLOT.ROW,%d0)}};@pemit %#=footer()
+
+&SW.PLOT.MAIN #scene=@if strlen(%0)={@attach %!/INC.PLOT.DISPLAY},{@attach %!/INC.PLOT.LIST}
+
+&MSG_PLOT #scene=@pemit/list [setunion(sql(SELECT entity_objid FROM plot_runner_view WHERE plot_id=%0 AND runner_type>=%1),%2)]=[ansi(c,PLOT %0:)] [gm_format(%3,##,%:)]
+@@ %0 - PLOT id, %1 - minimum actor_type to display to, %2 - extra objids to send to. %3 - message.
+
+&Q.INSERT.PLOT #scene=INSERT INTO plot (plot_title,plot_date_start) VALUES (?,FROM_UNIXTIME(?))
+&Q.UPDATE.PLOT #scene=UPDATE plot SET !=? WHERE plot_id=?
+&Q.UPDATE.PLOT.UNIXTIME #scene=UPDATE plot SET !=FROM_UNIXTIME(?) WHERE plot_id=?
+
+&Q.INSERT.RUNNER #scene=INSERT INTO plot_runner (plot_id,entity_id,runner_type) VALUES (?,?,?) ON DUPLICATE KEY UPDATE runner_type=VALUES(runner_type)
+
+&SW.PLOT.CREATE #scene=@assert/inline strlen(stripansi(%0))=@pemit %#=No plot title entered!;@attach #inc/DOSQL=INSERT.PLOT/plot,stripansi(%0),secs();@attach #inc/MSG_ALERT=Plot %q<plot> '[stripansi(%0)]' Created.
+
+&Q.SELECT.RUNNER #scene=SELECT ! from plot_runner_view WHERE plot_id=? AND !=?
+&Q.DELETE.RUNNER #scene=DELETE pr FROM plot_runner AS pr LEFT JOIN entity AS e on e.entity_id=pr.entity_id WHERE e.entity_objid=? AND pr.plot_id=?
+
+&SW.PLOT.ADDRUNNER #scene=@attach %!/FINDPLOT=%0,plot;@attach #inc/GET_PLAYER=%1,t1;@break/inline eq(mysql(SELECT.RUNNER,%q<plot>,entity_objid,%q<t1>),2)=@pemit %#=[cname(%q<t1>)] is already a runner!;@attach #inc/DOSQL=INSERT.RUNNER,%q<plot>,u(FN.PREPENT,%q<t1>),2;@attach %!/MSG_PLOT=%q<plot>,0,%:,Added a Runner: [cname(%q<t1>)]
+
+&SW.PLOT.REMRUNNER #scene=@attach %!/FINDPLOT=%0,plot;@attach #inc/GET_PLAYER=%1,t1;@assert/inline eq(mysql(SELECT.RUNNER,runner_type,%q<plot>,entity_objid,%q<t1>),2)=@pemit %#=[cname(%q<t1>)] is not a runner!;@attach %!/MSG_PLOT=%q<plot>,0,%:,Removed a Runner: [cname(%q<t1>)];@attach #inc/DOSQL=DELETE.RUNNER,%q<t1>,%q<plot>
+
+&INC.CHANGEFIELD #scene=@attach %!/FINDPLOT=%0,plot;@assert/inline cor(gtebittype(%#,5),gte(mysql(SELECT.RUNNER,runner_type,%q<plot>,entity_objid,%:),%1))=@pemit %#=Permission denied.;@assert/inline cor(gtebittype(%#,5),!isint(mysql(SELECT.PLOT,plot_date_end_secs,%q<plot>)))=@pemit %#=Permission denied. The plot has ended.
+
+&SW.PLOT.ADDHELPER #scene=@attach %!/INC.CHANGEFIELD=%0,2;@attach #inc/GET_PLAYER=%1,t1;@break/inline gt(mysql(SELECT.RUNNER,runner_type,%q<plot>,entity_objid,%q<t1>),0)=@pemit %#=[cname(%q<t1>)] is already a helper or runner!;@attach #inc/DOSQL=INSERT.RUNNER,%q<plot>,u(FN.PREPENT,%q<t1>),1;@attach %!/MSG_PLOT=%q<plot>,0,%:,Added a Helper: [cname(%q<t1>)]
+
+&SW.PLOT.REMHELPER #scene=@attach %!/INC.CHANGEFIELD=%0,2;@attach #inc/GET_PLAYER=%1,t1;@assert/inline eq(mysql(SELECT.RUNNER,runner_type,%q<plot>,entity_objid,%q<t1>),1)=@pemit %#=[cname(%q<t1>)] is not a helper!;@attach %!/MSG_PLOT=%q<plot>,0,%:,Added a Helper: [cname(%q<t1>)];@attach #inc/DOSQL=DELETE.RUNNER,%q<t1>,%q<plot>;
+
+&SW.PLOT.TITLE #scene=@attach %!/INC.CHANGEFIELD=%0,2;@assert/inline strlen(stripansi(%1))=@pemit %#=No title entered!;@attach #inc/DOSQL=UPDATE.PLOT,plot_title,stripansi(%1);@attach %!/MSG_PLOT=%q<plot>,0,%:,Updated the Title.
+
+&SW.PLOT.PITCH #scene=@attach %!/INC.CHANGEFIELD=%0,2;@assert/inline strlen(%1)=@pemit %#=No pitch entered!;@attach #inc/DOSQL=UPDATE.PLOT,plot_pitch,stripansi(%1);@attach #inc/DOSQL=UPDATE.PLOT,plot_pitch_color,%1;@attach %!/MSG_PLOT=%q<plot>,0,%:,Updated the Pitch.
+
+&SW.PLOT.OUTCOME #scene=@attach %!/INC.CHANGEFIELD=%0,2;@assert/inline strlen(%1)=@pemit %#=No outcome entered!;@attach #inc/DOSQL=UPDATE.PLOT,plot_outcome,stripansi(%1);@attach #inc/DOSQL=UPDATE.PLOT,plot_outcome_color,%1;@attach %!/MSG_PLOT=%q<plot>,0,%:,Updated the Outcome.
+
+&SW.PLOT.STARTED #scene=@attach %!/FINDPLOT=%0,plot;@attach #inc/VALID.TIME=%1;@attach #inc/DOSQL=UPDATE.PLOT.UNIXTIME,plot_date_start,%q<value>,%q<plot>;@attach %!/MSG_PLOT=%q<plot>,0,%:,Updated the Plot Start Date.;
+
+&SW.PLOT.ENDED #scene=@attach %!/FINDPLOT=%0,plot;@if strmatch(%1,NULL)={@attach #inc/DOSQL=UPDATE.PLOT,plot_date_end,SET_NULL},{@attach #inc/VALID.TIME=%1;@attach #inc/DOSQL=UPDATE.PLOT.UNIXTIME,plot_date_end,%q<value>,%q<plot>};@attach %!/MSG_PLOT=%q<plot>,0,%:,Updated the Plot End Date.
+
+&Q.INSERT.SCENE_PLOT #scene=INSERT INTO scene_plot (plot_id,scene_id) VALUES (?,?)
+&Q.DELETE.SCENE_PLOT #scene=DELETE FROM scene_plot WHERE plot_id=? AND scene_id=?
+
+&SW.PLOT.ADDSCENE #scene=@attach %!/INC.CHANGEFIELD=%0,1;@attach %!/FINDSCENE=%1,scene;@break/inline match(mysql(SELECT.PLOT_SCENES,%q<plot>),%q<scene>)=@pemit %#=That scene is already part of the plot!;@attach #inc/DOSQL=INSERT.SCENE_PLOT,%q<plot>,%q<scene>;@attach %!/MSG_PLOT=%q<plot>,0,%:,Added Scene %q<scene>: '%q<sname>';
+
+&SW.PLOT.REMSCENE #scene=@attach %!/INC.CHANGEFIELD=%0,1;@attach %!/FINDSCENE=%1,scene;@assert/inline match(mysql(SELECT.PLOT_SCENES,%q<plot>),%q<scene>)=@pemit %#=That scene is not part of the plot!;@attach #inc/DOSQL=DELETE.SCENE_PLOT,%q<plot>,%q<scene>;@attach %!/MSG_PLOT=%q<plot>,0,%:,Removed Scene %q<scene>: '%q<sname>';
 
 @@ Pose Recording
 
@@ -116,7 +176,7 @@
 
 &Q.INSERT.ACTROLE #scene=INSERT INTO actrole (actor_id,actrole_name) VALUES (?,?)
 
-&Q.INSERT.POSE #scene=INSERT INTO pose (actrole_id,channel_id,pose_date_created,pose_text) VALUES (?,?,FROM_UNIXTIME(?),?)
+&Q.INSERT.POSE #scene=INSERT INTO pose (actrole_id,channel_id,pose_date_created,pose_text) VALUES (!,?,FROM_UNIXTIME(?),?)
 
 &Q.UPDATE.POSE #scene=UPDATE pose SET !=? WHERE pose_id=?
 
@@ -143,3 +203,11 @@
 &FN.OSAY_HEADER #scene=[ansi(hx,-<)][ansi(hr,OOC)][if(%0,[ansi(hx,:)]%B[ansi(hg,%1)])][ansi(hx,>-)]
 
 &OSAY #scene=@assert/inline elock(%l/SpeechLock,%#)=@pemit %#=You may not express yourself here.;@assert/inline strlen(%0)=@pemit %#=Osay what?;@break/inline strmatch(%0,|*)=@pemit %#=Emits are disabled for osay.;th setq(!,u(FN.OSAY,%0,%:),pose);@if setr(!,cand(isint(setr(!,get(%l/GAME.SCENE),scene)),mysql(SELECT.SCENE_ACTIVE,%q<scene>)),sceneactive)={@attach %!/OSAY_RECORD=%q<scene>,%q<pose>};@remit %l=[u(FN.OSAY_HEADER,%q<sceneactive>,%q<scene>)] %q<pose>
+
+@@ System Messages
+
+&RECORD_SCENE #scene=@skip isint(setr(!,mysql(SELECT.CHANNEL,channel_id,%0,2,%2),chan_id))={@attach #inc/DOSQL=INSERT.CHANNEL/chan_id,%0,%2,NULL,2};@if isobjid(%1)={@skip isint(setr(!,mysql(SELECT.ACTROLE,%q<actor>,setr(!,name(%1),actname)),role_id))={@attach #inc/DOSQL=INSERT.ACTROLE/role_id,%q<actor>,%q<actname>}};@attach #inc/DOSQL=INSERT.POSE/pose_id,strfirstof(%q<role_id>,NULL),%q<chan_id>,secs(),stripansi(%3);@attach #inc/DOSQL=UPDATE.POSE,pose_text_color,%3,%q<pose_id>;
+@@ %0 - scene ID, %1 - enactor objid if player, empty otherwise, %2 - system name, %3 - message
+
+&RECORD_ROOM #scene=@if setr(!,cand(isint(setr(!,get(%l/GAME.SCENE),scene)),mysql(SELECT.SCENE_ACTIVE,%q<scene>)),sceneactive)={@attach %!/RECORD_SCENE=%q<scene>,%1,%2,%3}
+@@ %0 - room dbref, %1 - enactor objid if player, empty otherwise, %2 - system name, %3 - message

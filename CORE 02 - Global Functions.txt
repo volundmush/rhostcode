@@ -169,7 +169,7 @@
 
 &REG.SQLFORMAT #gfun=(!|\?)
 
-&GFN.SQLFORMAT_RAW #gfun=privatize(1,edit(edit(regeditalli(%0,get(#gfun/REG.SQLFORMAT),[setq(!,$0,reg)][if(isint(setr(!,v(setr(!,inc(%q<sqlnum>),sqlnum)),arg)),%q<arg>,switch(%q<reg>,!,%q<arg>,switch(%q<arg>,NULL,NULL,SET_NULL,SET_NULL,'[sqlescape(%q<arg>)]')))]),=NULL,%BIS NULL),=SET_NULL,=NULL))
+&GFN.SQLFORMAT_RAW #gfun=privatize(1,edit(edit(edit(regeditalli(%0,get(#gfun/REG.SQLFORMAT),[setq(!,$0,reg)][if(isint(setr(!,v(setr(!,inc(%q<sqlnum>),sqlnum)),arg)),%q<arg>,switch(%q<reg>,!,%q<arg>,switch(%q<arg>,NULL,NULL,SET_NULL,SET_NULL,'[sqlescape(%q<arg>)]')))]),=NULL,%BIS NULL),=SET_NULL,=NULL),='SET_NULL',=NULL))
 
 
 &GFN.SQLFORMAT #gfun=sqlformat_raw(v(Q.%0),%1,%2,%3,%4,%5,%6,%7,%8,%9)

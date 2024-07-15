@@ -33,7 +33,12 @@ CREATE TABLE IF NOT EXISTS plot_runner (
 ) ENGINE=InnoDB;
 
 CREATE OR REPLACE VIEW plot_runner_view AS
-       SELECT p.*,pr.runner_type,e.*
+       SELECT p.*,pr.runner_type,e.*,
+                CASE pr.runner_type
+                    WHEN 1 THEN 'Helper'
+                    WHEN 2 THEN 'Runner'
+                    ELSE 'Unknown'
+                END AS runner_type_name
        FROM plot_runner AS pr
            LEFT JOIN plot_view AS p ON p.plot_id = pr.plot_id
            LEFT JOIN entity AS e ON pr.entity_id = e.entity_id;
@@ -97,7 +102,13 @@ CREATE TABLE IF NOT EXISTS actor (
 
 CREATE OR REPLACE VIEW actor_view AS
     SELECT a.actor_id,a.scene_id,a.entity_id,a.actor_type,a.action_count,
-           e.entity_name,e.entity_objid
+           e.entity_name,e.entity_objid,
+           CASE a.actor_type
+               WHEN 0 THEN 'Participant'
+               WHEN 1 THEN 'Tagged'
+               WHEN 2 THEN 'Owner'
+               ELSE 'Unknown'
+           END AS actor_type_name
     FROM actor AS a
     LEFT JOIN entity AS e ON a.entity_id = e.entity_id;
 
@@ -114,6 +125,13 @@ SELECT s.scene_id,s.scene_title,s.scene_title_color,s.scene_pitch,s.scene_pitch_
        s.scene_date_activity,
        UNIX_TIMESTAMP(s.scene_date_activity) AS scene_date_activity_secs,
        s.scene_status,
+       CASE s.scene_status
+           WHEN 0 THEN 'Scheduled'
+           WHEN 1 THEN 'Active'
+           WHEN 2 THEN 'Paused'
+           WHEN 3 THEN 'Finished'
+           ELSE 'Unknown'
+       END AS scene_status_name,
        a.entity_id as owner_id,
        a.entity_name as owner_name,
        a.entity_objid as owner_objid
@@ -160,7 +178,7 @@ CREATE OR REPLACE VIEW channel_view AS
     FROM channel AS c;
 
 CREATE OR REPLACE VIEW channel_scene AS
-    SELECT c.channel_id,c.channel_name,c.channel_objid,c.channel_category,
+    SELECT c.channel_id,c.channel_name,c.channel_objid,c.channel_category,c.channel_active,
            s.*
     FROM channel AS c
     LEFT JOIN scene_view AS s ON c.scene_id = s.scene_id;
