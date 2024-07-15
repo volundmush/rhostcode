@@ -75,6 +75,7 @@ CREATE TABLE IF NOT EXISTS scene (
     scene_date_finished DATETIME NULL,
     scene_date_activity DATETIME NULL,
     scene_status TINYINT DEFAULT 0,
+    scene_capacity INT UNSIGNED NOT NULL DEFAULT 0,
     INDEX(scene_date_created),
     INDEX(scene_date_scheduled,scene_status),
     INDEX(scene_status,scene_date_activity)
@@ -113,7 +114,8 @@ CREATE OR REPLACE VIEW actor_view AS
     LEFT JOIN entity AS e ON a.entity_id = e.entity_id;
 
 CREATE OR REPLACE VIEW scene_view AS
-SELECT s.scene_id,s.scene_title,s.scene_title_color,s.scene_pitch,s.scene_pitch_color,s.scene_outcome,s.scene_outcome_color,
+SELECT s.scene_id,s.scene_title,s.scene_title_color,s.scene_pitch,s.scene_pitch_color,
+       s.scene_outcome,s.scene_outcome_color,s.scene_capacity,
        s.scene_date_created,
        UNIX_TIMESTAMP(s.scene_date_created) AS scene_date_created_secs,
        s.scene_date_scheduled,

@@ -1,11 +1,11 @@
 @skip isdbref(tag(setr(1,scene)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No global room set!;@assert/inline isdbref(setr(0,create(Scene System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=[globalroom()];@parent %q0=#info_lib}
 
-&CMD.SCENE #scene=$^(?s)(?\:@|\+)?(scene|scenes|plot|plots|rplog|rplogs)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:th setq(!,switch(%1,scene,scene,scenes,scene,plot,plot,plots,plot,rplog,scene,rplogs,scene),family);@assert/inline isint(setr(!,u(FN.PREPENT,%#),ent))=@pemit %#=Couldn't create Entity: %q<ent>;@attach #inc/GET_SWITCH=%2,%q<family>;@attach %!/SW.%q<family>.[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
+&CMD.SCENE #scene=$^(?s)(?\:@|\+)?(scene|scenes|plot|plots|rplog|rplogs|log|logs)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:th setq(!,switch(%1,scene,scene,scenes,scene,plot,plot,plots,plot,rplog,scene,rplogs,scene,log,scene,logs,scene),family);@assert/inline isint(setr(!,u(FN.PREPENT,%#),ent))=@pemit %#=Couldn't create Entity: %q<ent>;@attach #inc/GET_SWITCH=%2,%q<family>;@attach %!/SW.%q<family>.[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
 @set #scene/CMD.SCENE=regexp
 
 
 @@ SCENE section
-&SWITCHES.SCENE.0 #scene=CREATE|TITLE|PITCH|OUTCOME|JOIN|LEAVE|START|PAUSE|FINISH|TAG|UNTAG|SCHEDULE|RESCHEDULE|UNDO|REDO|EDIT|UPCOMING|CALENDAR|OLD|ROLE
+&SWITCHES.SCENE.0 #scene=CREATE|TITLE|PITCH|OUTCOME|START|PAUSE|FINISH|TAG|UNTAG|SCHEDULE|RESCHEDULE|UNDO|REDO|EDIT|UPCOMING|CALENDAR|OLD|ROLE
 
 &Q.PREPENT.SELECT #scene=SELECT entity_id FROM entity WHERE entity_objid=?
 &Q.PREPENT.INSERT #scene=INSERT INTO entity (entity_name,entity_objid) VALUES (?,?)
@@ -58,7 +58,7 @@
 
 &SW.SCENE.JOIN #scene=@attach %!/FINDSCENE=%0,scene;@assert/inline eq(1,mysql(SELECT.SCENE,scene_status,%q<scene>))=@pemit %#=Scene %q<scene>: '%q<sname>' is not active!;@attach %!/JOINSCENE=%q<scene>,%:
 
-&PITCHCOME #scene=@attach %!/FINDSCENE=%0,scene;@attach %!/CANCONTROL;@assert/inline strlen(%1)=@pemit %#=No %1 entered!;@attach #inc/DOSQL=UPDATE.SCENE.FIELD,scene_%1,stripansi(%2),%q<scene>;@attach #inc/DOSQL=UPDATE.SCENE.FIELD,scene_%1_color,%2,%q<scene>;@attach %!/MSG_SCENE=%0,0,,[capstr(%1)] updated!
+&PITCHCOME #scene=@attach %!/FINDSCENE=%0,scene;@attach %!/CANCONTROL;@assert/inline strlen(%1)=@pemit %#=No %1 entered!;@attach #inc/DOSQL=UPDATE.SCENE.FIELD,scene_%1,stripansi(%2),%q<scene>;@attach #inc/DOSQL=UPDATE.SCENE.FIELD,scene_%1_color,%2,%q<scene>;@attach %!/MSG_SCENE=%0,0,%:,[capstr(%1)] updated!
 @@ %0 - scene, %1 - field, %2 - text
 
 &SW.SCENE.TITLE #scene=@attach %!/PITCHCOME=%0,title,%1;
@@ -72,6 +72,15 @@
 &SW.SCENE.TAG #scene=@attach %!/FINDSCENE=%0,scene;@break/inline gt(mysql(SELECT.ACTOR.TYPE,%q<scene>,%q<ent>),0)=@pemit %#=You already tagged Scene %q<scene>: '%q<sname>'!;th setq(!,u(FN.PREPACT,%q<scene>,%:),actor);@attach #inc/DOSQL=UPDATE.ACTOR.FIELD,actor_type,1,%q<actor>;@attach %!/MSG_SCENE=%0,0,%k tagged the scene!
 
 &SW.SCENE.UNTAG #scene=@attach %!/FINDSCENE=%0,scene;@assert/inline eq(mysql(SELECT.ACTOR.TYPE,%q<scene>,%q<ent>),1)=@pemit %#=You haven't tagged Scene %q<scene>: '%q<sname>'!;th setq(!,u(FN.PREPACT,%q<scene>,%:),actor);@attach %!/MSG_SCENE=%0,0,%k un-tagged the scene!;@attach #inc/DOSQL=UPDATE.ACTOR.FIELD,actor_type,0,%q<actor>
+
+&SW.SCENE.EDIT #scene=
+&SW.SCENE.UNDO #scene=
+&SW.SCENE.REDO #scene=
+
+&SW.SCENE.CAPACITY #scene=
+
+&SW.SCENE.TAG #scene=
+&SW.SCENE.UNTAG #scene=
 
 @@ PLOT Section
 &SWITCHES.PLOT.0 #scene=ADDHELPER|REMHELPER|ADDSCENE|REMSCENE|STARTED|ENDED
@@ -133,16 +142,16 @@
 
 &SW.PLOT.OUTCOME #scene=@attach %!/INC.CHANGEFIELD=%0,2;@assert/inline strlen(%1)=@pemit %#=No outcome entered!;@attach #inc/DOSQL=UPDATE.PLOT,plot_outcome,stripansi(%1);@attach #inc/DOSQL=UPDATE.PLOT,plot_outcome_color,%1;@attach %!/MSG_PLOT=%q<plot>,0,%:,Updated the Outcome.
 
-&SW.PLOT.STARTED #scene=@attach %!/FINDPLOT=%0,plot;@attach #inc/VALID.TIME=%1;@attach #inc/DOSQL=UPDATE.PLOT.UNIXTIME,plot_date_start,%q<value>,%q<plot>;@attach %!/MSG_PLOT=%q<plot>,0,%:,Updated the Plot Start Date.;
+&SW.PLOT.STARTED #scene=@attach %!/FINDPLOT=%0,plot;@attach #inc/VALID.TIME=%1;@attach #inc/DOSQL=UPDATE.PLOT.UNIXTIME,plot_date_start,%q<value>,%q<plot>;@attach %!/MSG_PLOT=%q<plot>,0,%:,Updated the Plot Start Date.
 
 &SW.PLOT.ENDED #scene=@attach %!/FINDPLOT=%0,plot;@if strmatch(%1,NULL)={@attach #inc/DOSQL=UPDATE.PLOT,plot_date_end,SET_NULL},{@attach #inc/VALID.TIME=%1;@attach #inc/DOSQL=UPDATE.PLOT.UNIXTIME,plot_date_end,%q<value>,%q<plot>};@attach %!/MSG_PLOT=%q<plot>,0,%:,Updated the Plot End Date.
 
 &Q.INSERT.SCENE_PLOT #scene=INSERT INTO scene_plot (plot_id,scene_id) VALUES (?,?)
 &Q.DELETE.SCENE_PLOT #scene=DELETE FROM scene_plot WHERE plot_id=? AND scene_id=?
 
-&SW.PLOT.ADDSCENE #scene=@attach %!/INC.CHANGEFIELD=%0,1;@attach %!/FINDSCENE=%1,scene;@break/inline match(mysql(SELECT.PLOT_SCENES,%q<plot>),%q<scene>)=@pemit %#=That scene is already part of the plot!;@attach #inc/DOSQL=INSERT.SCENE_PLOT,%q<plot>,%q<scene>;@attach %!/MSG_PLOT=%q<plot>,0,%:,Added Scene %q<scene>: '%q<sname>';
+&SW.PLOT.ADDSCENE #scene=@attach %!/INC.CHANGEFIELD=%0,1;@attach %!/FINDSCENE=%1,scene;@break/inline match(mysql(SELECT.PLOT_SCENES,%q<plot>),%q<scene>)=@pemit %#=That scene is already part of the plot!;@attach #inc/DOSQL=INSERT.SCENE_PLOT,%q<plot>,%q<scene>;@attach %!/MSG_PLOT=%q<plot>,0,%:,Added Scene %q<scene>: '%q<sname>';@attach %!/MSG_SCENE=%q<scene>,0,%:,Scene added to Plot %q<plot>: '%q<pname>'
 
-&SW.PLOT.REMSCENE #scene=@attach %!/INC.CHANGEFIELD=%0,1;@attach %!/FINDSCENE=%1,scene;@assert/inline match(mysql(SELECT.PLOT_SCENES,%q<plot>),%q<scene>)=@pemit %#=That scene is not part of the plot!;@attach #inc/DOSQL=DELETE.SCENE_PLOT,%q<plot>,%q<scene>;@attach %!/MSG_PLOT=%q<plot>,0,%:,Removed Scene %q<scene>: '%q<sname>';
+&SW.PLOT.REMSCENE #scene=@attach %!/INC.CHANGEFIELD=%0,1;@attach %!/FINDSCENE=%1,scene;@assert/inline match(mysql(SELECT.PLOT_SCENES,%q<plot>),%q<scene>)=@pemit %#=That scene is not part of the plot!;@attach #inc/DOSQL=DELETE.SCENE_PLOT,%q<plot>,%q<scene>;@attach %!/MSG_PLOT=%q<plot>,0,%:,Removed Scene %q<scene>: '%q<sname>';@attach %!/MSG_SCENE=%q<scene>,0,%:,Scene removed from Plot %q<plot>: '%q<pname>'
 
 @@ Pose Recording
 
