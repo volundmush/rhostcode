@@ -231,7 +231,7 @@
 
 &FMT.ALT #gfun=u(FMT._UPPER,%0,ALT,elements(%1,if(strmatch(num(%2),num(%3)),1,2),|))
 
-&REG.FORMAT #gfun=(\$(\w+)(?:\((.*)\))?)
+&REG.FORMAT #gfun=(\$(\w+)(?:\((.*?)\))?)
 
 &GMFN.FORMAT #gfun=regeditalli(%0,get(#gfun/REG.FORMAT),[setq(!,$0,all)][setq(!,$2,fn)][setq(!,$3,arg)][uldefault(#gfun/FMT.%q<fn>,%q<all>,%q<fn>,%q<arg>,%1,%2,%3,%4,%5,%6,%7,%8,%9)])
 @@ %0 - message, %1 - recipient, %2 - source, %3+, extra arguments?

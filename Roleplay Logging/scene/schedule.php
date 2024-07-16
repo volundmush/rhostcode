@@ -10,15 +10,15 @@
 	else
 	{
 		
-		$schedule_data = $scenedb->get('scene_view', ['owner_name', 'owner_id', 'scene_title_color',
-		'scene_pitch_color', 'scene_date_scheduled'], ['scene_id'=>$num]);
+		$schedule_data = $scenedb->get('scene_view', ['owner_name', 'owner_id', 'scene_title',
+		'scene_pitch', 'scene_date_scheduled'], ['scene_id'=>$num]);
 		
 		$truetime = explode(" ",$schedule_data['scene_date_scheduled']);
 		$hourminute = explode(":",$truetime[1]);
 		$scene_time = $truetime[0].":".$truetime[1];
 		
 		$schedule = ['player_name'=>$schedule_data['owner_name'],'date'=>$truetime[0],'id'=>$num,
-		'title'=>convertRhost($schedule_data['scene_title_color']),'desc'=>$schedule_data['scene_pitch'],
+		'title'=>convertRhost($schedule_data['scene_title']),'desc'=>$schedule_data['scene_pitch'],
 		'time'=>$scene_time];
 		
 		$smarty->assign('schedule',$schedule);

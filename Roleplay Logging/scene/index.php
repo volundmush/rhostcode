@@ -1,14 +1,14 @@
 <?php
 	require_once 'base.php';
 	$scene_list = array_reverse($scenedb->select('scene_view', ["scene_id", "owner_id", "owner_name",
-	"scene_title_color", "scene_outcome_color", "scene_status"], ["scene_status[!]"=>2]));
+	"scene_title", "scene_outcome", "scene_status"], ["scene_status[!]"=>2]));
 	
 	$state_array = ["0"=>"Scheduled", "1"=>"Active", "2"=>"Paused", "3"=>"Finished"];
 	$scene_data = array();
 	foreach ($scene_list as $indiv)
 	{
 		$indiv_data = ["id"=>$indiv['scene_id'], "owner_name"=>$indiv['owner_name'], "owner"=>$indiv['owner_id'],
-		'title'=>convertRhost($indiv['scene_title_color']), "description"=>convertRhost($indiv['scene_outcome_color']),
+		'title'=>convertRhost($indiv['scene_title']), "description"=>convertRhost($indiv['scene_outcome']),
 		"state"=>$state_array[$indiv['scene_status']]];
 		$scene_data[] = $indiv_data;
 	}

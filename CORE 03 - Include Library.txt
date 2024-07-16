@@ -40,9 +40,9 @@
 
 &VALID.LOCKKEY #inc=@assert/inline valid(lockkey,%0)=@pemit %#={'%0' was not accepted by the @lock system.};th setq(!,setr(!,%0,value),valueformat)
 
-&VALID.TIME #inc=@assert/inline strlen(%0)=@attach %!/INC`MSG=You didn't enter a date!;@assert/inline gt(setr(!,setr(!,runintz(gettz(%#),convtime(%0)),value),time),0)=@attach %!/INC`MSG=The entered date was not recognized. Did you typo? Dates should be in abbreviated 24-hour <month> <day> <hour>:<minute> format using YOUR timezone\, such as Jun 26 7:00 or Oct 31 13:00. Check [ansi(hw,@list options convtime)] for more information.;th setq(!,runintz(UTC,convsecs(%q<value>)),valueformat)
+&VALID.TIME #inc=@assert/inline strlen(%0)=@pemit %#=You didn't enter a date!;@assert/inline gt(setr(!,setr(!,runintz(gettz(%#),convtime(%0)),value),time),0)=@pemit %#=The entered date was not recognized. Did you typo? Dates should be in abbreviated 24-hour <month> <day> <hour>:<minute> format using YOUR timezone\, such as Jun 26 7:00 or Oct 31 13:00. Check [ansi(hw,@list options convtime)] for more information.;th setq(!,runintz(UTC,convsecs(%q<value>)),valueformat)
 
-&VALID.FUTURE #inc=@attach %!/VALID_TIME;@assert/inline gt(%q<time>,secs())=@attach %!/INC`MSG=That would be in the past!
+&VALID.FUTURE #inc=@attach #inc/VALID.TIME;@assert/inline gt(%q<time>,secs())=@pemit %#=That would be in the past!
 
 &REGISTER_FUNCTIONS #inc=@dolist/inline lattr(%!/GPFN.*)={@function/protect/privilege [after(%d0,.)]=%!/%d0};@dolist/inline lattr(%!/GFN.*)={@function/protect [after(%d0,.)]=%!/%d0};@dolist/inline lattr(%!/GMFN.*)={@function/protect/privilege gm_[after(%d0,.)]=%!/%d0;@admin function_access=gm_[after(%d0,.)] guildmaster}
 

@@ -8,15 +8,13 @@ CREATE TABLE IF NOT EXISTS plot (
     plot_id INT AUTO_INCREMENT PRIMARY KEY,
     plot_title VARCHAR(255) UNIQUE,
     plot_pitch TEXT NULL,
-    plot_pitch_color TEXT NULL,
     plot_outcome TEXT NULL,
-    plot_outcome_color TEXT NULL,
     plot_date_start DATETIME NULL DEFAULT NULL,
     plot_date_end DATETIME NULL DEFAULT NULL
 ) ENGINE=InnoDB;
 
 CREATE OR REPLACE VIEW plot_view AS
-         SELECT plot_id,plot_title,plot_pitch,plot_pitch_color,plot_outcome,plot_outcome_color,
+         SELECT plot_id,plot_title,plot_pitch,plot_outcome,
                 plot_date_start,
                 UNIX_TIMESTAMP(plot_date_start) AS plot_date_start_secs,
                 plot_date_end,
@@ -64,11 +62,8 @@ CREATE OR REPLACE VIEW plot_runner_view_agg AS
 CREATE TABLE IF NOT EXISTS scene (
     scene_id INT AUTO_INCREMENT PRIMARY KEY,
     scene_title VARCHAR(255) NOT NULL UNIQUE,
-    scene_title_color VARCHAR(255) NOT NULL,
     scene_pitch TEXT NULL,
-    scene_pitch_color TEXT NULL,
     scene_outcome TEXT NULL,
-    scene_outcome_color TEXT NULL,
     scene_date_created DATETIME,
     scene_date_scheduled DATETIME NULL,
     scene_date_started DATETIME NULL,
@@ -113,9 +108,14 @@ CREATE OR REPLACE VIEW actor_view AS
     FROM actor AS a
     LEFT JOIN entity AS e ON a.entity_id = e.entity_id;
 
+CREATE OR REPLACE VIEW actor_tagged AS
+       SELECT scene_id,GROUP_CONCAT(entity_objid ORDER BY entity_name) AS tagged_objids, GROUP_CONCAT(entity_name ORDER BY entity_name SEPARATOR '|') AS tagged_names
+         FROM actor_view
+              WHERE actor_type = 1;
+
 CREATE OR REPLACE VIEW scene_view AS
-SELECT s.scene_id,s.scene_title,s.scene_title_color,s.scene_pitch,s.scene_pitch_color,
-       s.scene_outcome,s.scene_outcome_color,s.scene_capacity,
+SELECT s.scene_id,s.scene_title,s.scene_pitch,
+       s.scene_outcome,s.scene_capacity,
        s.scene_date_created,
        UNIX_TIMESTAMP(s.scene_date_created) AS scene_date_created_secs,
        s.scene_date_scheduled,
@@ -139,6 +139,13 @@ SELECT s.scene_id,s.scene_title,s.scene_title_color,s.scene_pitch,s.scene_pitch_
        a.entity_objid as owner_objid
     FROM scene AS s
     LEFT JOIN actor_view as a ON a.scene_id=s.scene_ID AND a.actor_type=2;
+
+CREATE OR REPLACE VIEW scene_scheduled AS
+       SELECT s.*,a.tagged_objids,a.tagged_names
+         FROM scene_view as s
+            LEFT JOIN actor_tagged as a ON s.scene_id = a.scene_id
+            WHERE s.scene_status = 0 AND s.scene_date_scheduled > NOW() - INTERVAL 10 HOUR
+       ORDER BY scene_date_scheduled;
 
 CREATE TABLE IF NOT EXISTS actrole (
     actrole_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -192,7 +199,6 @@ CREATE TABLE IF NOT EXISTS pose (
     pose_is_deleted TINYINT UNSIGNED NOT NULL DEFAULT 0,
     pose_date_created DATETIME NOT NULL,
     pose_text TEXT NOT NULL,
-    pose_text_color TEXT NULL,
     FOREIGN KEY (actrole_id) REFERENCES actrole(actrole_id) ON UPDATE CASCADE ON DELETE CASCADE,
     FOREIGN KEY (channel_id) REFERENCES channel(channel_id) ON UPDATE CASCADE ON DELETE CASCADE,
     INDEX(pose_date_created)
@@ -200,7 +206,7 @@ CREATE TABLE IF NOT EXISTS pose (
 
 CREATE OR REPLACE VIEW pose_view AS
        SELECT p.pose_id,p.pose_is_deleted,p.pose_date_created,UNIX_TIMESTAMP(p.pose_date_created) AS pose_date_created_secs,
-              p.pose_text,p.pose_text_color,
+              p.pose_text,
               c.channel_id,c.channel_category,c.channel_category_name,c.channel_name,
               a.*
            FROM pose AS p

@@ -7,7 +7,7 @@
 &CRON_TIME_DUMP3 #cron=||||30|
 &CRON_TIME_DUMP4 #cron=||||45|
 
-&DUMP #cron=@attach #inc/MSG_ALERT=Dumping database to flatfile...;@dump/flat
+&DUMP #cron=@@ @attach #inc/MSG_ALERT=Dumping database to flatfile...;@dump/flat
 &CRON_JOB_DUMP1 #cron=@attach %!/DUMP
 &CRON_JOB_DUMP2 #cron=@attach %!/DUMP
 &CRON_JOB_DUMP3 #cron=@attach %!/DUMP

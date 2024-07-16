@@ -47,9 +47,9 @@
 
 &HANDLE.RELOCATE #interact=@dolist/inline sort(lattr(%!/HANDLE.RELOCATE.*))={@attach/nobreak %!/%d0}
 
-&HANDLE.RELOCATE.000_ZONECHANGE #interact=th setq(!,upzones(%1),oldupzones);th setq(!,upzones(%0),newupzones);@skip strmatch(%q<oldupzones>,%q<newupzones>)={@attach %!/HANDLE.ZONECHANGE=%0,revwords(listdiff(%q<oldupzones>,%q<newupzones>)),revwords(listdiff(%q<newupzones>,%q<oldupzones>)),msecs(),crc32(%0,objid(%!),%q<oldupzones>,%q<newupzones>)}
+&HANDLE.RELOCATE.000_ZONECHANGE #interact=th setq(!,upzones(%1),oldupzones);th setq(!,upzones(%0),newupzones);@skip strmatch(%q<oldupzones>,%q<newupzones>)={@attach %!/HANDLE.ZONECHANGE=%0,%q<newupzones>,revwords(listdiff(%q<oldupzones>,%q<newupzones>)),revwords(listdiff(%q<newupzones>,%q<oldupzones>)),msecs(),crc32(%0,objid(%!),%q<oldupzones>,%q<newupzones>)}
 
 &FN.HASHRETAIN #gfun=lte(sub(%1,after(%0,~)),10)
 
-&HANDLE.ZONECHANGE #interact=@set %0=GAME.UPZONES:%1;@set %0=GAME.UPZONES.HASH:[setunion(filter(FN.HASHRETAIN,get(%0/GAME.UPZONES.HASH),|,|,%3),%4~%3)];th setq(!,filter(#lambda/[lit(hastotem(%1,%0))],CHARACTER ITEM STRUCTURE REGION,%b,%b,%#),totems);@if words(%1)={@dolist/inline/nobreak %1={@trigger/inline %d0/ZONE.LEAVE=%0,%q<totems>}};@if words(%2)={@dolist/inline/nobreak %2={@trigger/inline %d0/ZONE.ENTER=%0,%q<totems>}};th setq(!,setunion(lcon(%0),if(hasflag(%0,ZONEMASTER),zlcon(%0))),contents);@if words(%q<contents>)={@dolist %q<contents>={@skip strlen(grab(get(##/GAME.UPZONES.HASH),%4~*))=@attach %!/HANDLE.ZONECHANGE=##,%1,%2,%3,%4}}
+&HANDLE.ZONECHANGE #interact=@set %0=GAME.UPZONES:%1;@set %0=GAME.UPZONES.HASH:[setunion(filter(FN.HASHRETAIN,get(%0/GAME.UPZONES.HASH),|,|,%4),%5~%4)];th setq(!,filter(#lambda/[lit(hastotem(%2,%0))],CHARACTER ITEM STRUCTURE REGION,%b,%b,%#),totems);@if words(%2)={@dolist/inline/nobreak %2={@trigger/inline %d0/ZONE.LEAVE=%0,%q<totems>}};@if words(%3)={@dolist/inline/nobreak %3={@trigger/inline %d0/ZONE.ENTER=%0,%q<totems>}};th setq(!,setunion(lcon(%0),if(hasflag(%0,ZONEMASTER),zlcon(%0))),contents);@if words(%q<contents>)={@dolist %q<contents>={@skip strlen(grab(get(##/GAME.UPZONES.HASH),%5~*))=@attach %!/HANDLE.ZONECHANGE=##,%2,%3,%4,%5}}
 

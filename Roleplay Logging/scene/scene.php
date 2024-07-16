@@ -8,18 +8,18 @@
 	}
 	else
 	{
-		$scene_data = $scenedb->get('scene_view', ['owner_name', 'owner_id', 'scene_title_color', 'scene_outcome_color',
+		$scene_data = $scenedb->get('scene_view', ['owner_name', 'owner_id', 'scene_title', 'scene_outcome',
 		 'scene_status', 'scene_date_created'], ['scene_id'=>$num]);
 
 		$pose_list = $scenedb->select('pose_view', ['entity_id', 'channel_category_name',
-                         'display_name', 'pose_text_color'],
+                         'display_name', 'pose_text'],
                         ['AND' => ['pose_is_deleted' => 0, 'scene_id' => $num]]);
 		$pose_data = array();
 		$log_data = "";
 		$poser_ids = array();
 		foreach ($pose_list as $indiv)
 		{
-			$scene_text = convertRhost($indiv['pose_text_color']);
+			$scene_text = convertRhost($indiv['pose_text']);
 			$scene_text = str_replace("\n", "<br>", $scene_text);
 			$scene_text = str_replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;", $scene_text);
 			$scene_text = str_replace("  ", "&nbsp;&nbsp;", $scene_text);
@@ -33,7 +33,7 @@
 		$poser_list = implode(", ",$poser_ids);
 		$scene_date = substr($scene_data['scene_date_created'],0,10);
 
-		$scene = ["title"=>convertRhost($scene_data['scene_title_color']), 'id'=>$num, 'description'=>convertRhost($scene_data['scene_outcome_color']), 'formatted_poses'=>$pose_data, 'poser_ids'=>$poser_list, 'creation_date'=>$scene_date];
+		$scene = ["title"=>convertRhost($scene_data['scene_title']), 'id'=>$num, 'description'=>convertRhost($scene_data['scene_outcome']), 'formatted_poses'=>$pose_data, 'poser_ids'=>$poser_list, 'creation_date'=>$scene_date];
 
 		if($json) {
 			header("Content-type: application/json");
