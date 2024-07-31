@@ -9,10 +9,10 @@
 
 &ATTRIBUTES_MAX #stdata=10
 &ATTRIBUTES_GETTAG #stdata=get_kv(get(%0/ST.ATTRIBUTES.TAGGED),%1,0)
-&TAG_ATTRIBUTES #stdata=@attach %!/DO_TAG=%0,%1,%2,ATTRIBUTES,ATTRIBUTES,Attribute,Attributes
+&TAG.ATTRIBUTES #stdata=@attach %!/DO_TAG=%0,%1,%2,ATTRIBUTES,ATTRIBUTES,Attribute,Attributes
 
 &ABILITIES_GETTAG #stdata=get_kv(get(%0/ST.ABILITIES.TAGGED),%1,0)
-&TAG_ABILITIES #stdata=@attach %!/DO_TAG=%0,%1,%2,ABILITIES,ABILITIES,Ability,Abilities
+&TAG.ABILITIES #stdata=@attach %!/DO_TAG=%0,%1,%2,ABILITIES,ABILITIES,Ability,Abilities
 
 &STYLES #stdata=getconf(%!,STYLES)
 
@@ -32,24 +32,24 @@
 
 &SPLAT_X_LUNAR #stdata=Full Moon|[if(getconf(%!,LOSTLUNARCASTES),Waxing Moon|Half Moon|Waning Moon,Changing Moon)]|No Moon|Casteless
 
-&SET_ABILITIES #stdata=@attach %!/DO_STATLIKE=%0,%1,%2,ABILITIES,ABILITIES,Ability,Abilities,1
-&SET_STYLES #stdata=@attach %!/DO_STATLIKE=%0,%1,%2,STYLES,STYLES,Style,Styles,1
+&SET.ABILITIES #stdata=@attach %!/DO_STATLIKE=%0,%1,%2,ABILITIES,ABILITIES,Ability,Abilities,1
+&SET.STYLES #stdata=@attach %!/DO_STATLIKE=%0,%1,%2,STYLES,STYLES,Style,Styles,1
 
-&SET_CASTE #stdata=@attach %!/DO_SPLAT=%0,%1,%2,X,Caste
+&SET.CASTE #stdata=@attach %!/DO_SPLAT=%0,%1,%2,X,Caste
 
 &ADVANTAGES #stdata=Essence|Willpower
 
-&SET_ADVANTAGES #stdata=@attach %!/DO_STATLIKE=%0,%1,%2,ADVANTAGES,ADVANTAGES,Advantage,Advantages,0
+&SET.ADVANTAGES #stdata=@attach %!/DO_STATLIKE=%0,%1,%2,ADVANTAGES,ADVANTAGES,Advantage,Advantages,0
 
-&DO_CHARMS #stdata=@assert/inline strlen(%1)=@pemit %#=No Charm Type category entered!;@attach #inc/PARTIAL=%1,capnames(iter(lattr(%!/CHARMS_*),after(%i0,_),%b,|)),|,type,Charm Type;@assert/inline strlen(%2)=@pemit %#=No %q<type> Charm category entered!;@attach #inc/PARTIAL=%2,u(CHARMS_%q<type>),|,category,%q<type> Charm Category;@assert/inline setr(!,u(FN.VALID_WORDPOWER,%3,CHARM),res)=@pemit %#=That's not a valid Charm name: %q<res>;@assert/inline isint(%4)=@pemit %#=Must enter a value to modify the Charm by!;@attach %!/HANDLE_WORDPOWER=%0,%3,%4,edit(ST.CHARMS.%q<type>.%q<category>,%B,_);th setq(!,[ansi(hc,capnames(%q<type> %q<category> Charm:))] [ansi(hw,capnames(%3))],tname);@if lte(%q<newvalue>,0)={@attach %!/REPORT=%0,Removed all counts of %q<tname>},{@attach %!/REPORT=%0,Now counting [ansi(hg,%q<newvalue> purchase[if(gt(%q<newvalue>,1),s)])] of %q<tname>}
+&DO_CHARMS #stdata=@assert/inline strlen(%1)=@pemit %#=No Charm Type category entered!;@attach #inc/PARTIAL=%1,capnames(iter(lattr(%!/CHARMS.*),after(%i0,_),%b,|)),|,type,Charm Type;@assert/inline strlen(%2)=@pemit %#=No %q<type> Charm category entered!;@attach #inc/PARTIAL=%2,u(CHARMS.%q<type>),|,category,%q<type> Charm Category;@assert/inline setr(!,u(FN.VALID_WORDPOWER,%3,CHARM),res)=@pemit %#=That's not a valid Charm name: %q<res>;@assert/inline isint(%4)=@pemit %#=Must enter a value to modify the Charm by!;@attach %!/HANDLE_WORDPOWER=%0,%3,%4,edit(ST.CHARMS.%q<type>.%q<category>,%B,_);th setq(!,[ansi(hc,capnames(%q<type> %q<category> Charm:))] [ansi(hw,capnames(%3))],tname);@if lte(%q<newvalue>,0)={@attach %!/REPORT=%0,Removed all counts of %q<tname>},{@attach %!/REPORT=%0,Now counting [ansi(hg,%q<newvalue> purchase[if(gt(%q<newvalue>,1),s)])] of %q<tname>}
 @@ %0 - target character, %1 - major category, %2 - secondary category, %3 - charm name, %4 - value to modify by.
 
-&ADD_NATIVE #stdata=@assert/inline strlen(setr(!,get(%0/ST.TEMPLATE),template))=@pemit %#=Set a template first!;@assert/inline strlen(setr(!,u(NATIVE.TYPE,%0),native))=@pemit %#=No native Charms for a %q<template>;@attach %!/DO_CHARMS=%0,%q<native>,%1,before(%2,~),mul(if(%3,-1,1),strfirstof(after(%2,~),1))
-&REM_NATIVE #stdata=@attach %!/ADD_NATIVE=%0,%1,%2,1
+&ADD.NATIVE #stdata=@assert/inline strlen(setr(!,get(%0/ST.TEMPLATE),template))=@pemit %#=Set a template first!;@assert/inline strlen(setr(!,u(NATIVE.TYPE,%0),native))=@pemit %#=No native Charms for a %q<template>;@attach %!/DO_CHARMS=%0,%q<native>,%1,before(%2,~),mul(if(%3,-1,1),strfirstof(after(%2,~),1))
+&REM.NATIVE #stdata=@attach %!/ADD_NATIVE=%0,%1,%2,1
 @@ %0 - target character, %1 - charm category, %2 charm name., %3 reverse sign
 
-&ADD_CHARM #stdata=@attach %!/DO_CHARMS=%0,elementsmux(%1,1,|),elementsmux(%1,2,|),before(%2,~),mul(if(%3,-1,1),strfirstof(after(%2,~),1))
-&REM_CHARM #stdata=@attach %!/ADD_CHARM=%0,%1,%2,1
+&ADD.CHARM #stdata=@attach %!/DO_CHARMS=%0,elementsmux(%1,1,|),elementsmux(%1,2,|),before(%2,~),mul(if(%3,-1,1),strfirstof(after(%2,~),1))
+&REM.CHARM #stdata=@attach %!/ADD_CHARM=%0,%1,%2,1
 @@ %0 - target character, %1 - major category|secondary category, %2 - charm name, %3 - reverse sign
 
 &FN.VALID_EVOSTYLE #stdata=ofparse(3,if(strlen(%0),1,#-1 NO %1 CATEGORY NAME ENTERED),if(!contains_character(%0,.),1,#-1 A %1 CATEGORY NAME MAY NOT CONTAIN PERIODS),if(valid(attrname,ST.%2.%0,%b,_),1,#-1 INVALID AS AN ATTRIBUTE. TRY REMOVING SPECIAL CHARACTERS LIKE :),1)
@@ -60,18 +60,18 @@
 &DO_STYLECHARM #stdata=@attach %!/DO_EVOSTYLE=%0,%1,%2,%3,STYLECHARMS,Style,u(STYLES);th setq(!,[ansi(hc,capnames(%q<category> Charm:))] [ansi(hw,capnames(%2))],tname);@if lte(%q<newvalue>,0)={@attach %!/REPORT=%0,Removed all counts of %q<tname>},{@attach %!/REPORT=%0,Now counting [ansi(hg,%q<newvalue> purchase[if(gt(%q<newvalue>,1),s)])] of %q<tname>}
 @@ %0 - target character, %1 - artifact name, %2 - charm name, %3 - value to modify by.
 
-&ADD_STYLECHARM #stdata=@attach %!/DO_STYLECHARM=%0,elementsmux(%1,1,|),before(%2,~),mul(if(%3,-1,1),strfirstof(after(%2,~),1))
-&REM_STYLECHARM #stdata=@attach %!/ADD_STYLECHARM=%0,%1,%2,1
+&ADD.STYLECHARM #stdata=@attach %!/DO_STYLECHARM=%0,elementsmux(%1,1,|),before(%2,~),mul(if(%3,-1,1),strfirstof(after(%2,~),1))
+&REM.STYLECHARM #stdata=@attach %!/ADD_STYLECHARM=%0,%1,%2,1
 
 &SORCERY_CIRCLES #stdata=Terrestrial|Celestial|Solar
 
 &DO_SORCERY #stdata=@attach %!/DO_EVOSTYLE=%0,%1,%2,%3,SORCERY,Spell,u(SORCERY_CIRCLES);th setq(!,[ansi(hc,capnames(%q<category> Circle Sorcery Spell:))] [ansi(hw,capnames(%2))],tname);@if lte(%q<newvalue>,0)={@attach %!/REPORT=%0,Removed all counts of %q<tname>},{@attach %!/REPORT=%0,Now counting [ansi(hg,%q<newvalue> purchase[if(gt(%q<newvalue>,1),s)])] of %q<tname>}
-&ADD_SORCERY #stdata=@attach %!/DO_SORCERY=%0,elementsmux(%1,1,|),before(%2,~),mul(if(%3,-1,1),strfirstof(after(%2,~),1))
-&REM_SORCERY #stdata=@attach %!/ADD_SORCERY=%0,%1,%2,1
+&ADD.SORCERY #stdata=@attach %!/DO_SORCERY=%0,elementsmux(%1,1,|),before(%2,~),mul(if(%3,-1,1),strfirstof(after(%2,~),1))
+&REM.SORCERY #stdata=@attach %!/ADD_SORCERY=%0,%1,%2,1
 
 &DO_NECROMANCY #stdata=@attach %!/DO_EVOSTYLE=%0,%1,%2,%3,NECROMANCY,Spell,u(NECROMANCY_CIRCLES);th setq(!,[ansi(hc,capnames(%q<category> Circle Necromancy Spell:))] [ansi(hw,capnames(%2))],tname);@if lte(%q<newvalue>,0)={@attach %!/REPORT=%0,Removed all counts of %q<tname>},{@attach %!/REPORT=%0,Now counting [ansi(hg,%q<newvalue> purchase[if(gt(%q<newvalue>,1),s)])] of %q<tname>}
-&ADD_NECROMANCY #stdata=@attach %!/DO_NECROMANCY=%0,elementsmux(%1,1,|),before(%2,~),mul(if(%3,-1,1),strfirstof(after(%2,~),1))
-&REM_NECROMANCY #stdata=@attach %!/ADD_NECROMANCY=%0,%1,%2,1
+&ADD.NECROMANCY #stdata=@attach %!/DO_NECROMANCY=%0,elementsmux(%1,1,|),before(%2,~),mul(if(%3,-1,1),strfirstof(after(%2,~),1))
+&REM.NECROMANCY #stdata=@attach %!/ADD_NECROMANCY=%0,%1,%2,1
 
 &FN.QUICK_BASE #stdata=Template~TEMPLATE|Caste~CASTE
 
@@ -115,13 +115,13 @@
 &SOLAR_ABILITY_PENALTY #stdata=if(hasflag(%#,XTERMCOLOR),197,r)
 
 @@ Sheet help
-&HELP_NATIVE #stdata=Native Charms. For a Solar, this would be Solar Charms. This exists as a shortcut to Charms|<template>.%R%R[if(strmatch(%#,num(%q<target>)),Your,cname(%q<target>)'s)] available Native Charm categories: [ansi(hw,strfirstof(elist(u(CHARMS_[get(%#/ST.TEMPLATE)]),,|),Nothing!))]
+&HELP.NATIVE #stdata=Native Charms. For a Solar, this would be Solar Charms. This exists as a shortcut to Charms|<template>.%R%R[if(strmatch(%#,num(%q<target>)),Your,cname(%q<target>)'s)] available Native Charm categories: [ansi(hw,strfirstof(elist(u(CHARMS.[get(%#/ST.TEMPLATE)]),,|),Nothing!))]
 
-&HELP_CHARMS #stdata=The Charms of the Exalted and other beings. Charms are subdivided by Major Type and a Subcategory.%R%RType and Category support partial matching, but there is [ansi(hr,NO)] database of Charms. The system will accept any charm names you type, within reason. So, unfortunately, you must type out Blazing Solar Bolt and Ox-Body Technique and etc. Don't worry about capitalization, though. Our system will normalize it.%R%R[ansi(hc,Examples:)]%R[ansi(hw,add Charm|Solar|Melee=Blazing Solar Bolt)]%RThe lazy version: [ansi(hw,add cha|so|mel=blazing solar bolt)]%R[ansi(hw,add Charm|Solar|Resistance=Ox-Body Technique~5)] would add 5 purchases of Ox-Body at once.%R[ansi(hw,rem cha|sol|res=ox-body technique~4)] would then remove 4 of them.%R%R[ansi(hc,Notes:)]%RThe [ansi(hw,Native)] option is a shortcut to Charm|<type> based on the character being edited. If a Solar is targeted, then it's Solar Charms, etc. So you could [ansi(hw,add nat|mel=blazing solar bolt)] just as easily.%R%RBelow are the available choices for such in TYPE: <subcategories> format.%R%R[iter(sort(u(GATHER,CHARMS),i,|,|),ansi(hw,%i0): [elist(u(CHARMS_%i0),,|)],|,%R%R)]
+&HELP.CHARMS #stdata=The Charms of the Exalted and other beings. Charms are subdivided by Major Type and a Subcategory.%R%RType and Category support partial matching, but there is [ansi(hr,NO)] database of Charms. The system will accept any charm names you type, within reason. So, unfortunately, you must type out Blazing Solar Bolt and Ox-Body Technique and etc. Don't worry about capitalization, though. Our system will normalize it.%R%R[ansi(hc,Examples:)]%R[ansi(hw,add Charm|Solar|Melee=Blazing Solar Bolt)]%RThe lazy version: [ansi(hw,add cha|so|mel=blazing solar bolt)]%R[ansi(hw,add Charm|Solar|Resistance=Ox-Body Technique~5)] would add 5 purchases of Ox-Body at once.%R[ansi(hw,rem cha|sol|res=ox-body technique~4)] would then remove 4 of them.%R%R[ansi(hc,Notes:)]%RThe [ansi(hw,Native)] option is a shortcut to Charm|<type> based on the character being edited. If a Solar is targeted, then it's Solar Charms, etc. So you could [ansi(hw,add nat|mel=blazing solar bolt)] just as easily.%R%RBelow are the available choices for such in TYPE: <subcategories> format.%R%R[iter(sort(u(GATHER,CHARMS),i,|,|),ansi(hw,%i0): [elist(u(CHARMS.%i0),,|)],|,%R%R)]
 
-&HELP_SORCERY #stdata=Sorcery Spells.%R%R[ansi(hc,Examples:)]%R[ansi(hw,add Sorcery|Terrestrial=Demon of the First Circle)]%R[ansi(hw,add Sorcery|Celestial=Magma Kraken)]%R%R[ansi(hw,Circles:)] [elist(u(SORCERY_CIRCLES),,|)]
+&HELP.SORCERY #stdata=Sorcery Spells.%R%R[ansi(hc,Examples:)]%R[ansi(hw,add Sorcery|Terrestrial=Demon of the First Circle)]%R[ansi(hw,add Sorcery|Celestial=Magma Kraken)]%R%R[ansi(hw,Circles:)] [elist(u(SORCERY_CIRCLES),,|)]
 
-&HELP_NECROMANCY #stdata=Necromancy Spells.%R%R[ansi(hc,Examples:)]%R[ansi(hw,add Necromancy|Ivory=Summon Ghost)]%R[ansi(hw,add Necromancy|Shadow=Forest of Ivory Razors)]%R%R[ansi(hw,Circles:)] [elist(u(NECROMANCY_CIRCLES),,|)]
+&HELP.NECROMANCY #stdata=Necromancy Spells.%R%R[ansi(hc,Examples:)]%R[ansi(hw,add Necromancy|Ivory=Summon Ghost)]%R[ansi(hw,add Necromancy|Shadow=Forest of Ivory Razors)]%R%R[ansi(hw,Circles:)] [elist(u(NECROMANCY_CIRCLES),,|)]
 
 
 @@ Resources

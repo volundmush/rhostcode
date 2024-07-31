@@ -31,7 +31,7 @@
 &FN.CHECK.LOCATION #interact=listdiff(objeval(%0,lcon(%l,VISIBLE,,,1),3),objid(%0))
 &FN.CHECK.EXITS #interact=objeval(%0,lexits(%l,,,,1),3)
 
-&FN.MATCH #interact=t(strlen(grab(gm_keywords_for(%1,%0),%1*)))
+&FN.MATCH #interact=t(strlen(grab(gm_keywords_for(%1,%0),%2*,|)))
 
 &FN.CHECK #interact=switch(%1,me,%0,here,objid(loc(%0)),iter(strfirstof(%2,LOCATION EXITS CARRIED EQUIPPED),squish(iter(u(FN.CHECK.%i0,%0),if(u(FN.MATCH,%0,%i0,%1),objid(%i0)[ibreak(0)][ibreak(1)])))))
 @@ %0 - target, %1 - input text, %2 - types

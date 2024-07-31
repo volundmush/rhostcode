@@ -58,40 +58,40 @@
 
 &VIRTUES #stdata=Compassion|Conviction|Temperance|Valor
 
-&CHARMS_SOLAR #stdata=u(ABILITIES)
-&CHARMS_ABYSSAL #stdata=u(CHARMS_SOLAR)
-&CHARMS_DRAGON-BLOODED #stdata=u(ABILITIES)
+&CHARMS.SOLAR #stdata=u(ABILITIES)
+&CHARMS.ABYSSAL #stdata=u(CHARMS.SOLAR)
+&CHARMS.DRAGON-BLOODED #stdata=u(ABILITIES)
 
-&CHARMS_LUNAR #stdata=[u(ATTRIBUTES)]|Knacks
+&CHARMS.LUNAR #stdata=[u(ATTRIBUTES)]|Knacks
 
-&CHARMS_INFERNAL #stdata=[if(getconf(%!,GUNSTAR),Theion,Malfeas)]|Cecelyne|She Who Lives In Her Name|Adorjan|The Ebon Dragon|Kimbery|Martial Arts|Heretical|Devil Tiger
+&CHARMS.INFERNAL #stdata=[if(getconf(%!,GUNSTAR),Theion,Malfeas)]|Cecelyne|She Who Lives In Her Name|Adorjan|The Ebon Dragon|Kimbery|Martial Arts|Heretical|Devil Tiger
 
-&CHARMS_SIDEREAL #stdata=[u(ABILITIES)]|[u(SPLAT_X_SIDEREAL)]
+&CHARMS.SIDEREAL #stdata=[u(ABILITIES)]|[u(SPLAT_X_SIDEREAL)]
 
-&CHARMS_ALCHEMICAL #stdata=Combat|Survival|Speed and Mobility|Social|Stealth and Disguise|Analytic and Cognitive|Labor and Utility|Submodules|General|Mass Combat|Spiritual
+&CHARMS.ALCHEMICAL #stdata=Combat|Survival|Speed and Mobility|Social|Stealth and Disguise|Analytic and Cognitive|Labor and Utility|Submodules|General|Mass Combat|Spiritual
 
-&CHARMS_RAKSHA #stdata=u(GRACES)
+&CHARMS.RAKSHA #stdata=u(GRACES)
 
-&CHARMS_SPIRIT #stdata=General|Universal|Aegis|Blessings|Curses|Divinations|Divine Works|Edges|Eidola|Enchantments|Inhabitings|Relocations|Sendings|Tantra
+&CHARMS.SPIRIT #stdata=General|Universal|Aegis|Blessings|Curses|Divinations|Divine Works|Edges|Eidola|Enchantments|Inhabitings|Relocations|Sendings|Tantra
 
-&CHARMS_JADEBORN #stdata=Foundation|Worker|Warrior|Artisan|Enlightened|Chaos
+&CHARMS.JADEBORN #stdata=Foundation|Worker|Warrior|Artisan|Enlightened|Chaos
 
-&CHARMS_GHOST #stdata=Common|Chains of the Ancient Monarchs|Essence-Measuring Thief Arts|Noble Craftsman Ways|Savage Ghost Tamer|Shifting Ghost-Clay Path|The Stringless Puppeteer Art|Tangled Web Arts|Tenacious Merchant's Way|Terror-Spreading Art
+&CHARMS.GHOST #stdata=Common|Chains of the Ancient Monarchs|Essence-Measuring Thief Arts|Noble Craftsman Ways|Savage Ghost Tamer|Shifting Ghost-Clay Path|The Stringless Puppeteer Art|Tangled Web Arts|Tenacious Merchant's Way|Terror-Spreading Art
 
 &NATIVE.TYPE #stdata=privatize(1,switch(u(setr,class,get(%0/ST.TEMPLATE)),God-Blooded,switch(1,t(match(Divine Demon,u(setr,caste,get(%0/ST.SPLAT_X)))),Spirit,strmatch(%q<caste>,Fae),Raksha,t(match(Solar Lunar Abyssal Infernal Sidereal)),%q<caste>,Mortal),%q<class>))
 
-&SET_MERITS #stdata=@attach %!/DO_STATLIKE=%0,%1,%2,MERITS,MERITS,Merit,Merits,0
-&SET_FLAWS #stdata=@attach %!/DO_STATLIKE=%0,%1,%2,FLAWS,FLAWS,Flaw,Flaws,0
-&SET_BACKGROUNDS #stdata=@attach %!/DO_STATLIKE=%0,%1,%2,BACKGROUNDS,BACKGROUNDS,Background,Backgrounds,0
+&SET.MERITS #stdata=@attach %!/DO_STATLIKE=%0,%1,%2,MERITS,MERITS,Merit,Merits,0
+&SET.FLAWS #stdata=@attach %!/DO_STATLIKE=%0,%1,%2,FLAWS,FLAWS,Flaw,Flaws,0
+&SET.BACKGROUNDS #stdata=@attach %!/DO_STATLIKE=%0,%1,%2,BACKGROUNDS,BACKGROUNDS,Background,Backgrounds,0
 
-&SET_MUTATIONS #stdata=@attach %!/DO_MERITLIKE=%0,%1,%2,MUTATIONS,MUTATIONS,Mutation,Mutations,0,1
+&SET.MUTATIONS #stdata=@attach %!/DO_MERITLIKE=%0,%1,%2,MUTATIONS,MUTATIONS,Mutation,Mutations,0,1
 
 
 &PROTOCOL_CIRCLES #stdata=Man-Machine|God-Machine
 
 &DO_PROTOCOL #stdata=@attach %!/DO_EVOSTYLE=%0,%1,%2,%3,PROTOCOL,Spell,u(PROTOCOL_CIRCLES);th setq(!,[ansi(hc,capnames(%q<category> Circle PROTOCOL Spell:))] [ansi(hw,capnames(%2))],tname);@if lte(%q<newvalue>,0)={@attach %!/REPORT=%0,Removed all counts of %q<tname>},{@attach %!/REPORT=%0,Now counting [ansi(hg,%q<newvalue> purchase[if(gt(%q<newvalue>,1),s)])] of %q<tname>}
-&ADD_PROTOCOL #stdata=@attach %!/DO_PROTOCOL=%0,elementsmux(%1,1,|),before(%2,~),mul(if(%3,-1,1),strfirstof(after(%2,~),1))
-&REM_PROTOCOL #stdata=@attach %!/ADD_PROTOCOL=%0,%1,%2,1
+&ADD.PROTOCOL #stdata=@attach %!/DO_PROTOCOL=%0,elementsmux(%1,1,|),before(%2,~),mul(if(%3,-1,1),strfirstof(after(%2,~),1))
+&REM.PROTOCOL #stdata=@attach %!/ADD_PROTOCOL=%0,%1,%2,1
 
 @@ Sheet Templates
 &FN.TEMPINFO_GOD-BLOODED #stdata=u(FN.TEMPINFO_MAIN,%0,%1,NAME~Name|SPLAT_X~Caste~N/A,ADVANTAGES_ESSENCE~Essence~1)
