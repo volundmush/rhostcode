@@ -8,7 +8,7 @@
 &FN.LIST_ACCOUNTS #acc=searchngobjid(TOTEMS=A)
 &FN.FIND_ACCOUNT #acc=if(%1,namegrab(u(FN.LIST_ACCOUNTS),%0),namefind(u(FN.LIST_ACCOUNTS),%0))
 
-&FN.VALID_ACCOUNT_NAME #acc=ofparse(3,if(strlen(%0),1,#-1 ACCOUNT NAMES CANNOT BE EMPTY),if(!strmatch(%0,@*),1,#-1 ACCOUNT NAMES MAY NOT START WITH @),if(lte(strlen(%0),25),1,#-1 ACCOUNT NAMES MUST BE LESS THAN 26 CHARACTERS),if(valid(name,%0),1,#-1 ACCOUNT NAME CONTAINS INVALID FORMATTING),if(words(setdiff(u(FN.FIND_ACCOUNT,stripansi(%0)),objid(%1))),#-1 ACCOUNT NAME IN USE,1))
+&FN.VALID_ACCOUNT_NAME #acc=ofparse(3,if(strlen(%0),1,#-1 ACCOUNT NAMES CANNOT BE EMPTY),if(!strmatch(%0,@*),1,#-1 ACCOUNT NAMES MAY NOT START WITH @),if(!strmatch(%0,"*),1,#-1 ACCOUNT NAMES SHOULD NOT BEGIN WITH QUOTES),if(lte(strlen(%0),25),1,#-1 ACCOUNT NAMES MUST BE LESS THAN 26 CHARACTERS),if(valid(name,%0),1,#-1 ACCOUNT NAME CONTAINS INVALID FORMATTING),if(words(setdiff(u(FN.FIND_ACCOUNT,stripansi(%0)),objid(%1))),#-1 ACCOUNT NAME IN USE,1))
 @@ %0 - name to check. %1 - A dbref to exclude when checking for duplicates.
 
 &FN.CREATE_ACCOUNT #acc=privatize(1,if(isdbref(setr(0,create(%0,,t))),[null([parent(%q0,#acc_parent)][tel(%q0,%!,1)][totemset(%q0,ACCOUNT)][set(%q0,SAFE)][attrpass(%q0/_PASSWORD,%1,SET)][iter(lattr(%!/FN.CREATE_ACCOUNT_*),ulocal(%!/%i0,%0,%1))])][objid(%q0)],%q0))
@@ -100,9 +100,9 @@
 
 &SW.MAIN #acc=@attach %!/INC.ACCPLAYER=if(cand(strlen(%0),gtebittype(%#,4)),trim(%0),%#),acc;@pemit %#=header([ansi(hw,Account:)] [cname(%q<acc>)]);@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.ACC_COLUMNS));@pemit %#=subheader();@dolist/inline [u(FN.CHARACTERS,%q<acc>)]=@pemit %#=u(FN.ACC_ROW,%d0);@pemit %#=footer()
 
-&FN.ACC_COLUMNS #acc=printf($-5s $-3s $-2s $-4s $-s $s,Dbref,Bit,Al,Mail,Name)
+&FN.ACC_COLUMNS #acc=printf($-7s $-3s $-2s $-4s $-s $s,Dbref,Bit,Al,Mail,Name)
 
-&FN.ACC_ROW #acc=printf($-5s $3s $2s $-4:0:s $-s $s,num(%d0),bittype(%0),default(%0/ALTS,0),umail(%0),cname(%0))
+&FN.ACC_ROW #acc=printf($-7s $3s $2s $-4:0:s $-s $s,num(%d0),bittype(%0),default(%0/ALTS,0),umail(%0),cname(%0))
 
 &SW.CREATE #acc=@assert/inline setr(!,u(FN.VALID_ACCOUNT_NAME,%0),res)=@pemit %#=ERROR: %q<res>;@assert/inline valid(password,%1)=@pemit %#=ERROR: Cannot use provided password: '%1'.;@assert/inline isobjid(setr(!,u(FN.CREATE_ACCOUNT,%0,%1),acc))=@pemit %#=ERROR: %q<acc>;@if has_markup(%0)={@name/ansi %q<acc>=%0};@pemit %#=Account '[cname(%q<acc>)]' created with password: %1;@attach #inc/MSG_ALERT=Account '[cname(%q<acc>)]' created.
 
@@ -136,8 +136,8 @@
 
 &SW.LIST #acc=@pemit %#=header(Accounts);@pemit %#=u(FN.ACCLIST_COLUMNS);@pemit %#=subheader();@dolist/inline u(FN.LIST_ACCOUNTS)={@pemit %#=u(FN.ACCLIST_ROW,%d0)};@pemit %#=footer()
 
-&FN.ACCLIST_COLUMNS #acc=printf($-5s $-25s $s,Dbref,Name,Characters)
-&FN.ACCLIST_ROW #acc=printf($-5s $-25s $s,num(%0),cname(%0),iter(u(FN.CHARACTERS,%0),cname(%i0),%b,\,%B))
+&FN.ACCLIST_COLUMNS #acc=printf($-7s $-25s $s,Dbref,Name,Characters)
+&FN.ACCLIST_ROW #acc=printf($-7s $-25s $s,num(%0),cname(%0),iter(u(FN.CHARACTERS,%0),cname(%i0),%b,\,%B))
 
 &FN.ACC_LAST #acc=lmax(iter(u(FN.CHARACTERS,%0),convtime(get(%i0/LAST))))
 

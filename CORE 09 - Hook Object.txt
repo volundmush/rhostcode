@@ -13,8 +13,6 @@
 
 &SHOW_ERROR #hobj=pemit(%#,rest(v(ERROR)))
 
-
-
 &P_@password #hobj=0
 &AF_@password #hobj=[pemit(%#,ansi(hr,ALERT:) @password has no affect on our softcoded login system! Use [ansi(hw,@acc/password <old>=<new>)] to change your password!)]
 

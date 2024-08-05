@@ -12,18 +12,18 @@
 &SWITCHES.5 #help=HELP|ADD|CATEGORY|RENAMECATEGORY|RENAME|DELETE|SUMMARY
 &SWITCHES.6 #help=DELETECATEGORY
 
-&INIT.HELP #help=th setq(!,HELP,root);th setq(!,+help,cmd)
-&INIT.SHELP #help=@assert/inline gtebittype(%#,4)=@pemit %#=error();th setq(!,SHELP,root);th setq(!,+shelp,cmd);
+&INIT.HELP #help=th setq(!,HELP,root);th setq(!,+help,cmd);th setq(!,plushelp,txtfile)
+&INIT.SHELP #help=@assert/inline gtebittype(%#,4)=@pemit %#=error();th setq(!,SHELP,root);th setq(!,+shelp,cmd);th setq(!,staffhelp,txtfile)
 
-&START #help=@attach %!/INIT.%0;@attach #inc/GET_SWITCH=%1;@attach %!/SW.[strfirstof(%q<switch>,MAIN)]=trim(%2),trim(%3)
+&START #help=@attach %!/INIT.%0;@if %q<txtfile>=th setq(!,setr(!,trim(setdiff(if(!strmatch(setr(!,textfile(%q<txtfile>,*,1,1,|),rawlegacy),Sorry*),%q<rawlegacy>),help,|,|,i),b,|),legacy),legacy);@attach #inc/GET_SWITCH=%1;@attach %!/SW.[strfirstof(%q<switch>,MAIN)]=trim(%2),trim(%3)
 
 &SW.MAIN #help=@if strlen(%0)={@attach %!/INC.VIEW_FILE},{@attach %!/INC.VIEW_CATEGORIES};@pemit %#=footer(%q<cmd>/help for help)
 
-&INC.VIEW_CATEGORIES #help=@pemit %#=header(mudname() %q<cmd> Categories);@dolist/inline/delimit | [u(FN.CATEGORIES,%q<root>)]={@pemit %#=subheader(%d0);@pemit %#=columns(u(FN.FILE_NAMES,%q<root>,%d0),26,3,l,1,1,,%b,,1,|,,)};
+&INC.VIEW_CATEGORIES #help=@pemit %#=header(mudname() %q<cmd> Categories);@dolist/inline/delimit | [u(FN.CATEGORIES,%q<root>)]={@pemit %#=subheader(%d0);@pemit %#=columns(u(FN.FILE_NAMES,%q<root>,%d0),26,3,,,1,,%b,,1,|,,1)};@if words(%q<legacy>,|)={@pemit %#=subheader(Legacy %q<cmd> Files);@pemit %#=columns(%q<legacy>,14,5,,,,,%b,,1,|,,1)}
 
-&INC.FIND_FILE #help=@assert/inline words(setr(!,u(FN.FILE_NAMES,%q<root>),files),|)=@pemit %#=There are no files!;@attach #inc/PARTIAL=%0,%q<files>,|,%1,file;th setq(!,get(#help_db/[u(FN.HASH,%q<root>,r(%1))]_CATEGORY),category);
+&INC.FIND_FILE #help=@assert/inline words(setr(!,listunion(u(FN.FILE_NAMES,%q<root>),if(%2,%q<legacy>),|,|),files),|)=@pemit %#=There are no files!;@attach #inc/PARTIAL=%0,%q<files>,|,%1,file;th setq(!,0,islegacy);@if cand(%2,match(%q<legacy>,r(%1),|))={th setq(!,1,islegacy)},{th setq(!,get(#help_db/[u(FN.HASH,%q<root>,r(%1))]_CATEGORY),category)}
 
-&INC.VIEW_FILE #help=@attach %!/INC.FIND_FILE=%0,file;@pemit %#=header(mudname() %q<cmd>: %q<file>);th setq(!,get(#help_db/[u(FN.HASH,%q<root>,%q<file>)]_ENTRY),data);@pemit %#=if(hasattr(%q<data>),ulocal(%q<data>,%#),%q<data>);
+&INC.VIEW_FILE #help=@attach %!/INC.FIND_FILE=%0,file,1;@if %q<islegacy>={@dynhelp/parse %q<txtfile>/%q<file>=%#},{@pemit %#=header(mudname() %q<cmd>: %q<file>);th setq(!,get(#help_db/[u(FN.HASH,%q<root>,%q<file>)]_ENTRY),data);@pemit %#=if(hasattr(%q<data>),ulocal(%q<data>,%#),%q<data>)}
 
 &SW.HELP #help=@pemit %#=header(Staff %q<cmd> Commands);@pemit %#=u(HLP_INTERNAL);@pemit %#=footer()
 

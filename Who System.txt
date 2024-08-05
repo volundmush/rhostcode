@@ -1,0 +1,14 @@
+@skip isdbref(tag(setr(1,who)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(Who System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom()}
+
+@@ Commands and stuff.
+&CMD.WHO #WHO=$^(?s)(?\:@|\+)?(who)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2;@attach %!/SW.[strfirstof(%q<switch>,MAIN)]=%3,%4
+@set #WHO/CMD.WHO=regexp
+
+&FN.WHO.COLUMNS #who=printf($-23s $-11s $-3s $-4s $-4s $-1s $-s,Name,Alias,Fac,Idle,Conn,G,Location)
+&FN.WHO.ROW #who=printf($-23s $-11s $-3s $4s $4s $-1s $-&s,cname(%0),getalias(%0),,hideidle(%0),hideconn(%0),left(default(%0/SEX,?),1),if(!strmatch(setr(!,objeval(%#,loc(%0),3),loc),#-*),cname(%q<loc>),*UNFINDABLE*))
+
+&SW.MAIN #who=@pemit %#=header(Who's Online);@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.WHO.COLUMNS));@pemit %#=separator();@dolist/inline lwho(0,%#,1)={@pemit %#=u(FN.WHO.ROW,%d0)};@pemit %#=footer()
+
+
++help/add Community/@who=#who/HLP.WHO
+&HLP.WHO #who=[ansi(hc,Aliases:)] @who, who, +who%R%R[ansi(hw,@who)]%R%TThe Who Command displays online player characters.

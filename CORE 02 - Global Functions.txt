@@ -3,8 +3,6 @@
 
 @skip isdbref(tag(setr(1,gfun)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object installed!;@assert/inline isdbref(setr(0,create(Global Functions,,t)))=@pemit %#=ERROR: Could not create code object: %q0;@set %q0=INDESTRUCTIBLE NO_COMMAND;@tag/add %q1=%q0;@tel %q1=#stor}
 
-&GFN.STRINGSECS #gfun=ladd(iter(secure(regeditall(%0,(h|m|s),$1%b)),switch(%i0,*ML,mul(%i0,31536000000),*y,mul(%i0,31471200),*C,mul(%i0,3153600000),*Mo,mul(%i0,2628000),*w,mul(%i0,604800),*d,mul(%i0,86400),*h,mul(%i0,3600),*m,mul(%i0,60),*s,add(%i0,0))) 0)
-
 &GFN.GTBITTYPE #gfun=gt(bittype(%0),%1)
 &GFN.GTEBITTYPE #gfun=gte(bittype(%0),%1)
 
@@ -22,8 +20,6 @@
 
 &GFN.SET_AKV #gfun=attrib_set(%0,%1,set_kv(attrib_get(%0,%1),%2,%3))
 
-&GFN.ITEMIZE #gfun=elist(%0,%2,%1,%4,%3)
-
 &GFN.SORTNAME #gfun=sortby(#lambda/[lit([comp(lcstr(name(%0)),lcstr(name(%1)))])],%0,if(strlen(%1),%1,%B),if(strlen(%2),%2,%B))
 
 &GFN.GETALIAS #gfun=switch(type(%0),EXIT,if(strfirstof(%1,1),elementsmux(fullname(%0),2,;),after(fullalias(%0),chr(59))),get(%0/ALIAS))
@@ -32,11 +28,8 @@
 &GFN.RANDWORD #gfun=first(shuffle(%0,strfirstof(%1,%b),strfirstof(%1,%b)),strfirstof(%1,%b))
 
 &GFN.NAMEMATCH #gfun=t(match([name(%0)]|[num(%0)]|[objid(%0)][if(%2,|[getalias(%0)])][if(%3,|[u(%0/%3)])],%1,|))
-&GFN.GRABNAME #gfun=strmatch(name(%0),%1*)
 
 &GFN.NAMEFIND #gfun=trim(localize(iter(sortname(%0),if(namematch(%i0,%1,%2,%3),%i0[ibreak()]))))
-&GFN.NAMEGRAB #gfun=trim(localize(ofparse(1,iter(setr(0,sortname(%0)),if(namematch(%i0,%1,%2,%3),%i0[ibreak()])),iter(%q0,if(grabname(%i0,%1),%i0[ibreak()])))))
-&GFN.NAMEGRABALL #gfun=trim(localize(ofparse(1,iter(setr(0,sortname(%0)),if(namematch(%i0,%1,%2,%3),%i0[ibreak()])),iter(%q0,if(grabname(%i0,%1),%i0),))))
 @@ %0 - dbrefs. %1 - name. %2 - check aliases. %3 - match against results of this function call
 
 &GFN.OBJIDS #gfun=squish(iter(%0,if(isdbref(%i0),objid(%i0))))
@@ -66,13 +59,8 @@
 
 &GFN.RYG #gfun=<[if(gt(%0,50),255,round(mul(255,fdiv(mul(%0,2),100)),0))] [if(gte(%0,50),sub(mul(255,2),round(mul(255,fdiv(mul(%0,2),100)),0)),255)] 0>
 
-&GFN.STRFIRSTOF #gfun=ofparse(5,%0,%1,%2,%3,%4,%5,%6,%7,%8,%9)
-
-&GFN.FIRSTOF #gfun=ofparse(1,%0,%1,%2,%3,%4,%5,%6,%7,%8,%9)
-
 &GFN.AGO #gfun=singletime(%0)
 &GFN.SMALLTIME #gfun=singletime(%0)
-&GFN.ETIME #gfun=[trim(timefmt($!mML $!2UC $!2uy $!2EMo $!2ww $!2dd $!2Xh $!2Fm $!2Gs,%0))][if(!t(%0),0s)]
 
 &GFN.NCHILDREN #gfun=last(children(%0,l))
 
@@ -89,8 +77,6 @@
 &GFN.FILTEROBJID #gfun=filter(#lambda/[lit(isobjid(%0))],%0)
 
 &GFN.FANCYTIME #gfun=if(cor(!strlen(%0),isint(%0)),runintz(if(strlen(%2),if(isdbref(%2),gettz(%2),%2),gettz(%#)),timefmt(switch(%1,2,$a $b $02D $02I:$02M$p $Z,3,$b $02D $02I:$02M$p $Y $Z,day,$b $02D $Y,date,$m/$d/$Y,strfirstof(%3,$b $02D $02H:$02T$P $i)),strfirstof(%0,secs()))),<invalid date>)
-
-&GFN.BASECONV #gfun=pack(unpack(%0,%1),%2)
 
 &GFN.DECOMPOSE #gfun=translate(%0,p)
 

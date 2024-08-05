@@ -147,10 +147,11 @@ lc_chk=`echo "$1"|tr '[:upper:]' '[:lower:]'`
 6. Edit `objects.conf` to set the `master_room` parameter to this dbref. strip the #. it should be something like `master_room 3`
 7. Type `@reboot` and use `think globalroom()` to confirm that it's working.
 8. Copy and paste the contents of the CORE 01, CORE 02, and CORE 03 files into the game.
-9. `@reboot` again. Confirm that `@function` has the new global functions listed.
-10. Copy and paste the contents of the remaining CORE files in numeric order to install everything else.
-11. edit `objects.conf` again to set the other Utility Object and Global Parent dbrefs just like you did the master room. you can use `@tag/list 0` to review everything that was created.
-12. `@reboot` again.
+9. Copy and paste the contents of `rhost/Mushcode/softfunctions.minmax` into the game then `@tel Softfunctions=#stor` to put it in the storage object. Then, paste in the contents of `rhost/Mushcode/scan` and put the resulting object in the master room (#3).
+10. `@reboot` again. Confirm that `@function` has the new global functions listed.
+11. Copy and paste the contents of the remaining CORE files in numeric order to install everything else.
+12. edit `objects.conf` again to set the other Utility Object and Global Parent dbrefs just like you did the master room. you can use `@tag/list 0` to review everything that was created.
+13. `@reboot` again.
 
 At this point, the CORE should be installed. You'll notice that the login screen now uses new commands. By default, only bittype 2+ and guests can login using the `connect` command. Everyone else needs to create accounts and use the `login` command.
 

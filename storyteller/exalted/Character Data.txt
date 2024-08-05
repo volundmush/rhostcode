@@ -2,10 +2,10 @@
 &CONFIG.LOSTLUNARCASTES.DEFAULT #stdata=0
 &CONFIG.LOSTLUNARCASTES.TYPE #stdata=BOOL
 
-&ATTRIBUTES_PHYSICAL #stdata=Strength|Dexterity|Stamina
-&ATTRIBUTES_SOCIAL #stdata=Charisma|Manipulation|Appearance
-&ATTRIBUTES_MENTAL #stdata=Perception|Intelligence|Wits
-&ATTRIBUTES #stdata=[u(ATTRIBUTES_PHYSICAL)]|[u(ATTRIBUTES_SOCIAL)]|[u(ATTRIBUTES_MENTAL)]
+&ATTRIBUTES.PHYSICAL #stdata=Strength|Dexterity|Stamina
+&ATTRIBUTES.SOCIAL #stdata=Charisma|Manipulation|Appearance
+&ATTRIBUTES.MENTAL #stdata=Perception|Intelligence|Wits
+&ATTRIBUTES #stdata=[u(ATTRIBUTES.PHYSICAL)]|[u(ATTRIBUTES.SOCIAL)]|[u(ATTRIBUTES.MENTAL)]
 
 &ATTRIBUTES_MAX #stdata=10
 &ATTRIBUTES_GETTAG #stdata=get_kv(get(%0/ST.ATTRIBUTES.TAGGED),%1,0)
@@ -16,21 +16,26 @@
 
 &STYLES #stdata=getconf(%!,STYLES)
 
-&SPLAT_X_MORTAL #stdata=Warrior|Priest|Broker|Savant|Rogue
-&SPLAT_X_MORTAL_NAME #stdata=Profession
+&SPLAT.X.MORTAL #stdata=Warrior|Priest|Broker|Savant|Rogue
+&SPLAT.X.MORTAL.NAME #stdata=Profession
 
-&SPLAT_X_SOLAR #stdata=Dawn|Zenith|Eclipse|Twilight|Night
+&SPLAT.X.EXALT/SOLAR #stdata=Dawn|Zenith|Eclipse|Twilight|Night
+&SPLAT.X.EXALT/SOLAR.NAME #stdata=Caste
 
-&SPLAT_X_ABYSSAL #stdata=Dusk|Midnight|Moonshadow|Daybreak|Day
+&SPLAT.X.EXALT/ABYSSAL #stdata=Dusk|Midnight|Moonshadow|Daybreak|Day
+&SPLAT.X.EXALT/ABYSSAL.NAME #stdata=Caste
 
-&SPLAT_X_SIDEREAL #stdata=Journeys|Serenity|Battles|Secrets|Endings
+&SPLAT.X.EXALT/SIDEREAL #stdata=Journeys|Serenity|Battles|Secrets|Endings
+&SPLAT.X.EXALT/SIDEREAL.NAME #stdata=Caste
 
-&SPLAT_X_ALCHEMICAL #stdata=Orichalcum|Moonsilver|Jade|Starmetal|Soulsteel|Adamant
+&SPLAT.X.EXALT/ALCHEMICAL #stdata=Orichalcum|Moonsilver|Jade|Starmetal|Soulsteel|Adamant
+&SPLAT.X.EXALT/ALCHEMICAL.NAME #stdata=Caste
 
-&SPLAT_X_DRAGON-BLOODED #stdata=Fire|Earth|Air|Wood|Water
-&SPLAT_X_DRAGON-BLOODED_NAME #stdata=Aspect
+&SPLAT.X.EXALT/DRAGON-BLOODED #stdata=Fire|Earth|Air|Wood|Water
+&SPLAT.X.EXALT/DRAGON-BLOODED.NAME #stdata=Aspect
 
-&SPLAT_X_LUNAR #stdata=Full Moon|[if(getconf(%!,LOSTLUNARCASTES),Waxing Moon|Half Moon|Waning Moon,Changing Moon)]|No Moon|Casteless
+&SPLAT.X.EXALT/LUNAR #stdata=Full Moon|[if(getconf(%!,LOSTLUNARCASTES),Waxing Moon|Half Moon|Waning Moon,Changing Moon)]|No Moon|Casteless
+&SPLAT.X.EXALT/SIDEREAL.NAME #stdata=Caste
 
 &SET.ABILITIES #stdata=@attach %!/DO_STATLIKE=%0,%1,%2,ABILITIES,ABILITIES,Ability,Abilities,1
 &SET.STYLES #stdata=@attach %!/DO_STATLIKE=%0,%1,%2,STYLES,STYLES,Style,Styles,1
@@ -76,13 +81,13 @@
 &FN.QUICK_BASE #stdata=Template~TEMPLATE|Caste~CASTE
 
 @@ Sheet Templates
-&FN.SHEET_TEMPINFO_MORTAL #stdata=u(FN.SHEET_TEMPINFO,%0,%1,%2,NAME~Name|SEX~Sex,ADVANTAGES_ESSENCE~Essence~1|SPLAT_X~Profession~N/A)
-&FN.SHEET_TEMPINFO_SOLAR #stdata=u(FN.SHEET_TEMPINFO,%0,%1,%2,NAME~Name|SEX~Sex,ADVANTAGES_ESSENCE~Essence~1|SPLAT_X~Caste~N/A)
-&FN.TEMPINFO_ABYSSAL #stdata=u(FN.TEMPINFO_MAIN,%0,%1,%2,NAME~Name|SEX~Sex,ADVANTAGES_ESSENCE~Essence~1|SPLAT_X~Caste~N/A)
-&FN.SHEET_TEMPINFO_DRAGON-BLOODED #stdata=u(FN.SHEET_TEMPINFO,%0,%1,%2,NAME~Name|SEX~Sex|SPLAT_X~Aspect~N/A,ADVANTAGES_ESSENCE~Essence~1|FIELD_NATION~Nation~Outcaste|FIELD_HOUSE~House~None)
-&FN.SHEET_TEMPINFO_LUNAR #stdata=u(FN.SHEET_TEMPINFO,%0,%1,%2,NAME~Name|SEX~Sex|FIELD_ANIMAL~Animal~None,ADVANTAGES_ESSENCE~Essence~1|SPLAT_X~Caste~N/A)
-&FN.TEMPINFO_ALCHEMICAL #stdata=u(FN.TEMPINFO_MAIN,%0,%1,NAME~Name|SPLAT_X~Caste~N/A,ADVANTAGES_ESSENCE~Essence~1|NATION~Nation~None)
-&FN.TEMPINFO_SIDEREAL #stdata=u(FN.TEMPINFO_MAIN,%0,%1,%2,NAME~Name|SEX~Sex,ADVANTAGES_ESSENCE~Essence~1|SPLAT_X~Caste~N/A)
+&FN.SHEET_TEMPINFO_MORTAL #stdata=u(FN.SHEET_TEMPINFO,%0,%1,%2,NAME~Name|SEX~Sex,ADVANTAGES_ESSENCE~Essence~1|SPLAT.X~Profession~N/A)
+&FN.SHEET_TEMPINFO_SOLAR #stdata=u(FN.SHEET_TEMPINFO,%0,%1,%2,NAME~Name|SEX~Sex,ADVANTAGES_ESSENCE~Essence~1|SPLAT.X~Caste~N/A)
+&FN.TEMPINFO_ABYSSAL #stdata=u(FN.TEMPINFO_MAIN,%0,%1,%2,NAME~Name|SEX~Sex,ADVANTAGES_ESSENCE~Essence~1|SPLAT.X~Caste~N/A)
+&FN.SHEET_TEMPINFO_DRAGON-BLOODED #stdata=u(FN.SHEET_TEMPINFO,%0,%1,%2,NAME~Name|SEX~Sex|SPLAT.X~Aspect~N/A,ADVANTAGES_ESSENCE~Essence~1|FIELD_NATION~Nation~Outcaste|FIELD_HOUSE~House~None)
+&FN.SHEET_TEMPINFO_LUNAR #stdata=u(FN.SHEET_TEMPINFO,%0,%1,%2,NAME~Name|SEX~Sex|FIELD_ANIMAL~Animal~None,ADVANTAGES_ESSENCE~Essence~1|SPLAT.X~Caste~N/A)
+&FN.TEMPINFO_ALCHEMICAL #stdata=u(FN.TEMPINFO_MAIN,%0,%1,NAME~Name|SPLAT.X~Caste~N/A,ADVANTAGES_ESSENCE~Essence~1|NATION~Nation~None)
+&FN.TEMPINFO_SIDEREAL #stdata=u(FN.TEMPINFO_MAIN,%0,%1,%2,NAME~Name|SEX~Sex,ADVANTAGES_ESSENCE~Essence~1|SPLAT.X~Caste~N/A)
 
 @@ Sheet Rendering
 &SHEET_ABILITIES #stdata=th setq(!,setdiff(iter(setr(!,get(%0/ST.ABILITIES),abil),before(%i0,~),|,|),u(ABILITIES),|,|),exabil);th setq(!,iter(setr(!,get(%0/ST.ABILITIES.TAGGED),tags),before(%i0,~),|,|),tagged);th setq(!,setunion(u(ABILITIES),setunion(%q<exabil>,%q<tagged>,|,|),|,|),allabil);th setq(!,iter(%q<allabil>,%i0~[get_kv(%q<abil>,%i0,0)]~0~[u(ABILITIES_GETTAG,%0,%i0)],|,|),prepabil);th setq(!,filter(FIL.SHOULDSHOW,%q<prepabil>,|,|),finabil);@attach %!/SHEET_DOSTATS=%0,%1,%2,Abilities,%q<finabil>,ST.ABILITIES,ABILITY

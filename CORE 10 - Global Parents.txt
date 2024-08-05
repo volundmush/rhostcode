@@ -61,6 +61,7 @@
 
 @nameformat #globroom=[header(cname(%!)[if(gtebittype(%#,2),%B\(%!\))],%#,,1)][if(strlen(setr(!,u(FN.INFOBOX),infobox)),%R%q<infobox>)]
 &formatdesc #globroom=[if(strlen(%0),[separator(Description,%#,,1)]%R[wrap(%0,sub(width(%#),2),left,setr(!,ansi(confoverride(%#,BORDER),|),bord),%q<bord>,,)])]
+&descformat #globroom=u(FORMATDESC,%0,%1,%2,%3,%4,%5)
 
 &FIL.TOTEM #globroom=hastotem(%0,%1)
 

@@ -1,0 +1,362 @@
+&CONFIG.EXVSWOD.DESC #stdata=Enable Exalted vs World of Darkness?
+&CONFIG.EXVSWOD.DEFAULT #stdata=0
+&CONFIG.EXVSWOD.TYPE #stdata=BOOL
+
+&SET.SPLATX #stdata=@attach %!/DO_SPLAT=%0,%1,%2,X
+&SET.SPLATY #stdata=@attach %!/DO_SPLAT=%0,%1,%2,Y
+&SET.SPLATZ #stdata=@attach %!/DO_SPLAT=%0,%1,%2,Z
+
+&FN.QUICK_BASE #stdata=privatize(1,Template~TEMPLATE|[iter(X Y Z,if(strlen(setr(!,u(%!/SPLAT.%i0.[edit(%1,%b,_)].NAME),spname)),%q<spname>~SPLAT%i0),%b,|)])
+
+&FN.QUICK_STATS #stdata=iter(ATTRIBUTES ADVANTAGES TALENTS SKILLS KNOWLEDGES,iter(u(%i0,%0),%i0~%i1,|,|),%b,|)
+
+&TEMPLATES #stdata=Mortal|Mortal/Imbued|Mummy|Mummy/Amenti|Bygone|Changeling|Demon|Mage|Shifter/Ajaba|Shifter/Ananasi|Shifter/Bastet|Shifter/Corax|Shifter/Garou|Shifter/Gurahl|Shifter/Kitsune|Shifter/Mokole|Shifter/Nuwisha|Shifter/Ratkin|Shifter/Rokea|Vampire|Wan Kuei|Wraith|Wraith/Risen[if(getconf(%!,EXVSWOD),|Exalt/Solar|Exalt/Lunar|Exalt/Sidereal|Exalt/Abyssal|Exalt/Infernal|Exalt/Dragon-Blooded|Exalt/Alchemical|Exalt/Liminal|Dragon King)]
+
+@@ Core
+
+&ATTRIBUTES.PHYSICAL #stdata=Strength|Dexterity|Stamina
+&ATTRIBUTES.SOCIAL #stdata=Charisma|Manipulation|Appearance
+&ATTRIBUTES.MENTAL #stdata=Perception|Intelligence|Wits
+&ATTRIBUTES #stdata=[u(ATTRIBUTES.PHYSICAL)]|[u(ATTRIBUTES.SOCIAL)]|[u(ATTRIBUTES.MENTAL)]
+
+&HELP.ATTRIBUTES #stdata=[ansi(hc,Choices:)]%R[columns(sort(u(ATTRIBUTES,%0),i,|,|),25,3,,,,,,,,|,,1)]
+
+&ADVANTAGES #stdata=trim(squish(listunion(Willpower,u(ADVANTAGES.[edit(get(%0/ST.TEMPLATE),%b,_)]),|,|),|),b,|)
+
+
+@@ Todo: fix these, I know they don't all have Rage and I'm missing some.
+
+@@ With Ex vs WoD enabled....
+&ADVANTAGES.Exalt/Solar #stdata=Essence
+&ADVANTAGES.Exalt/Lunar #stdata=Essence
+&ADVANTAGES.Exalt/Sidereal #stdata=Essence
+&ADVANTAGES.Exalt/Abyssal #stdata=Essence
+&ADVANTAGES.Exalt/Infernal #stdata=Essence
+&ADVANTAGES.Exalt/Dragon-Blooded #stdata=Essence
+&ADVANTAGES.Exalt/Alchemical #stdata=Essence
+&ADVANTAGES.Exalt/Liminal #stdata=Essence
+&ADVANTAGES.Dragon_King #stdata=Essence
+
+&SET.ADVANTAGES #stdata=@attach %!/DO_STATLIKE=%0,%1,%2,ADVANTAGES,ADVANTAGES,Advantage,Advantages,0
+
+&TALENTS #stdata=Alertness|Athletics|Awareness|Brawl|Dodge|Empathy|Expression|Intimidation|Kenning|Primal Urge|Streetwise|Subterfuge|Leadership
+&TALENTS.CONTEXT #stdata=0
+&TALENTS.MAX #stdata=6
+
+&SET.TALENTS #stdata=@attach %!/DO_STATLIKE=%0,%1,%2,TALENTS,TALENTS,Talent,Talents,1
+
+&HELP.TALENTS #stdata=[ansi(hc,Choices:)]%R[columns(sort(u(TALENTS,%0),i,|,|),25,3,,,,,,,,|,,1)]
+
+&SKILLS #stdata=Animal Ken|Crafts|Drive|Etiquette|Firearms|Melee|Performance|Security|Stealth|Survival|Technology
+&SKILLS.CONTEXT #stdata=0
+&SKILLS.MAX #stdata=6
+
+&SET.SKILLS #stdata=@attach %!/DO_STATLIKE=%0,%1,%2,SKILLS,SKILLS,Skill,Skills,1
+
+&HELP.SKILLS #stdata=[ansi(hc,Choices:)]%R[columns(sort(u(SKILLS,%0),i,|,|),25,3,,,,,,,,|,,1)]
+
+&KNOWLEDGES #stdata=Academics|Bureaucracy|Computer|Cosmology|Enigmas|Finance|Gremayre|Investigation|Law|Linguistics|Medicine|Occult|Politics|Rituals|Science|Lore
+&KNOWLEDGES.CONTEXT #stdata=0
+&KNOWLEDGES.MAX #stdata=6
+
+&SET.KNOWLEDGES #stdata=@attach %!/DO_STATLIKE=%0,%1,%2,KNOWLEDGES,KNOWLEDGES,Knowledge,Knowledges,1
+
+&HELP.KNOWLEDGES #stdata=[ansi(hc,Choices:)]%R[columns(sort(u(KNOWLEDGES,%0),i,|,|),25,3,,,,,,,,|,,1)]
+
+&MERITS.MAX #stdata=6
+&MERITS.CONTEXT #stdata=1
+
+&FLAWS.MAX #stdata=1
+&FLAWS.CONTEXT #stdata=1
+
+&SET.MERITS #stdata=@attach %!/DO_MERITLIKE=%0,%1,%2,MERITS,MERITS,Merit,Merits,0,1
+&SET.FLAWS #stdata=@attach %!/DO_MERITLIKE=%0,%1,%2,FLAWS,FLAWS,Flaw,Flaws,0,1
+
+&HELP.SPLAT #stdata=Splats cover divisions/sub-types/options particular to your Template. They come in X, Y, and Z variants. Not all Templates have all three.%R%RFor a [ansi(hc,setr(!,get(%0/ST.TEMPLATE),tem):)]%R[trim(iter(X Y Z,if(strlen(setr(!,u(%!/[setr(!,SPLAT.%i0.[edit(%q<tem>,%b,_)],sproot)].NAME),spname)),ansi(hw,%i0: %q<spname>)%R[columns(u(%!/%q<sproot>),35,2,,,,,,,,|,,1)]),%B,%R%R),b,%R)]
+
+&NATURES #stdata=Analyst|Architect|Autist|Autocrat|Avant-Garde|Benefactor|Bon Vivant|Bravo|Bureaucrat|Capitalist|Caregiver|Cavalier|Celebrant|Chameleon|Child|Competitor|Confidant|Conformist|Conniver|Crackerjack|Creep Show|Critic|Curmudgeon|Dabbler|Decoder|Deviant|Director|Enigma|Explorer|Eye of the Storm|Fanatic|Follower|Gallant|Guardian|Guru|Honest Abe|Idealist|Jester|Jobsworth|Judge|Loner|Manipulator|Martyr|Masochist|Masquerader|Monster|Optimist|Pedagogue|Penitent|Perfectionist|Plotter|Poltroon|Praise-Seeker|Predator|Rebel|Recognition Seeker|Reluctant Supernatural|Renunciate|Revolutionary|Rogue|Sadist|Sage|Scientist|Sensualist|Show-Off|Sociopath|Soldier|Supplicant|Survivor|Sycophant|Theorist|Thrill Seeker|Thrillseeker|Traditionalist|Trickster|Visionary|Waif|Wanderer
+
+&DEMEANORS #stdata=v(NATURES)
+
+@@ Mortals
+&HELP.GUIDE.MORTAL
+
+@@ Vampire: The Masquerade
+&ADVANTAGES.Vampire #stdata=Generation
+
+&SPLAT.X.VAMPIRE #stdata=Brujah|Gangrel|Malkavian|Nosferatu|Toreador|Tremere|Ventrue|Lasombra|Tzimisce|Assamite|Followers of Set|Giovanni|Ravnos|Kiasyd|Baali|Nagaraja|True Brujah|Caitiff|Gargoyle|Lasombra Antitribu|Assamite Antitribu|Blood Brothers|Brujah Antitribu|Gangrel Antitribu|Harbingers of Skulls|Malkavian Antitribu|Nosferatu Antitribu|Panders|Ravnos Antitribu|Salubri|Salubri Antitribu|Serpents of Light|Toreador Antitribu|Ventrue Antitribu
+&SPLAT.X.VAMPIRE.NAME #stdata=Clan
+
+&SPLAT.Y.VAMPIRE #stdata=Camarilla|Sabbat|Black Hand|Anarch|Independent
+&SPLAT.Y.VAMPIRE.NAME #stdata=Sect
+
+&DISCIPLINES #stdata=Auspex|Animalism|Celerity|Chimerstry|Dementation|Dominate|Fortitude|Necromancy|Obfuscate|Obtenebration|Potence|Presence|Quietus|Serpentis|Thaumaturgy|Vicissitude|Protean|Mytherceria|Melpominee
+
+&SET.DISCIPLINES #stdata=@attach %!/DO_STATLIKE=%0,%1,%2,DISCIPLINES,DISCIPLINES,Discipline,Disciplines,1
+
+&SPLAT.Z.VAMPIRE #stdata=Humanity|Caine|Cathari|Death and the Soul|Evil Revelations|Feral Heart|Honorable Accord|Lilith|Power and the Inner Voice
+&SPLAT.Z.VAMPIRE.NAME #stdata=Path
+
+@@ TODO: Thaumaturgy
+
+@@ Kindred of the East
+&ADVANTAGES.Wan_Kuei #stdata=Dharma
+
+@@ Werewolf: The Apocalypse
+&RENOWN #stdata=Ferocity|Cunning|Honor|Obedience|Wisdom|Obligation|Glory|Succor
+
+&SET.RENOWN #stdata=@attach %!/DO_STATLIKE=%0,%1,%2,RENOWN,RENOWN,Renown,Renown,1
+
+
+&ADVANTAGES.Shifter/Ajaba #stdata=Rage|Gnosis|Rank
+&SPLAT.X.SHIFTER/AJABA #stdata=Homid|Metis|Hyaenid
+&SPLAT.X.SHIFTER/AJABA.NAME #stdata=Breed
+
+&SPLAT.Z.SHIFTER/AJABA #stdata=Dawn|Midnight|Dusk
+&SPLAT.Z.SHIFTER/AJABA.NAME #stdata=Aspect
+
+&GIFTS.SHIFTER/AJABA #stdata=Ajaba|[u(SPLAT.Z.SHIFTER/AJABA)]
+
+&FORMS.SHIFTER/AJABA #stdata=Homid|Anthros|Crinos|Crocas|Hyaenid
+&FORMS.SHIFTER/AJABA.Anthros #stdata=Strength~2|Dexterity~1|Stamina~1|Manipulation~-1|Appearance~-3
+&FORMS.SHIFTER/AJABA.Crinos #stdata=Strength~3|Dexterity~2|Stamina~4|Manipulation~-2|Appearance~-[get_kv(get(%0/ST.ATTRIBUTES),Appearance,0)]
+&FORMS.SHIFTER/AJABA.Crocas #stdata=Strength~3|Dexterity~2|Stamina~3|Manipulation~-2|Appearance~-[get_kv(get(%0/ST.ATTRIBUTES),Appearance,0)]
+&FORMS.SHIFTER/AJABA.Hyaenid #stdata=Strength~1|Dexterity~2|Stamina~2|Manipulation~-2
+
+
+&ADVANTAGES.Shifter/Ananasi #stdata=Rage|Gnosis|Rank
+&SPLAT.X.SHIFTER/ANANASI #stdata=Homid|Arachnid
+&SPLAT.X.SHIFTER/ANANASI.NAME #stdata=Breed
+
+&SPLAT.Y.SHIFTER/ANANASI #stdata=Myrmidon|Viskr|Wyrsta
+&SPLAT.Y.SHIFTER/ANANASI.NAME #stdata=Faction
+
+&SPLAT.Z.SHIFTER/ANANASI #stdata=Tenere|Hatar|Kumoti
+&SPLAT.Z.SHIFTER/ANANASI.NAME #stdata=Aspect
+
+&GIFTS.SHIFTER/ANANASI #stdata=Ananasi|[u(SPLAT.Y.SHIFTER/ANANASI)]|[u(SPLAT.Z.SHIFTER/ANANASI)]
+
+&FORMS.SHIFTER/ANANASI #stdata=Homid|Lilian|Pithus|Crawlerling
+&FORMS.SHIFTER/ANANASI.Lilian #stdata=Strength~2|Dexterity~3|Stamina~2|Manipulation~-1|Appearance~-[get_kv(get(%0/ST.ATTRIBUTES),Appearance,0)]
+&FORMS.SHIFTER/ANANASI.Pithus #stdata=Strength~4|Dexterity~1|Stamina~3|Manipulation~-3|Appearance~-[get_kv(get(%0/ST.ATTRIBUTES),Appearance,0)]
+&FORMS.SHIFTER/ANANASI.Crawlerling #stdata=Dexterity~5|[iter(Strength Stamina Manipulation Appearance,%i0~-[get_kv(get(%0/ST.ATTRIBUTES),%i0,0)],%b,|)]
+
+&ADVANTAGES.Shifter/Bastet #stdata=Rage|Gnosis|Rank
+&SPLAT.X.SHIFTER/BASTET #stdata=Homid|Metis|Feline
+&SPLAT.X.SHIFTER/BASTET.NAME #stdata=Breed
+
+&SPLAT.Y.SHIFTER/BASTET #stdata=Bagheera|Balam|Bubasti|Ceilican|Khan|Pumonca|Qualmi|Simba|Swara
+&SPLAT.Y.SHIFTER/BASTET.NAME #stdata=Tribe
+
+&SPLAT.Z.SHIFTER/BASTET #stdata=Daylight|Twilight|Night
+&SPLAT.Z.SHIFTER/BASTET.NAME #stdata=Pyrio
+
+&FORMS.SHIFTER/BASTET #stdata=Homid|Sokto|Crinos|Chatro|Feline
+
+&FORMS.SHIFTER/BASTET.Sokto #stdata=u(FORMS.SHIFTER/BASTET.Sokto.[get(%0/ST.SPLAT.Y)])
+&FORMS.SHIFTER/BASTET.Crinos #stdata=u(FORMS.SHIFTER/BASTET.Crinos.[get(%0/ST.SPLAT.Y)])
+&FORMS.SHIFTER/BASTET.Chatro #stdata=u(FORMS.SHIFTER/BASTET.Chatro.[get(%0/ST.SPLAT.Y)])
+&FORMS.SHIFTER/BASTET.Feline #stdata=u(FORMS.SHIFTER/BASTET.Feline.[get(%0/ST.SPLAT.Y)])
+
+&FORMS.SHIFTER/BASTET.Sokto.Bagheera #stdata=Strength~1|Dexterity~1|Stamina~2|Manipulation~-1|Appearance~-1
+&FORMS.SHIFTER/BASTET.Crinos.Bagheera #stdata=Strength~3|Dexterity~2|Stamina~3|Manipulation~-3|Appearance~-[get_kv(get(%0/ST.ATTRIBUTES),Appearance,0)]
+&FORMS.SHIFTER/BASTET.Chatro.Bagheera #stdata=Strength~2|Dexterity~3|Stamina~3|Manipulation~-3|Appearance~-2
+&FORMS.SHIFTER/BASTET.Feline.Bagheera #stdata=Strength~1|Dexterity~3|Stamina~2|Manipulation~-3
+
+&FORMS.SHIFTER/BASTET.Sokto.Balam #stdata=Strength~1|Dexterity~1|Stamina~2|Manipulation~-1|Appearance~-1
+&FORMS.SHIFTER/BASTET.Crinos.Balam #stdata=Strength~3|Dexterity~2|Stamina~3|Manipulation~-4|Appearance~-[get_kv(get(%0/ST.ATTRIBUTES),Appearance,0)]
+&FORMS.SHIFTER/BASTET.Chatro.Balam #stdata=Strength~3|Dexterity~2|Stamina~3|Manipulation~-4
+&FORMS.SHIFTER/BASTET.Feline.Balam #stdata=Strength~2|Dexterity~2|Stamina~2|Manipulation~-3
+
+&FORMS.SHIFTER/BASTET.Sokto.Bubasti #stdata=Strength~0|Dexterity~1|Stamina~0|Manipulation~-1|Appearance~-1
+&FORMS.SHIFTER/BASTET.Crinos.Bubasti #stdata=Strength~1|Dexterity~3|Stamina~1|Manipulation~-3|Appearance~-[get_kv(get(%0/ST.ATTRIBUTES),Appearance,0)]
+&FORMS.SHIFTER/BASTET.Chatro.Bubasti #stdata=Strength~2|Dexterity~3|Stamina~3|Manipulation~-2
+&FORMS.SHIFTER/BASTET.Feline.Bubasti #stdata=Strength~-1|Dexterity~4|Stamina~1|Manipulation~-2
+
+&FORMS.SHIFTER/BASTET.Sokto.Ceilican #stdata=Strength~0|Dexterity~2|Stamina~1|Manipulation~0|Appearance~-1
+&FORMS.SHIFTER/BASTET.Crinos.Ceilican #stdata=Strength~1|Dexterity~3|Stamina~1|Manipulation~-2|Appearance~-[get_kv(get(%0/ST.ATTRIBUTES),Appearance,0)]
+&FORMS.SHIFTER/BASTET.Chatro.Ceilican #stdata=Strength~0|Dexterity~4|Stamina~1|Manipulation~-2|Appearance~-2
+&FORMS.SHIFTER/BASTET.Feline.Ceilican #stdata=Strength~-1|Dexterity~4|Stamina~0|Manipulation~-2
+
+&FORMS.SHIFTER/BASTET.Sokto.Khan #stdata=Strength~2|Dexterity~1|Stamina~2|Manipulation~-1|Appearance~-1
+&FORMS.SHIFTER/BASTET.Crinos.Khan #stdata=Strength~3|Dexterity~2|Stamina~3|Manipulation~-3|Appearance~-[get_kv(get(%0/ST.ATTRIBUTES),Appearance,0)]
+&FORMS.SHIFTER/BASTET.Chatro.Khan #stdata=Strength~4|Dexterity~2|Stamina~3|Manipulation~-3
+&FORMS.SHIFTER/BASTET.Feline.Khan #stdata=Strength~3|Dexterity~2|Stamina~2|Manipulation~-3
+
+&FORMS.SHIFTER/BASTET.Sokto.Pumonca #stdata=Strength~1|Dexterity~2|Stamina~1|Manipulation~-1|Appearance~-1
+&FORMS.SHIFTER/BASTET.Crinos.Pumonca #stdata=Strength~2|Dexterity~3|Stamina~3|Manipulation~-3|Appearance~-[get_kv(get(%0/ST.ATTRIBUTES),Appearance,0)]
+&FORMS.SHIFTER/BASTET.Chatro.Pumonca #stdata=Strength~3|Dexterity~3|Stamina~2|Manipulation~-3
+&FORMS.SHIFTER/BASTET.Feline.Pumonca #stdata=Strength~2|Dexterity~2|Stamina~2|Manipulation~-3
+
+&FORMS.SHIFTER/BASTET.Sokto.Qualmi #stdata=Strength~0|Dexterity~2|Stamina~1|Manipulation~-1|Appearance~-1
+&FORMS.SHIFTER/BASTET.Crinos.Qualmi #stdata=Strength~1|Dexterity~2|Stamina~2|Manipulation~-2|Appearance~-[get_kv(get(%0/ST.ATTRIBUTES),Appearance,0)]
+&FORMS.SHIFTER/BASTET.Chatro.Qualmi #stdata=Strength~2|Dexterity~3|Stamina~2|Manipulation~-2
+&FORMS.SHIFTER/BASTET.Feline.Qualmi #stdata=Strength~0|Dexterity~3|Stamina~0|Manipulation~0
+
+&FORMS.SHIFTER/BASTET.Sokto.Simba #stdata=Strength~2|Dexterity~1|Stamina~2|Manipulation~-1|Appearance~-1
+&FORMS.SHIFTER/BASTET.Crinos.Simba #stdata=Strength~3|Dexterity~2|Stamina~3|Manipulation~-2|Appearance~-[get_kv(get(%0/ST.ATTRIBUTES),Appearance,0)]
+&FORMS.SHIFTER/BASTET.Chatro.Simba #stdata=Strength~4|Dexterity~2|Stamina~2|Manipulation~-2
+&FORMS.SHIFTER/BASTET.Feline.Simba #stdata=Strength~2|Dexterity~3|Stamina~2|Manipulation~-1
+
+&FORMS.SHIFTER/BASTET.Sokto.Swara #stdata=Strength~1|Dexterity~2|Stamina~1|Manipulation~-1|Appearance~-1
+&FORMS.SHIFTER/BASTET.Crinos.Swara #stdata=Strength~2|Dexterity~3|Stamina~2|Manipulation~-3|Appearance~-[get_kv(get(%0/ST.ATTRIBUTES),Appearance,0)]
+&FORMS.SHIFTER/BASTET.Chatro.Swara #stdata=Strength~2|Dexterity~4|Stamina~2|Manipulation~-3
+&FORMS.SHIFTER/BASTET.Feline.Swara #stdata=Strength~1|Dexterity~4|Stamina~1|Manipulation~-1
+
+&GIFTS.SHIFTER/BASTET #stdata=General|[u(SPLAT.Y.SHIFTER/BASTET)]|[u(SPLAT.Z.SHIFTER/BASTET)]
+
+&ADVANTAGES.Shifter/Corax #stdata=Rage|Gnosis|Rank
+&SPLAT.X.SHIFTER/CORAX #stdata=Homid|Corvid
+&SPLAT.X.SHIFTER/CORAX #stdata=Breed
+
+&FORMS.SHIFTER/CORAX #stdata=Homid|Corvid|Crinos
+&FORMS.SHIFTER/CORAX.Crinos #stdata=Strength~1|Dexterity~1|Stamina~1|Manipulation~-2|Appearance~-[get_kv(get(%0/ST.ATTRIBUTES),Appearance,0)]|Perception~3
+&FORMS.SHIFTER/CORAX.Corvid #stdata=Strength~-1|Dexterity~1|Stamina~0|Manipulation~-3|Perception~4
+
+&GIFTS.SHIFTER/CORAX #stdata=Corax
+
+&ADVANTAGES.Shifter/Garou #stdata=Rage|Gnosis|Rank
+&SPLAT.X.SHIFTER/GAROU #stdata=Homid|Metis|Lupus
+&SPLAT.X.SHIFTER/GAROU.NAME #stdata=Breed
+
+&SPLAT.Y.SHIFTER/GAROU #stdata=Black Furies|Bone Gnawers|Children of Gaia|Fianna|Get of Fenris|Glass Walkers|Red Talons|Shadow Lords|Silent Striders|Silver Fangs|Stargazers|Uktena|Wendigo|Black Spiral Dancers
+&SPLAT.Y.SHIFTER/GAROU.NAME #stdata=Tribe
+
+&SPLAT.Z.SHIFTER/GAROU #stdata=Ragabash|Theurge|Philodox|Galliard|Ahroun
+&SPLAT.Z.SHIFTER/GAROU.NAME #stdata=Auspice
+
+&GIFTS.SHIFTER/GAROU #stdata=[u(SPLAT.X.SHIFTER/GAROU)]|[u(SPLAT.Y.SHIFTER/GAROU)]|[u(SPLAT.Z.SHIFTER/GAROU)]
+
+&FORMS.SHIFTER/GAROU #stdata=Homid|Glabro|Crinos|Hispo|Lupus
+&FORMS.SHIFTER/GAROU.Glabro #stdata=Strength~2|Stamina~2|Manipulation~-2|Appearance~-1
+&FORMS.SHIFTER/GAROU.Crinos #stdata=Strength~4|Dexterity~1|Stamina~3|Appearance~-[get_kv(get(%0/ST.ATTRIBUTES),Appearance,0)]|Manipulation~-[get_kv(get(%0/ST.ATTRIBUTES),Manipulation,0)]
+&FORMS.SHIFTER/GAROU.Hispo #stdata=Strength~3|Dexterity~2|Stamina~3|Manipulation~-[get_kv(get(%0/ST.ATTRIBUTES),Manipulation,0)]
+&FORMS.SHIFTER/GAROU.Lupus #stdata=Strength~1|Dexterity~2|Stamina~2|Manipulation~-[get_kv(get(%0/ST.ATTRIBUTES),Manipulation,0)]
+
+&ADVANTAGES.Shifter/Gurahl #stdata=Rage|Gnosis|Rank
+&SPLAT.X.SHIFTER/GURAHL #stdata=Homid|Ursine
+&SPLAT.X.SHIFTER/GURAHL.NAME #stdata=Breed
+
+&SPLAT.Y.SHIFTER/GURAHL #stdata=Forest Walkers|Ice Stalkers|Mountain Guardians|River Keepers
+&SPLAT.Y.SHIFTER/GURAHL.NAME #stdata=Tribe
+
+&SPLAT.Z.SHIFTER/GURAHL #stdata=Arcas|Uzmati|Kojubat|Kieh|Rishi
+&SPLAT.Z.SHIFTER/GURAHL.NAME #stdata=Auspice
+
+&FORMS.SHIFTER/GURAHL #stdata=Homid|Arthren|Crinos|Bjornen|Ursus
+&FORMS.SHIFTER/GURAHL.Arthren #stdata=Strength~3|Dexterity~0|Stamina~3|Manipulation~-2|Appearance~-2
+&FORMS.SHIFTER/GURAHL.Crinos #stdata=Strength~5|Dexterity~-1|Stamina~5|Manipulation~-3|Appearance~-[get_kv(get(%0/ST.ATTRIBUTES),Appearance,0)]
+&FORMS.SHIFTER/GURAHL.Bjornen #stdata=Strength~4|Dexterity~-2|Stamina~4|Manipulation~-3
+&FORMS.SHIFTER/GURAHL.Ursus #stdata=Strength~3|Dexterity~0|Stamina~3|Manipulation~-3
+
+&GIFTS.SHIFTER/GURAHL #stdata=Gurahl|[u(SPLAT.X.SHIFTER/GURAHL)]|[u(SPLAT.Z.SHIFTER/GURAHL)]
+
+&ADVANTAGES.Shifter/Kitsune #stdata=Rage|Gnosis|Rank
+&SPLAT.X.SHIFTER/KITSUNE #stdata=Kojin|Roko|Shinju
+&SPLAT.X.SHIFTER/KITSUNE.NAME #stdata=Breed
+
+&SPLAT.Z.SHIFTER/KITSUNE #stdata=Kataribe|Gukutsushi|Doshi|Eji
+&SPLAT.Z.SHIFTER/KITSUNE.NAME #stdata=Path
+
+&FORMS.SHIFTER/KITSUNE #stdata=Hitogata|Sambuhenge|Koto|Juko|Kyubi
+&FORMS.SHIFTER/KITSUNE.Sambuhenge #stdata=Strength~0|Dexterity~1|Stamina~1|Manipulation~-1
+&FORMS.SHIFTER/KITSUNE.Koto #stdata=Strength~1|Dexterity~2|Stamina~2|Manipulation~-1|Perception~1
+&FORMS.SHIFTER/KITSUNE.Juko #stdata=Juko=Dexterity~3|Stamina~3|Manipulation~-2|Perception~1
+&FORMS.SHIFTER/KITSUNE.Kyubi #stdata=Dexterity~4|Stamina~2|Manipulation~-1|Perception~2
+
+&GIFTS.SHIFTER/KITSUNE #stdata=Kitsune|[u(SPLAT.X.SHIFTER/KITSUNE)]|[u(SPLAT.Z.SHIFTER/KITSUNE)]
+
+&ADVANTAGES.Shifter/Mokole #stdata=Rage|Gnosis|Rank
+&SPLAT.X.SHIFTER/MOKOLE #stdata=Homid|Suchid
+&SPLAT.X.SHIFTER/MOKOLE.NAME #stdata=Breed
+
+&SPLAT.Y.SHIFTER/MOKOLE #stdata=Zhong Lung|Makara|Mokole-mbembe|Gumagun
+&SPLAT.Y.SHIFTER/MOKOLE.NAME #stdata=Stream
+
+&SPLAT.Z.SHIFTER/MOKOLE #stdata=switch(get(%0/ST.SPLAT.Y),Zhong Lung,Tung Chun|Nam Hsai|Sai Chau|Pei Tung,Makara,Hemanta|Zarad|Grisma|Vasanta,Rising Sun|Noonday Sun|Setting Sun|Shrouded Sun|Midnight Sun|Decorated Sun|Solar Eclipse)
+&SPLAT.Z.SHIFTER/MOKOLE.NAME #stdata=Auspice
+
+&FORMS.SHIFTER/MOKOLE #stdata=Homid|Archid|Suchid
+@@ TODO: Screw these lizards. How to suchid?
+
+&ADVANTAGES.Shifter/Nagah #stdata=Rage|Gnosis|Rank
+&SPLAT.X.SHIFTER/NAGAH #stdata=Balaram|Ahi|Vasuki
+&SPLAT.X.SHIFTER/NAGAH.NAME #stdata=Breed
+
+&SPLAT.Z.SHIFTER/NAGAH #stdata=Kamakshi|Kartikeya|Kamsa|Kali
+&SPLAT.Z.SHIFTER/NAGAH.NAME #stdata=Auspice
+
+&FORMS.SHIFTER/NAGAH #stdata=Balaram|Silkaram|Azhi Dahaka|Kali Dahaka|Vasuki
+
+&FORMS.SHIFTER/NAGAH.Silkaram #stdata=Strength~2|Dexterity~0|Stamina~2|Appearance~-2|Manipulation~-2
+&FORMS.SHIFTER/NAGAH.Azhi_Dahaka #stdata=Strength~3|Dexterity~2|Stamina~3|Appearance~-[get_kv(get(%0/ST.ATTRIBUTES),Appearance,0)]|Manipulation~-3
+&FORMS.SHIFTER/NAGAH.Kali_Dahaka #stdata=Strength~2|Dexterity~2|Stamina~2|Appearance~-[get_kv(get(%0/ST.ATTRIBUTES),Appearance,0)]|Manipulation~-3
+&FORMS.SHIFTER/NAGAH.Vasuki #stdata=Strength~-1|Dexterity~2|Stamina~1|Manipulation~-[get_kv(get(%0/ST.ATTRIBUTES),Manipulation,0)]
+
+&GIFTS.SHIFTER/NAGAH #stdata=Nagah|[u(SPLAT.X.SHIFTER/NAGAH)]|[u(SPLAT.Z.SHIFTER/NAGAH)]
+
+&ADVANTAGES.Shifter/Nuwisha #stdata=Rage|Gnosis|Rank
+&SPLAT.X.SHIFTER/NUWISHA #stdata=Homid|Latrani
+&SPLAT.X.SHIFTER/NUWISHA.NAME #stdata=Breed
+
+&GIFTS.SHIFTER/NUWISHA #stdata=Nuwisha|Homid|Lupus|Ragabash
+
+&FORMS.SHIFTER/NUWISHA #stdata=Homid|Tsitsu|Manabozho|Sendeh|Latrani
+&FORMS.SHITER/NUWISHA.Tsitsui #stdata=Strength~2|Dexterity~1|Stamina~2|Manipulation~-1
+&FORMS.SHITER/NUWISHA.Manabozho #stdata=Strength~2|Dexterity~3|Stamina~3|Manipulation~-2|Appearance~-[get_kv(get(%0/ST.ATTRIBUTES),Appearance,0)]
+&FORMS.SHITER/NUWISHA.Sendeh #stdata=Strength~2|Dexterity~3|Stamina~3|Manipulation~-3
+&FORMS.SHITER/NUWISHA.Latrani #stdata=Strength~0|Dexterity~3|Stamina~3|Manipulation~-3
+
+
+@@ Mage: The Ascension
+&ADVANTAGES.Mage #stdata=Arete
+
+&SPHERES #stdata=Life|Spirit|Prime|Entropy|Forces|Time|Matter|Mind|Correspondence|Data|Dimensional Science
+
+@@ Wraith
+
+&ARCANOI #stdata=Argos|Castigate|Embody|Fatalism|Inhabit|Keening|Lifeweb|Moliate|Outrage|Pandemonium|Phantasm|Puppetry|Usury
+
+@@ Exalted vs WoD
+&SPLAT.X.EXALT/SOLAR #stdata=Dawn|Zenith|Eclipse|Twilight|Night
+&SPLAT.X.EXALT/SOLAR.NAME #stdata=Caste
+
+&SPLAT.X.EXALT/ABYSSAL #stdata=Dusk|Midnight|Moonshadow|Daybreak|Day
+&SPLAT.X.EXALT/ABYSSAL.NAME #stdata=Caste
+
+&SPLAT.X.EXALT/SIDEREAL #stdata=Journeys|Serenity|Battles|Secrets|Endings
+&SPLAT.X.EXALT/SIDEREAL.NAME #stdata=Caste
+
+&SPLAT.X.EXALT/ALCHEMICAL #stdata=Orichalcum|Moonsilver|Jade|Starmetal|Soulsteel|Adamant
+&SPLAT.X.EXALT/ALCHEMICAL.NAME #stdata=Caste
+
+&SPLAT.X.EXALT/LIMINAL #stdata=Blood|Breath|Flesh|Marrow|Soil
+&SPLAT.X.EXALT/LIMINAL.NAME #stdata=Aspect
+
+&SPLAT.X.EXALT/DRAGON-BLOODED #stdata=Fire|Earth|Air|Wood|Water
+&SPLAT.X.EXALT/DRAGON-BLOODED.NAME #stdata=Aspect
+
+&SPLAT.X.EXALT/LUNAR #stdata=Full Moon|[if(getconf(%!,LOSTLUNARCASTES),Waxing Moon|Half Moon|Waning Moon,Changing Moon)]|No Moon|Casteless
+&SPLAT.X.EXALT/SIDEREAL.NAME #stdata=Caste
+
+&CHARMS.DRAGON-BLOODED #stdata=u(SPLAT.X.EXALT/DRAGON-BLOODED)
+&CHARMS.SOLAR #stdata=u(SPLAT.X.EXALT/SOLAR)|Special
+&CHARMS.LUNAR #stdata=u(SPLAT.X.EXALT/LUNAR)|Shapeshifting
+&CHARMS.SIDEREAL #stdata=u(SPLAT.X.EXALT/SIDEREAL)
+&CHARMS.ABYSSAL #stdata=u(SPLAT.X.EXALT/ABYSSAL)|Special
+&CHARMS.INFERNAL #stdata=General|Kakuri|Lanka|The Hell of Being Skinned Alive|The Wicked City|The Hell of Boiling Oil|The Hell of Burrowing Maggots
+&CHARMS.ALCHEMICAL #stdata=u(SPLAT.X.EXALT/ALCHEMICAL)
+&CHARMS.LIMINAL #stdata=u(SPLAT.X.EXALT/LIMINAL)
+
+&NATIVE.TYPE #stdata=edit(after(get(%0/ST.TEMPLATE),EXALT/),%b,_)
+
+&STYLES #stdata=Kaleidoscopic Border|Citrine Poxes|Quicksilver Hand|Charcoal March|Obsidian Shards|Prismatic Arrangement|Sapphire Veil|Scarlet Battlefield
+
+&DO_STYLECHARM #stdata=@attach %!/DO_EVOSTYLE=%0,%1,%2,%3,STYLECHARMS,Style,u(STYLES);th setq(!,[ansi(hc,capnames(%q<category> Charm:))] [ansi(hw,capnames(%2))],tname);@if lte(%q<newvalue>,0)={@attach %!/REPORT=%0,Removed all counts of %q<tname>},{@attach %!/REPORT=%0,Now counting [ansi(hg,%q<newvalue> purchase[if(gt(%q<newvalue>,1),s)])] of %q<tname>}
+@@ %0 - target character, %1 - artifact name, %2 - charm name, %3 - value to modify by.
+
+&ADD.STYLECHARM #stdata=@attach %!/DO_STYLECHARM=%0,elementsmux(%1,1,|),before(%2,~),mul(if(%3,-1,1),strfirstof(after(%2,~),1))
+&REM.STYLECHARM #stdata=@attach %!/ADD_STYLECHARM=%0,%1,%2,1
+
+@@ TODO: Ancient Sorcery.
+

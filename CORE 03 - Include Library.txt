@@ -46,7 +46,7 @@
 
 &REGISTER_FUNCTIONS #inc=@dolist/inline lattr(%!/GPFN.*)={@function/protect/privilege [after(%d0,.)]=%!/%d0};@dolist/inline lattr(%!/GFN.*)={@function/protect [after(%d0,.)]=%!/%d0};@dolist/inline lattr(%!/GMFN.*)={@function/protect/privilege gm_[after(%d0,.)]=%!/%d0;@admin function_access=gm_[after(%d0,.)] guildmaster}
 
-&PARTIAL #inc=@if or(not(strlen(%0)),setr(!,match(%1,setr(!,%0,strfirstof(%3,choice)),strfirstof(%2,%b)),matched))={@if cand(t(strlen(%0)),t(%q<matched>))={th setq(!,elementsmux(%1,%q<matched>,strfirstof(%2,%b)),strfirstof(%3,choice))}},{@assert/inline words(setr(!,graball(%1,%0*,strfirstof(%2,%b),strfirstof(%2,%b)),strfirstof(%3,choice)))=@pemit %#={Invalid %4! Valid choices are: [elist(%1,,strfirstof(%2,%b))]};@break/inline gt(words(r(strfirstof(%3,choice)),strfirstof(%2,%b)),1)=@pemit %#={ERROR: %0 matched [elist(r(strfirstof(%3,choice)),strfirstof(%2,%b),,|)]. Please be more specific.}}
+&PARTIAL #inc=@if or(not(strlen(%0)),setr(!,match(%1,setr(!,%0,strfirstof(%3,choice)),strfirstof(%2,%b)),matched))={@if cand(t(strlen(%0)),t(%q<matched>))={th setq(!,elementsmux(%1,%q<matched>,strfirstof(%2,%b)),strfirstof(%3,choice))}},{@assert/inline words(setr(!,graball(%1,%0*,strfirstof(%2,%b),strfirstof(%2,%b)),strfirstof(%3,choice)))=@pemit %#={Invalid %4! Valid choices are: [elist(%1,,strfirstof(%2,%b))]};@break/inline gt(words(r(strfirstof(%3,choice)),strfirstof(%2,%b)),1)=@pemit %#={ERROR: %0 matched [elist(r(strfirstof(%3,choice)),,strfirstof(%2,%b))]. Please be more specific.}}
 @@ PARTIAL %0 = entry, %1 = choices, %2 = delimiter, %3 = register name, %4 = topic name
 
 &GET_SWITCH #inc=@if strlen(%0)={@attach #inc/PARTIAL=%0,get_switches(%!,%#,%1),|,switch,switch}

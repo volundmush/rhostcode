@@ -2,7 +2,7 @@
 
 @skip isdbref(tag(info))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No global room set!;@assert/inline isdbref(setr(0,create(Info Files,,t)))=@pemit %#=ERROR: Could not create code object: %q0;@set %q0=INDESTRUCTIBLE;@tag/add info=%q0;@tel #info=globalroom();@parent #info=#info_lib}
 
-&CMD.+INFO #info=$^(?s)(?\:\+)?(info|inf)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?))?(?\:=(.*))?$:@attach %!/DO_INFO
+&CMD.+INFO #info=$^(?s)(?\:\+)?(info|inf)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?)?)?(?\:=(.*))?$:@attach %!/DO_INFO
 @set #info/CMD.+INFO=regexp
 
 @@ CHARACTER - +INFO

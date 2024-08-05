@@ -54,13 +54,13 @@
 
 &SW.INFO.UNLOCK #info_lib=@assert/inline strlen(%q<filename>)=@pemit %#=[v(INFO.NAME)] name empty.;@dolist/inline/nobreak/delimit | %q<filename>={@attach %!/INC.INFO.FINDFILE=%d0;@assert/inline t(get_kv(%q<meta>,Locked))=@pemit %#=[v(INFO.NAME)] File %q<fname> is not Locked!;@set %q<target>=%q<attr>.META:[del_kv(del_kv(%q<meta>,LockedBy),Locked)];@attach %!/REPORT=%#,%q<target>,%q<fname>,Unlocked
 
-&SW.INFO.DELETE #info_lib=@assert/inline strlen(%q<filename>)=@pemit %#=[v(INFO.NAME)] name empty.;@dolist/inline/delimit | %q<filename>={@attach %!/INC.INFO.FINDFILE=%d0;@assert/inline cor(strmatch(%#,%q<target>),u(INFO.ADMIN,%#))=@pemit %#=You may not delete another's Info files.;@break/inline cand(cor(get_kv(%q<contents>,Locked),cand(%q<lockapprove>,get(%q<target>/APPROVED))),not(u(INFO.ADMIN,%#)))=@pemit %#=Locked Files must be Unlocked by admin first.;@wipe %q<target>/%q<attr>.*;@attach %!/REPORT=%#,%q<target>,%q<fname>,Deleted!
+&SW.INFO.DELETE #info_lib=@assert/inline strlen(%q<filename>)=@pemit %#=[v(INFO.NAME)] name empty.;@dolist/inline/delimit | %q<filename>={@attach %!/INC.INFO.FINDFILE=%d0;@assert/inline cor(strmatch(%:,%q<target>),u(INFO.ADMIN,%#))=@pemit %#=You may not delete another's Info files.;@break/inline cand(cor(get_kv(%q<contents>,Locked),cand(%q<lockapprove>,get(%q<target>/APPROVED))),not(u(INFO.ADMIN,%#)))=@pemit %#=Locked Files must be Unlocked by admin first.;@wipe %q<target>/%q<attr>.*;@attach %!/REPORT=%#,%q<target>,%q<fname>,Deleted!}
 
 &SW.INFO.GET #info_lib=@dolist/inline/nobreak/delimit | %q<filename>={@attach %!/INC.INFO.FINDFILE=%d0;@pemit %#=header(Unformatted Contents of %q<fname>);@pemit %#=translate(%q<contents>,1);@pemit %#=u(FOOTER)}
 
 &INC.INFO.GETSUM #info_lib=@dolist/inline/nobreak/delimit | %q<filename>={@attach %!/INC.INFO.FINDFILE=%d0;@pemit %#=header(Unformatted Contents of %q<fname> Summary);@pemit %#=%q<contents>;@pemit %#=u(FOOTER)}
 
-&INC.INFO.VIEW #info_lib=@if %q<private>={@assert/inline cor(strmatch(%#,num(%q<target>)),u(INFO.ADMIN,%#))=@pemit %#=%q<sysname> files are private.};@if strlen(%q<filename>)={@attach %!/INC.INFO.VIEW_CONTENTS},{@attach %!/INC.INFO.VIEW_FILES}
+&INC.INFO.VIEW #info_lib=@if %q<private>={@assert/inline cor(strmatch(%:,%q<target>),u(INFO.ADMIN,%#))=@pemit %#=%q<sysname> files are private.};@if strlen(%q<filename>)={@attach %!/INC.INFO.VIEW_CONTENTS},{@attach %!/INC.INFO.VIEW_FILES}
 
 &INC.INFO.VIEW_FILES #info_lib=@pemit %#=header(name(%q<target>)'s [v(INFO.NAME)] Files);@pemit %#=columns(iter(u(FN.LIST_FILENAMES,%q<target>),left(%i0,25)[if(get_kv(setr(!,get(%q<target>/[setr(!,u(FN.FILENAME,%i0),attr)].META),meta),Locked),\([ansi(hw,+)]\))],|,|),26,3,l,1,1,,%b,,1,|,%B,1);@pemit %#=footer(Legend: + - Locked)
 

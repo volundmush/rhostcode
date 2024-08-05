@@ -18,7 +18,7 @@
 
 &FN.VALID_NAME #chan_lib=ofparse(3,if(strlen(%0),1,#-1 CHANNEL NAMES CANNOT BE EMPTY),if(lte(strlen(%0),30),1,#-1 CHANNEL NAMES MUST BE <=30 CHARACTERS),if(valid(name,%0),1,#-1 CHANNEL NAMES MUST BE VALID THING NAMES))
 
-&FN.FIND_CHANNEL #chan_lib=privatize(1,ofparse(3,if(strlen(%0),1,#-1 CHANNEL NAME EMPTY),if(words(setr(0,u(FN.VISIBLE_CHANNELS,%0))),1,#-1 NO VISIBLE CHANNELS IN SYSTEM),if(lt(words(setr(1,switch(%2,1,namefind(%q0,%1),2,namegraball(%q0,%1),namegrab(%q0,%1)))),2),1,#-1 MATCHED MULTIPLE CHANNELS: [iter(%q0,name(%i0),%b,|)]),strfirstof(%q1,if(strfirstof(%3,1),#-1 CHANNEL '%1' NOT FOUND))))
+&FN.FIND_CHANNEL #chan_lib=privatize(1,ofparse(3,if(strlen(%0),1,#-1 CHANNEL NAME EMPTY),if(words(setr(0,u(FN.VISIBLE_CHANNELS,%0))),1,#-1 NO VISIBLE CHANNELS IN SYSTEM),if(cand(isobjid(%1),match(%q0,%1)),1[setq(1,%1)],if(lt(words(setr(1,switch(%2,1,namefind(%q0,%1),2,namegraball(%q0,%1),namegrab(%q0,%1)))),2),1,#-1 MATCHED MULTIPLE CHANNELS: [iter(%q0,name(%i0),%b,|)])),strfirstof(%q1,if(strfirstof(%3,1),#-1 CHANNEL '%1' NOT FOUND))))
 @@ %0 - for who, %1 channel name, %2 - 0 (default) for namegrab, 1 for namefind, 2 for namegraball, %3 - (default true) error on empty
 @@ Can Error.
 
@@ -41,15 +41,15 @@
 
 &SW.OPTIONS #chan_lib=@attach %!/INC.FIND=trim(before(%0,/));@assert/inline u(CHECK,%q<chan>,,%:)=@pemit %#=Permission denied.;@attach %!/CONFIG=trim(after(%0,/)),%1,%q<chan>
 
-&SW.EXAMINE #chan_lib=@attach %!/INC.FIND;@attach %!/INC.ADMIN;@pemit %#=header(Examine: [cname(%q<chan>)] (%q<chan>));@pemit %#=[ansi(hw,JOINED:)]%B[u(FN.NAMES,get(%q<chan>/JOINED))];@pemit %#=[ansi(hw,GAGGING:)]%B[u(FN.NAMES,get(%q<chan>/GAGGING))];@if words(setr(!,get(%q<chan>/RESTRICT),restrict),|)={@pemit %#=separator(Restricted);@dolist/inline/delimit | %q<restrict>={@pemit %#=[cname(before(%d0,~))] - until [fancytime(after(%d0,~))]}};@pemit %#=separator(Locks);@dolist/inline/delimit | [get(%!/LOCKS)]={@pemit %#=[ansi(hw,LOCK_%d0:)] [default(%q<chan>/LOCK_%d0,Default: [v(DEFAULT_LOCK_%d0)])];@pemit %#=[ansi(hw,LK.LOCK_%d0:)]%B[default(%q<chan>/LK.LOCK_%d0,<unset>)]};@pemit %#=footer()
+&SW.EXAMINE #chan_lib=@attach %!/INC.FIND;@attach %!/INC.ADMIN;@pemit %#=header(Examine: [cname(%q<chan>)] (%q<chan>));@pemit %#=[ansi(hw,JOINED:)]%B[u(FN.NAMES,get(%q<chan>/JOINED))];@pemit %#=[ansi(hw,GAGGING:)]%B[u(FN.NAMES,get(%q<chan>/GAGGING))];@if words(setr(!,get(%q<chan>/RESTRICT),restrict),|)={@pemit %#=separator(Restricted);@dolist/inline/delimit | %q<restrict>={@pemit %#=[cname(before(%d0,~))] - until [fancytime(after(%d0,~))]}};@pemit %#=separator(Locks);@dolist/inline/delimit | [get(%!/LOCKS)]={@pemit %#=[ansi(hw,%d0:)] [lock(%q<chan>/user|%d0)]};@pemit %#=footer()
 
-&SW.DELETE #chan_lib=@attach %!/INC.FIND;@attach %!/INC.ADMIN;
+&SW.DELETE #chan_lib=@attach %!/INC.FIND;@attach %!/INC.ADMIN;@assert/inline match(name(%q<chan>)|[num(%q<chan>)]|[objid(%q<chan>)],%1,|)=@pemit %#=Verify failed. Right side argument must be the channel's full name, dbref, or objid.;th setq(!,cname(%q<chan>),channame);@attach #inc/MSG_ALERT=Channel '%q<channame>' deleted.;th u(FN.CEMIT,%q<channame>,:has deleted the channel.);@set %q<chan>=!SAFE !INDESTRUCTIBLE;@destroy/override %q<chan>
 
 &INC.CREATE_CHECK #chan_lib=@assert/inline gtebittype(%#,5)=@pemit %#=Permission denied!
 
 &SW.CREATE #chan_lib=@attach %!/INC.CREATE_CHECK;@assert/inline setr(!,u(FN.VALID_NAME,setr(!,trim(%0),channame)),result)=@pemit %#=%q<result>;@break/inline cand(isobjid(setr(!,u(FN.FIND_CHANNEL,%#,%q<channame>),found)),!strmatch(%q<chan>,%q<found>))=@pemit %#=Channel name conflict detected.;@assert/inline isdbref(setr(!,create(%q<channame>,,t),chan))=@pemit %#=Could not create Channel: %q<chan>;@if has_markup(%q<channame>)={@name/ansi %q<chan>=%q<channame>};@parent %q<chan>=[u(CHAN_PARENT)];@set %q<chan>=INDESTRUCTIBLE SAFE;@pemit %#=Created a new channel: %q<channame>;@attach #inc/MSG_ALERT=New channel created: %q<channame>
 
-&SW.RENAME #chan_lib=@attach %!/INC.FIND;@attach %!/INC.ADMIN;@assert/inline setr(!,u(FN.VALID_NAME,setr(!,trim(%0),channame)))=@pemit %#=%q<result>;@break/inline cand(isobjid(setr(!,u(FN.FIND_CHANNEL,%#,stripansi(%q<channame>),found))),!strmatch(%q<chan>,%q<found>))=@pemit %#=Channel name conflict detected.;th setq(!,cname(%q<chan>),oldname);@name/ansi %q<chan>=%q<channame>;@pemit %#=Channel '%q<oldname>' renamed to '%q<channame>';@attach #inc/MSG_ALERT=Channel '%q<oldname>' renamed to '%q<channame>';th u(FN.CEMIT,%q<chan>,:renamed '%q<oldname>' to '%q<channame>',%#)
+&SW.RENAME #chan_lib=@attach %!/INC.FIND;@attach %!/INC.ADMIN;@assert/inline setr(!,u(FN.VALID_NAME,setr(!,trim(%1),channame)),result)=@pemit %#=%q<result>;@break/inline cand(isobjid(setr(!,u(FN.FIND_CHANNEL,%#,stripansi(%q<channame>),found))),!strmatch(%q<chan>,%q<found>))=@pemit %#=Channel name conflict detected.;th setq(!,cname(%q<chan>),oldname);@if has_markup(%q<channame>)={@name/ansi %q<chan>=%q<channame>},{@name %q<chan>=%q<channame>};@pemit %#=Channel '%q<oldname>' renamed to '%q<channame>';@attach #inc/MSG_ALERT=Channel '%q<oldname>' renamed to '%q<channame>';th u(FN.CEMIT,%q<chan>,:renamed '%q<oldname>' to '%q<channame>',%#)
 
 &INC.STARTLOCK #chan_lib=@attach %!/INC.FIND=before(stripansi(%0),/);@attach %!/INC.ADMIN;@attach #inc/PARTIAL=after(stripansi(%0),/),get(%!/LOCKS),|,lock,locktype;
 

@@ -3,15 +3,28 @@
 &CMD.COLORDEMO #uglobals=$^(?s)(?\:@|\+)?(colordemo)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@pemit %#=header(Color Demo);@pemit %#=iter(lnum(0,255),rjust(%i0,3,0)%b[ansi(%i0,colors(%i0,n))],%B,%R);@pemit %#=footer()
 @set #uglobals/CMD.COLORDEMO=regexp
 
++help/add System/@colordemo=#uglobals/HLP.colordemo
+&HLP.colordemo #uglobals=[ansi(hc,Aliases:)] colordemo, +colordemo, @colordemo%R%R[ansi(hw,@colordemo)]%R%TDisplays all of the xterm color options and names. Don't forget to [ansi(hw,@set me=ANSICOLOR ANSI XTERMCOLOR)] to see them properly on a compatible client.
+
 &CMD.BEEP #uglobals=$^(?s)(?\:@|\+)?(beep)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach #inc/GET_PLAYER=%3,target;@assert/inline hasflag(%q<target>,CONNECTED)=@pemit %#=[cname(%q<target>)] isn't online.;@pemit %q<target>=%k [ansi(hr,seeks your attention! BEEP!)][beep()];@pemit %#=You sent them a beep.
 @set #uglobals/CMD.BEEP=regexp
+
++help/add Communications/@beep=#uglobals/HLP.BEEP
+&HLP.BEEP #uglobals=[ansi(hc,Aliases:)] beep, +beep, @beep%R%R[ansi(hw,@beep <player>)]%R%TUsed to get someone's attention. This can be annoying so don't go overboard.
 
 &RANDFLIPS #uglobals=it landed on its side!|a Demon grabbed it!|it never comes back down...|when it lands, both sides are blank.|Reality Error 404: Coin not found!|it's drawn into a parallel universe!
 
 &CMD.FLIP #uglobals=$^(?s)(?\:@|\+)?(flip)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@if eq(rand(1,100),50)={@remit %l=%k flips a coin... [randextract(v(RANDFLIPS),1,|)]},{@remit %l=%k flips a coin: [ansi(h,if(rand(0,1),heads!,tails!))]}
 @set #uglobals/CMD.FLIP=regexp
 
++help/add Roleplaying/@dice=#uglobals/HLP.FLIP
+&HLP.FLIP #uglobals=[ansi(hc,Aliases:)] flip, +flip, @flip%R%R[ansi(hw,@flip)]%R%TFlip a coin. Doesn't get simpler than this.
+
 &REG_DICE #uglobals=(\d+)d(\d+)
 
-&CMD.DICE #uglobals=$^(?s)(?\:@|\+)?(dice)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@assert/inline regmatchi(%3,v(REG_DICE),-1 0 1)=@pemit %#=That's not a very good dice roll! try +dice 5d20 or +dice 3d10 etc.;@remit %l=%k rolls [ansi(h,%q0d%q1: [dice(%q0,%q1,1)])]
+&CMD.DICE #uglobals=$^(?s)(?\:@|\+)?(dice)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@assert/inline regmatchi(%3,v(REG_DICE),-1 0 1)=@pemit %#=That's not a very good dice roll! try +dice 5d20 or +dice 3d10 etc.;@remit %l=%k rolls [ansi(h,%q0d%q1: [rest(setr(!,dice(%q0,%q1,1),roll))] = [first(%q<roll>)])]
 @set #uglobals/CMD.DICE=regexp
+
++help/add Roleplaying/@dice=#uglobals/HLP.DICE
+&HLP.DICE #uglobals=[ansi(hc,Aliases:)] dice, +dice, @dice%R%R[ansi(hw,@dice <#>d<#>)]%R%TRoll XdY dice. Example: @dice 3d6
+

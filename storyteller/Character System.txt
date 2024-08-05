@@ -17,16 +17,16 @@
 &SET.TEMPLATE #stdata=@assert/inline strlen(%2)=@pemit %#=Must enter a Template name!;@attach #inc/PARTIAL=%2,u(TEMPLATES),|,template;@break/inline strmatch(get(%0/ST.TEMPLATE),%q<template>)=@pemit %#=That is already the case!;@set %0=ST.TEMPLATE:%q<template>;@attach %!/REPORT=%0,[ansi(hw,Template)] set to: [ansi(hw,%q<template>)]
 @@ %0 - target character, %1 - unused, %2 - template name
 
-&DO_SPLAT #stdata=@assert/inline setr(!,get(%0/ST.TEMPLATE),template)=@pemit %#=Must set a template first!;@assert/inline words(setr(!,u(SPLAT_%3_%q<template>),choices),|)=@pemit %#=No choices available!;@assert/inline strlen(%2)=@pemit %#=Must enter a %4 name!;@attach #inc/PARTIAL=%2,%q<choices>,|,splat;@set %0=ST.SPLAT_%3:%q<splat>;@attach %!/REPORT=%0,ansi(hw,%4) set to: [ansi(hw,%q<splat>)]
+&DO_SPLAT #stdata=@assert/inline setr(!,get(%0/ST.TEMPLATE),template)=@pemit %#=Must set a template first!;th setq(!,default(%!/SPLAT.%3.[edit(%q<template>,%b,_)].NAME,Splat %3),spname);@assert/inline words(setr(!,u(SPLAT.%3.%q<template>),choices),|)=@pemit %#=No %q<spname> choices available!;@assert/inline strlen(%2)=@pemit %#=Must enter a %q<spname> name!;@attach #inc/PARTIAL=%2,%q<choices>,|,splat;@set %0=ST.SPLAT.%3:%q<splat>;@attach %!/REPORT=%0,ansi(hw,%q<spname>) set to: [ansi(hw,%q<splat>)]
 @@ %0 - target character, %1 - unused, %2 - splat choice, %3 - splat letter, %4 - splat label
 
 &FN.VALID_STATNAME #stdata=ofparse(3,if(strlen(%0),#-1 NO %1 NAME ENTERED),if(lte(strlen(%0),50),1,#-1 %1 NAMES CANNOT EXCEED 50 CHARACTERS),if(!contains_character(%0,| ~),1,#-1 %1 NAMES MUST NOT CONTAIN | OR ~),1)
 
-&DO_STATLIKE #stdata=@assert/inline strlen(before(%1,:))=@pemit %#=%5 name wasn't provided!;@if [t(%8)]={@assert/inline setr(!,u(FN.VALID_STATNAME,setr(!,trim(before(%1,:)),stat),%5),res)=@pemit %#=That's not a good name for a %5: %q<res>},{@attach #inc/PARTIAL=before(%1,:),u(%3,%0),|,stat};th setq(!,udefault(%3_CONTEXT,0,%0,%q<stat>),needctx);@if strlen(setr(!,trim(after(%1,:)),context))={@assert/inline setr(!,u(FN.VALID_STATNAME,%q<context>,CONTEXT),res)=@pemit %#=Bad Context: %q<res>};@switch/first/inline %q<needctx>=0,{@break/inline strlen(%q<context>)=@pemit %#=This %5 cannot have a context.},1,{},2,{@assert/inline strlen(%q<context>)=@pemit %#=This %5 must have a context!};@attach #inc/VALID.INT=%2,%5;th setq(!,get(%0/ST.%4),olddata);th setq(!,capnames(%q<stat>[if(strlen(%q<context>),: %q<context>)]),fullstat);@if cor(lt(%q<value>,0),cand(%7,lte(%q<value>,0)))={@assert/inline strlen(get_kv(%q<olddata>,%q<fullstat>))=@pemit %#=That won't have any affect. Nothing to remove.;th setq(!,del_kv(%q<olddata>,%q<fullstat>),newdata);@set %0=ST.%4:%q<newdata>;@attach %!/REPORT=%0,ansi(hc,%5) [ansi(hw,%q<fullstat>)] set to: [ansi(hw,%q<value>)]},{@assert/inline lte(%q<value>,setr(!,udefault(%3_MAX,10,%0,%q<stat>,%q<context>),statmax))=@pemit %#=%q<stat> cannot be raised higher than %q<statmax>!;@break/inline cand(setr(!,get_kv(%q<olddata>,%q<fullstat>),curstat),eq(%q<curstat>,%q<value>))=@pemit %#=That won't have any affect. It's the same rank.;th setq(!,set_kv(%q<olddata>,%q<fullstat>,%q<value>),newdata);@set %0=ST.%4:%q<newdata>;@attach %!/REPORT=%0,ansi(hc,%5) [ansi(hw,%q<fullstat>)] set to: [ansi(hw,%q<value>)]}
+&DO_STATLIKE #stdata=@assert/inline strlen(before(%1,:))=@pemit %#=%5 name wasn't provided!;@if [t(%8)]={@assert/inline setr(!,u(FN.VALID_STATNAME,setr(!,trim(before(%1,:)),stat),%5),res)=@pemit %#=That's not a good name for a %5: %q<res>},{@attach #inc/PARTIAL=before(%1,:),u(%3,%0),|,stat};th setq(!,udefault(%3.CONTEXT,0,%0,%q<stat>),needctx);@if strlen(setr(!,trim(after(%1,:)),context))={@assert/inline setr(!,u(FN.VALID_STATNAME,%q<context>,CONTEXT),res)=@pemit %#=Bad Context: %q<res>};@switch/first/inline %q<needctx>=0,{@break/inline strlen(%q<context>)=@pemit %#=This %5 cannot have a context.},1,{},2,{@assert/inline strlen(%q<context>)=@pemit %#=This %5 must have a context!};@attach #inc/VALID.INT=%2,%5;th setq(!,get(%0/ST.%4),olddata);th setq(!,capnames(%q<stat>[if(strlen(%q<context>),: %q<context>)]),fullstat);@if cor(lt(%q<value>,0),cand(%7,lte(%q<value>,0)))={@assert/inline strlen(get_kv(%q<olddata>,%q<fullstat>))=@pemit %#=That won't have any affect. Nothing to remove.;th setq(!,del_kv(%q<olddata>,%q<fullstat>),newdata);@set %0=ST.%4:%q<newdata>;@attach %!/REPORT=%0,ansi(hc,%5) [ansi(hw,%q<fullstat>)] set to: [ansi(hw,%q<value>)]},{@assert/inline lte(%q<value>,setr(!,udefault(%3_MAX,10,%0,%q<stat>,%q<context>),statmax))=@pemit %#=%q<stat> cannot be raised higher than %q<statmax>!;@break/inline cand(setr(!,get_kv(%q<olddata>,%q<fullstat>),curstat),eq(%q<curstat>,%q<value>))=@pemit %#=That won't have any affect. It's the same rank.;th setq(!,set_kv(%q<olddata>,%q<fullstat>,%q<value>),newdata);@set %0=ST.%4:%q<newdata>;@attach %!/REPORT=%0,ansi(hc,%5) [ansi(hw,%q<fullstat>)] set to: [ansi(hw,%q<value>)]}
 
 @@ %0 - target character, %1 - stat name, %2 - value, %3 - category to u(), %4 attr to save on. Always prefixed with ST. %5 - Singular name, %6 - plural name, %7 - if true, 0 or lower deletes. Lower than 0 ALWAYS deletes., %8 - if true, allows any name instead of doing a partial match.
 
-&DO_TAG #stdata=@assert/inline strlen(before(%1,:))=@pemit %#=%5 name wasn't provided!;@attach #inc/PARTIAL=before(%1,:),u(%3,%0),|,stat;@assert/inline strlen(%2)=@pemit %#=Nothing entered to tag as!;@if isint(%2)={@attach #inc/VALID.INT=%2,%5;},{@attach #inc/PARTIAL=%2,iter(setr(!,u(%3_TAGREVERSE,%0),reversed),before(%i0,~),|,|),|,tagname;@assert/inline isint(setr(!,get_kv(%q<reversed>,%q<tagname>),value))=@pemit %#=That tagname doesn't have a value!};th setq(!,get(%0/ST.%4.TAGGED),olddata);th setq(!,max(%q<value>,0),value);@break/inline eq(%q<value>,get_kv(%q<olddata>,%q<stat>))=@pemit %#=That won't have any affect!;@assert/inline lte(%q<value>,setr(!,udefault(%3_MAXTAG,0,%0,%q<stat>),maxval))=@pemit %#=Maximum value for tagging %q<stat> is: %q<maxval>;@set %0=ST.%4.TAGGED:[setr(!,filter(FIL.HASVAL,set_kv(%q<olddata>,%q<stat>,%q<value>),|,|),newdata)]
+&DO_TAG #stdata=@assert/inline strlen(before(%1,:))=@pemit %#=%5 name wasn't provided!;@attach #inc/PARTIAL=before(%1,:),u(%3,%0),|,stat;@assert/inline strlen(%2)=@pemit %#=Nothing entered to tag as!;@if isint(%2)={@attach #inc/VALID.INT=%2,%5;},{@attach #inc/PARTIAL=%2,iter(setr(!,u(%3.TAGREVERSE,%0),reversed),before(%i0,~),|,|),|,tagname;@assert/inline isint(setr(!,get_kv(%q<reversed>,%q<tagname>),value))=@pemit %#=That tagname doesn't have a value!};th setq(!,get(%0/ST.%4.TAGGED),olddata);th setq(!,max(%q<value>,0),value);@break/inline eq(%q<value>,get_kv(%q<olddata>,%q<stat>))=@pemit %#=That won't have any affect!;@assert/inline lte(%q<value>,setr(!,udefault(%3.MAXTAG,0,%0,%q<stat>),maxval))=@pemit %#=Maximum value for tagging %q<stat> is: %q<maxval>;@set %0=ST.%4.TAGGED:[setr(!,filter(FIL.HASVAL,set_kv(%q<olddata>,%q<stat>,%q<value>),|,|),newdata)]
 @@ %0 - target character, %1 - stat name, %2 - value, %3 - category to u(), %4 attr to save on. Always prefixed with ST. and ends in .TAGGED. %5 - singular name, %6 - plural name.
 
 &FIL.HASVAL #stdata=gt(after(%0,~),0)
@@ -44,14 +44,14 @@
 
 &FN.QUICK_STATS #stdata=iter(u(ATTRIBUTES,%0),%i0~ATTRIBUTES,|,|)
 
-&FN.QUICK #stdata=[u(FN.QUICK_BASE,%0)]|[u(FN.QUICK_STATS,%0)]
+&FN.QUICK #stdata=[u(FN.QUICK_BASE,%0,%1)]|[u(FN.QUICK_STATS,%0,%1)]
 
-&QUICKSET #stdata=@assert/inline strlen(%1)=@pemit %#=Nothing entered to set!;th setq(!,u(FN.QUICK,%0),full);@attach #inc/PARTIAL=%1,iter(%q<full>,before(%i0,~),|,|),|,choice;@attach %!/SET_[get_kv(%q<full>,%q<choice>)]=%0,%1,%2
-@@ %0 - target character, %1 - stat name, %2 - value to modify by.
-@@ Executes a 'quick set'
+&QUICKSET #stdata=@assert/inline strlen(%1)=@pemit %#=Nothing entered to set!;th setq(!,trim(squish(u(FN.QUICK,%0,get(%0/ST.TEMPLATE)),|),b,|),full);@dolist/inline/nobreak/delimit | %1={@attach #inc/PARTIAL=before(%d0,=),iter(%q<full>,before(%i0,~),|,|),|,choice;@attach %!/SET.[get_kv(%q<full>,%q<choice>)]=%0,before(%d0,=),after(%d0,=)}
+@@ %0 - target character, %1 - args
+@@ Executes a 'quick bulk set'
 
-&REG_COMMAND #stdata=^(?s)(\S+?)(?:\/(\S+)?)?(?: +(.+?))?(?:=(.*))?$
-&FN.COMMAND #stdata=[setq(!,,cmd)][setq(!,,switch)][setq(!,,lhs)][setq(!,,rhs)][regmatchi(%0,v(REG_COMMAND),-1 cmd switch lhs rhs)][setq(!,trim(%q<lhs>),lhs)][setq(!,trim(%q<rhs>),rhs)]
+&REG_COMMAND #stdata=^(?s)(\S+?)(?:\/(\S+)?)?((?: +(.+?))?(?:=(.*))?)?$
+&FN.COMMAND #stdata=[iter(cmd switch args lhs rhs,setq(!,,%i0))][regmatchi(%0,v(REG_COMMAND),-1 cmd switch args lhs rhs)][setq(!,trim(%q<lhs>),lhs)][setq(!,trim(%q<rhs>),rhs)]
 
 &CHECKTARGET #stdata=@if strlen(get(%#/ST.TARGET))={@assert/inline isobjid(setr(!,get(%#/ST.TARGET),target))={@wipe %#/ST.TARGET;@pemit %#=Invalid target! Clearing...};@assert/inline gtebittype(%#,2)=@pemit %#={@wipe %#/ST.TARGET;@pemit %#=Permission denied. Clearing non-self target.}},{th setq(!,%#,target)}
 
@@ -60,27 +60,35 @@
 &CMD.HELPER #stdata=@attach %!/CHECKTARGET;@assert/inline words(setr(!,u(GATHER,%0),options),|)=@pemit %#=Nothing to %0!;@assert/inline strlen(before(%q<lhs>,|))=@pemit %#=What will be set? Choices: [elist(%q<options>,,|)];@attach #inc/PARTIAL=before(%q<lhs>,|),%q<options>,|,option;@attach %!/%0_%q<option>=%q<target>,after(%q<lhs>,|),%q<rhs>
 
 &PCMD.TARGET #stdata=@attach #inc/GET_PLAYER=%q<lhs>,t1;@set %#=ST.TARGET:%q<t1>;@attach %!/CHECKTARGET;@pemit %#=Now targeting: [cname(%q<t1>)]
-&PCMD.QSET #stdata=@attach %!/CHECKTARGET;@attach %!/QUICKSET=%q<target>,%q<lhs>,%q<rhs>
+&PCMD.QSET #stdata=@attach %!/CHECKTARGET;@attach %!/QUICKSET=%q<target>,%q<args>
 &PCMD.SET #stdata=@attach %!/CMD.HELPER=SET
 &PCMD.ADD #stdata=@attach %!/CMD.HELPER=ADD
 &PCMD.REM #stdata=@attach %!/CMD.HELPER=REM
 &PCMD.TAG #stdata=@attach %!/CMD.HELPER=TAG
 &PCMD.EXIT #stdata=th setq(!,1,quit);@pemit %#=Exiting menu...
-&PCMD.HELP #stdata=@attach %!/CHECKTARGET;@assert/inline strlen(%q<lhs>)=@pemit %#=Nothing entered to check help of!;@assert/inline words(setr(!,u(GATHER,HELP),hfiles),|)=@pemit %#=No helpfiles to display!;@attach #inc/PARTIAL=%q<lhs>,%q<hfiles>,|,helpfile,helpfile;@pemit %#=%R[header(Character Editor Help: %q<helpfile>)]%R[u(HELP.%q<helpfile>)]%R[footer()]
-&PCMD.LOOK #stdata=@pemit %#=%R[u(HELP_EDITOR)]
+&PCMD.HELP #stdata=@attach %!/CHECKTARGET;@assert/inline strlen(%q<lhs>)=@pemit %#=Nothing entered to check help of!;@assert/inline words(setr(!,u(GATHER,HELP),hfiles),|)=@pemit %#=No helpfiles to display!;@attach #inc/PARTIAL=%q<lhs>,%q<hfiles>,|,helpfile,helpfile;@pemit %#=%R[header(Character Editor Help: %q<helpfile>)]%R[u(HELP.%q<helpfile>,%q<target>)]%R[footer()]
+&PCMD.LOOK #stdata=@pemit %#=%R[u(HELP.EDITOR)]
 
-&CHELP_TARGET #stdata=[ansi(hw,target <player>)]%R%TChange target being edited.
-&CHELP_QSET #stdata=[ansi(hw,qset <field>=<value>)]%R%TQuick-sets common numeric or text fields. Attributes, Skills, Advantages, etc. Examples: [ansi(hw,qset Willpower=4)] or [ansi(hw,qset Template=Vampire)].%R%T[ansi(hc,NOTICE:)] This editor supports partial matching everywhere it can. Example: [ansi(hw,qs Will=4)] or [ansi(hw,q Tem=Vam)] would also work.
-&CHELP_SET #stdata=[ansi(hw,set <path>=<value>)]%R%TSets a stat or field. <path> is |-separated. Example: [ansi(hw,set Attributes|Strength=5)]%R%T[ansi(hc,Choices:)] [ansi(hw,elist(u(GATHER,SET),,|))]
-&CHELP_ADD #stdata=[ansi(hw,add <path>=<thing>)]%R%TAdds a thing. Example: [ansi(hw,add Charm|Solar|Melee=Blazing Solar Bolt)]. Add again to add a second purchase. Enter as <thing>~<#> to quickly add <#> purchases.%R%T[ansi(hc,Choices:)] [ansi(hw,elist(u(GATHER,ADD),,|))]
-&CHELP_REM #stdata=[ansi(hw,rem <path>=<thing>)]%R%TThe opposite of [ansi(hw,add)]. Works same way.
-&CHELP_TAG #stdata=[ansi(hw,tag <path>=<value>)]%R%TUsed to 'tag' stats. Favored/Caste for Exalted, Professional for Hunter, etc. Supports numbers or names for <value>. Each Template may have different names. Use [ansi(hw,help <template>)] for more information. Example: [ansi(hw,tag Abilities|Melee=Favored)] or [ansi(hw,tag Abilities|Melee=0)] to clear.%R%T[ansi(hc,Choices:)] [ansi(hw,elist(u(GATHER,TAG),,|))]
-&CHELP_HELP #stdata=[ansi(hw,help <topic>)]%R%TTo display a specific topic.%R%T[ansi(hc,Choices:)] [ansi(hw,elist(u(GATHER,HELP),,|))]
-&CHELP_EXIT #stdata=[ansi(hw,exit)]%R%TClose this menu and return to normal play.
+&CHELP.TARGET #stdata=[ansi(hw,target <player>)]%R%TChange target being edited.
+&CHELP.QSET #stdata=[ansi(hw,qset <field>=<value>)]%R%TQuick-sets common numeric or text fields. Attributes, Skills, Advantages, etc. Examples: [ansi(hw,qset Willpower=4)] or [ansi(hw,qset Template=Vampire)].%R%T[ansi(hc,NOTICE:)] This editor supports partial matching everywhere it can. Example: [ansi(hw,qs Will=4)] or [ansi(hw,q Tem=Vam)] would also work. Can also set multiple fields at once! Example: [ansi(hw,qset Str=3|Dex=2|Intel=4)]
+&CHELP.SET #stdata=[ansi(hw,set <path>=<value>)]%R%TSets a stat or field. <path> is |-separated. Example: [ansi(hw,set Attributes|Strength=5)]%R%T[ansi(hc,Choices:)] [ansi(hw,elist(u(GATHER,SET),,|))]
+&CHELP.ADD #stdata=[ansi(hw,add <path>=<thing>)]%R%TAdds a thing. Example: [ansi(hw,add Charm|Solar|Melee=Blazing Solar Bolt)]. Add again to add a second purchase. Enter as <thing>~<#> to quickly add <#> purchases.%R%T[ansi(hc,Choices:)] [ansi(hw,elist(u(GATHER,ADD),,|))]
+&CHELP.REM #stdata=[ansi(hw,rem <path>=<thing>)]%R%TThe opposite of [ansi(hw,add)]. Works same way.
+&CHELP.TAG #stdata=[ansi(hw,tag <path>=<value>)]%R%TUsed to 'tag' stats. Meaning depends on Template. Supports numbers or names for <value>. Each Template may have different names. Use [ansi(hw,help guide)] for more information. Example: [ansi(hw,tag Abilities|Melee=Favored)] or [ansi(hw,tag Abilities|Melee=0)] to clear.%R%T[ansi(hc,Choices:)] [ansi(hw,elist(u(GATHER,TAG),,|))]
+&CHELP.HELP #stdata=[ansi(hw,help <topic>)]%R%TTo display a specific topic.%R%T[ansi(hc,Choices:)] [ansi(hw,elist(u(GATHER,HELP),,|))]
+&CHELP.EXIT #stdata=[ansi(hw,exit)]%R%TClose this menu and return to normal play.
 
-&HELP.EDITOR #stdata=[header(Character Editing: [cname(setr(!,strfirstof(get(%#/ST.TARGET),%#),target))])]%R[trim(iter([if(gtebittype(%#,2),TARGET%B)]QSET SET TAG ADD REM HELP EXIT,udefault(CHELP_%i0,%i0,%i0),%B,%R%R),b,%R)]%R[footer()]
+&HELP.EDITOR #stdata=[header(Character Editing: [cname(setr(!,strfirstof(get(%#/ST.TARGET),%#),target))])]%R[trim(iter([if(gtebittype(%#,2),TARGET%B)]QSET SET TAG ADD REM HELP EXIT,udefault(CHELP.%i0,%i0,%i0),%B,%R%R),b,%R)]%R%R[ansi(hw,Normal Commands)]%R%TPrepend a command with | to use normal commands while in this editor. Example: |say blah.%R[footer()]
 
 &PROG_CHECKCOMMAND #stdata=@break strmatch(%0,IDLE);@assert/inline u(FN.COMMAND,%0)=@pemit %#=Bad input. Try again.;@assert/inline words(setr(!,u(GATHER,PCMD),cmds),|)=@pemit %#=No commands to execute! Whoops!;@attach #inc/PARTIAL=%q<cmd>,%q<cmds>,|,realcmd,command;@assert/inline hasattr(%!/PCMD.%q<realcmd>)=@pemit %#=That's not an available command. Use |<command> to use normal commands or help for help.;@attach %!/PCMD.%q<realcmd>
+
+&HELP.QSET #stdata=The things you can set using [ansi(hw,qset)] are:%R%R[null([setq(!,sort(trim(squish(u(FN.QUICK,%0,get(%0/ST.TEMPLATE)),|),b,|),i,|,|),full)][setq(!,setunion(iter(%q<full>,after(%i0,~),|,|),,|,|),categories)])][iter(%q<categories>,ansi(hw,capnames(%i0):)%R[columns(trim(squish(iter(%q<full>,if(strmatch(%i1,after(%i0,~)),before(%i0,~)),|,|),|),b,|),25,3,,,,,,,,|,,1)],|,%R%R)]
+
+
+
+&HELP.TEMPLATES #stdata=Your Template is your 'character type'.%R%RTo set it:%R[ansi(hw,qset template=<choice>)]%R%R[ansi(hc,Choices:)]%R[columns(sort(u(TEMPLATES,%0),i,|,|),25,3,,,,,,,,|,,1)]
+
+&HELP.GUIDE #stdata=[ansi(hr,NOTICE:)]%R%TThis file will change depending on how far along you are in chargen!%R%R[strfirstof(u(%!/HELP.GUIDE.[edit(get(%0/ST.TEMPLATE),%b,_)],%0),u(HELP.TEMPLATES,%0))]
 
 &SETPROG #stdata=@progprompt %!=Enter a Command>;@program %#=%!/PROG
 
