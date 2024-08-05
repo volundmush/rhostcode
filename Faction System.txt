@@ -6,27 +6,27 @@
 
 @@ Staff are considered rank 0. Lower numbers are better.
 
-&RANK_1_NAME #fac_parent=Leader
-&RANK_1_PERM #fac_parent=
-&RANK_1_FLAGS #fac_parent=NODELETE
+&RANK.1.NAME #fac.parent=Leader
+&RANK.1.PERM #fac.parent=
+&RANK.1.FLAGS #fac.parent=NODELETE
 
-&RANK_2_NAME #fac_parent=Second
-&RANK_2_PERM #fac_parent=
-&RANK_2_FLAGS #fac_parent=NODELETE
+&RANK.2.NAME #fac.parent=Second
+&RANK.2.PERM #fac.parent=
+&RANK.2.FLAGS #fac.parent=NODELETE
 
-&RANK_3_NAME #fac_parent=Officer
-&RANK_3_PERM #fac_parent=
-&RANK_3_FLAGS #fac_parent=NODELETE
+&RANK.3.NAME #fac.parent=Officer
+&RANK.3.PERM #fac.parent=
+&RANK.3.FLAGS #fac.parent=NODELETE
 
-&RANK_4_NAME #fac_parent=Member
-&RANK_4_PERM #fac_parent=
-&RANK_4_FLAGS #fac_parent=NODELETE
+&RANK.4.NAME #fac.parent=Member
+&RANK.4.PERM #fac.parent=
+&RANK.4.FLAGS #fac.parent=NODELETE
 
 &CONFIG.PERM #fac_parent=@assert/inline lte(getfacrank(%2,%#),2)=@pemit %#=Permission denied.
 
 &CONFIG.STARTRANK.DESC #fac_parent=The Rank # for new members.
 &CONFIG.STARTRANK.DEFAULT #fac_parent=4
-&CONFIG.STARTRANK_VALID #fac_parent=@assert/inline hasattrp(%2/RANK_%0_NAME)=@pemit %#=The '[cname(%2)]' have no such rank.;@assert/inline gte(%0,3)=@pemit %#=Startrank must be 3+.
+&CONFIG.STARTRANK_VALID #fac_parent=@assert/inline hasattrp(%2/RANK.%0.NAME)=@pemit %#=The '[cname(%2)]' have no such rank.;@assert/inline gte(%0,3)=@pemit %#=Startrank must be 3+.
 &CONFIG.STARTRANK.PERM #fac_parent=@assert/inline lte(facrank(%2,%#),2)=@pemit %#=Permission Denied. Only Rank 2 or better can change STARTRANK.
 &CONFIG.STARTRANK.TYPE #fac_parent=POSINT
 
@@ -39,6 +39,11 @@
 &CONFIG.KICK.DEFAULT #fac_parent=2
 &CONFIG.KICK.PERM #fac_parent=@assert/inline lte(facrank(%2,%#),1)=@pemit %#=Permission Denied. Only Rank 1 or better can change KICK.
 &CONFIG.KICK.TYPE #fac_parent=INT
+
+&CONFIG.CATEGORY.DESC #fac_parent=The Category that this faction belongs to.
+&CONFIG.CATEGORY.DEFAULT #fac_parent=Uncategorized
+&CONFIG.CATEGORY.PERM #fac_parent=@assert/inline lte(facrank(%2,%#),0)=@pemit %#=Permission Denied. Only Staff may change CATEGORY.
+&CONFIG.CATEGORY.TYPE #fac_parent=WORD
 
 &CONFIG.HIDDEN.DESC #fac_parent=If true, the faction can't be seen on public listings. A Hidden faction might be ICly clandestine or secretive, or OOCly kept hidden for code purposes.
 &CONFIG.HIDDEN.DEFAULT #fac_parent=1
@@ -109,7 +114,7 @@
 &FN.LTERANK #fac=u(FN.RNK,%0,%1,lte)
 &FN.EQRANK #fac=u(FN.RNK,%0,%1,eq)
 
-&GPFN.FACLISTPERMS #fac=privatize(1,if(facismember(%0,%1,%2),setunion(setunion(if(setr(0,facgetrank(%0,%1,1)),get(%0/RANK_%q0_PERM)),getconf(%0,ALLPERM)),get_kv(get(%1/FAC.[edit(objid(%0),:,_)]),Grant))))
+&GPFN.FACLISTPERMS #fac=privatize(1,if(facismember(%0,%1,%2),setunion(setunion(if(setr(0,facgetrank(%0,%1,1)),get(%0/RANK.%q0.PERM)),getconf(%0,ALLPERM)),get_kv(get(%1/FAC.[edit(objid(%0),:,_)]),Grant))))
 @@ %0 - faction, %1 - member, %2 - disable staff check
 
 &GPFN.FACHASPERM #fac=if(facismember(%0,%1,%3),if(cand(!t(%3),gtebittype(%1,2)),1,t(match(faclistperms(%0,%1),%2))),0)
@@ -122,9 +127,9 @@
 @startup #fac=@attach #inc/REGISTER_FUNCTIONS
 
 @@ Global Eval Locks
-&LK.FACMEMBER #globobj=[if(facismember(before(%1,_),%:),%1,#-1)]
-&LK.FACHASPERM #globobj=[if(fachasperm(before(%1,_),%:,after(%1,_)),%1,#-1)]
-&LK.FACLTERANK #globobj=[privatize(1,if(cand(isint(setr(0,facgetrank(before(%1,_),%:))),lte(%q0,after(%1,_))),%1,#-1))]
+&LK.FACMEMBER #globobj=if(facismember(before(%1,_),%:),%1,#-1)
+&LK.FACHASPERM #globobj=if(fachasperm(before(%1,_),%:,after(%1,_)),%1,#-1)
+&LK.FACLTERANK #globobj=privatize(1,if(cand(isint(setr(0,facgetrank(before(%1,_),%:))),lte(%q0,after(%1,_))),%1,#-1))
 
 @@ Command and Logic
 &CMD.@FACTION #fac=$^(?s)(?\:@|\+)?(fac|faction)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2;@attach %!/SW.[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
@@ -159,13 +164,16 @@
 
 &SW.CREATE #fac=@assert/inline or(u(FACTION_ADMIN,%#),cand(getconf(%!,PCQUOTA),!hasflag(%#,GUEST)))=@pemit %#=Permission denied.;@if cand(!u(FACTION_ADMIN,%#),gte(words(filterobjid(get(%#/CREATED_FACTIONS))),getconf(%!,PCQUOTA)))=@pemit %#=You cannot create any more factions. Rename or delete some. Alternatively contact staff to create it for you.;@attach %!/FACTION_CHECK_NAME=%0;@assert/inline isdbref(setr(!,create(stripansi(%0),,t),fac))=@pemit %#=Error creating faction: %q<fac>;@set %q<fac>=SAFE INDESTRUCTIBLE;@parent %q<fac>=[tag(fac_parent)];@tel %q<fac>=[tag(fac_parent)];@totem %q<fac>=FACTION;@if has_markup(%0)={@name/ansi %q<fac>=%0};@if u(FACTION_ADMIN,%#)={@if strlen(%1)={@attach #inc/GET_PLAYER=%1,t1;@attach %!/ADD_MEMBER=%q<fac>,%q<t1>,1}},{@attach %!/ADD_MEMBER=%q<fac>,%:,1;@set %#=CREATED_FACTIONS:[setunion(filterobjid(get(%#/CREATED_FACTIONS)),objid(%q<fac>))]};@pemit %#=You created the faction: '[cname(%q<fac>)]'
 
-&ADD_MEMBER #fac=@dolist/inline MEMBERS MEMBERS_%2={@set %0=%d0:[setunion(filterobjid(get(%0/%d0)),objid(%1))]};@set %1=FAC.[edit(objid(%0),:,_)]:[set_kv(get(%1/FAC.[edit(objid(%0),:,_)]),Rank,%2)];@set %1=FAC.MEMBERSHIPS:[sortname(setunion(filterobjid(get(%1/FAC.MEMBERSHIPS)),objid(%0)))]
+&ADD_MEMBER #fac=@dolist/inline MEMBERS MEMBERS.%2={@set %0=%d0:[setunion(filterobjid(get(%0/%d0)),objid(%1))]};@set %1=FAC.[edit(objid(%0),:,_)]:[set_kv(get(%1/FAC.[edit(objid(%0),:,_)]),Rank,%2)];@set %1=FAC.MEMBERSHIPS:[setunion(filterobjid(get(%1/FAC.MEMBERSHIPS)),objid(%0))];@attach %!/SORT_MEMBERS=%0
 
-&REMOVE_MEMBER #fac=@dolist/inline setunion(lattr(%0/MEMBERS*),lattr(%0/GRANT_*))={@set %0=%d0:[setdiff(filterobjid(get(%0/%d0)),objid(%1))]};@wipe %1/FAC.[num(%0)]_*
+&REMOVE_MEMBER #fac=@dolist/inline setunion(lattr(%0/MEMBERS*),lattr(%0/GRANT_*))={@set %0=%d0:[setdiff(filterobjid(get(%0/%d0)),objid(%1))]};@wipe %1/FAC.[num(%0)]_*;@attach %!/SORT_MEMBERS=%0
+
+&FN.COMPARE_RANK #fac=comp(get_kv(get(%0/FAC.%q<sfac>),Rank),get_kv(get(%1/FAC.%q<sfac>),Rank)))
+&SORT_MEMBERS #fac=th setq(!,edit(objid(%0),:,_),sfac);@set %0=MEMBERS:[sortby(FN.COMPARE_RANK,get(%0/MEMBERS))]
 
 &SW.RENAME #fac=@attach %!/FIND_FACTION=%0,fac,0;@assert/inline cor(u(FACTION_ADMIN,%#),cand(getconf(%!,ALLOWRENAME),lte(facgetrank(%q<fac>,%:),1)))=@pemit %#=Permission denied.;@attach %!/FACTION_CHECK_NAME=%1,%q<fac>;th setq(!,cname(%q<fac>),oldname);@name/ansi %q<fac>=%1;@pemit/list [setunion(get(%q<fac>/MEMBERS),%:)]=%q<oldname>> %k renamed the faction to: [cname(%q<fac>)];@attach #inc/MSG_ALERT=Renamed Faction '%q<oldname>' to: [cname(%q<fac>)]
 
-&SW.DELETE #fac=
+&SW.DELETE #fac=@attach %!/FIND_FACTION=%0,fac,0;@assert/inline match(name(%q<fac>)|[num(%q<fac>)]|[objid(%q<fac>)],%1,|)=@pemit %#=ERROR: Must enter faction's full name, dbref or objid as second argument to verify.;@attach %!/FACTION_ALERT=Deleted the Faction.;@set %q<fac>=!INDESTRUCTIBLE !SAFE;th setq(!,FAC.[edit(objid(%q<fac>,:,_))],attr);@dolist/inline [get(%q<fac>/MEMBERS)]={@wipe %d0/%q<attr>.*;@pemit %d0=The [cname(%q<fac>)] Faction has been deleted.}
 
 &FN.LIST_COLUMN #fac=ansi(confoverride(%#,COLUMN),printf($-5s $-20s $-21s $-21s $-7s,Dbref,Name,Leader,Second,Onl/Mem))
 
@@ -175,13 +183,18 @@
 &FN.VISIBLE_MEMBERSHIPS #fac=filter(FN.VISIBLE_MEMBER,get(%0/FAC.MEMBERSHIPS),%b,%b,objid(%0),objid(%1))
 @@ %0 - target objid, %1 - viewer objid
 
-&FN.LIST_MEMBERS #fac=if(words(setr(!,filterobjid(get(%0/MEMBERS_%1)),members)),switch(u(FN.IS_PRIVATE,%0,%:),0,iter(%q<members>,cname(%i0),%b,%,%b),1,Private!,\(Private\)%B[iter(%q<members>,cname(%i0),%b,%,%b)]))
+&FN.LIST_MEMBERS #fac=if(words(setr(!,filterobjid(get(%0/MEMBERS.%1)),members)),switch(u(FN.IS_PRIVATE,%0,%:),0,iter(%q<members>,cname(%i0),%b,%,%b),1,Private!,\(Private\)%B[iter(%q<members>,cname(%i0),%b,%,%b)]))
 
 &FN.LIST_ROW #fac=printf($-5s $-20s $-21s $-21s $:0:3s/$:0:3s,num(%0),cname(%0),u(FN.LIST_MEMBERS,%0,1),u(FN.LIST_MEMBERS,%0,2),switch(setr(!,u(FN.IS_PRIVATE,%0,%:),pri),1,???,words(setinter(setr(!,filterobjid(get(%0/MEMBERS)),mem),lwhoid(%#)))),switch(%q<pri>,1,???,words(%q<mem>)))
 
-&INC.LIST_FACTIONS #fac=@pemit %#=header(mudname() Factions);@pemit %#=u(FN.LIST_COLUMN);@if words(setr(!,u(FN.VISIBLE,%:),fac))={@dolist/inline %q<fac>={@pemit %#=u(FN.LIST_ROW,%d0)}};@pemit %#=footer()
+&FN.SORTCATEGORY #fac=comp(getconf(%0,CATEGORY),getconf(%1,CATEGORY),I)
 
-&INC.DISPLAY_FACTION #fac=
+&INC.LIST_FACTIONS #fac=@pemit %#=header(mudname() Factions);@pemit %#=u(FN.LIST_COLUMN);@if words(setr(!,sortname(u(FN.VISIBLE,%:)),fac))={@dolist/inline sortby(FN.SORTCATEGORY,%q<fac>)={@skip strmatch(%q<lastcat>,setr(!,capnames(getconf(%d0,CATEGORY)),lastcat))={@pemit %#=separator(%q<lastcat>)};@pemit %#=u(FN.LIST_ROW,%d0)}};@pemit %#=footer()
+
+&FN.ROSTER.COLUMNS #fac=printf($-23s $-20s $-25s $-6s,Name,Rank,Title,Idle)
+&FN.ROSTER.ROW #fac=printf($-23s $-20s $-25s $-6s,cname(%0),get(%1/RANK.[get(%0/FAC.[edit(objid(%1),:,_)].RANK)].NAME),get(%0/FAC.[edit(objid(%1),:,_)].TITLE),hideidle(%0))
+
+&INC.DISPLAY_FACTION #fac=@attach %!/FIND_FACTION=%0,fac,0;@break/inline cand(getconf(%q<fac>,PRIVATE),!facismember(%q<fac>,%:))=@pemit %#=Cannot view the details of a private faction you do not belong to.;@pemit %#=header(cname(%q<fac>));@if strlen(setr(!,get(%q<fac>/DESCRIBE),desc))={@pemit %#=%q<desc>;@pemit %#=subheader()};@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.ROSTER.COLUMNS));@if words(setr(!,get(%q<fac>/MEMBERS),members))={@dolist/inline %q<members>={@pemit %#=u(FN.ROSTER.ROW,%d0,%q<fac>)}};@pemit %#=footer(Objid: [objid(%q<fac>)])
 
 &SW.MAIN #fac=@if strlen(%0)={@attach %!/INC.DISPLAY_FACTION=%0},{@attach %!/INC.LIST_FACTIONS}
 
@@ -193,7 +206,7 @@
 
 &SW.RESCIND #fac=@attach %!/INC.STARTINV;@assert/inline match(setr(!,filterobjid(get(%q<fac>/INVITES)),data),%:)=@pemit %#=They don't have an outstanding invite to the [cname(%q<fac>)].;@set %q<fac>=INVITES:[setdiff(%q<data>,%q<t1>)];@pemit %#=You rescind [cname(%q<t1>)]'s invitation to join the [cname(%q<fac>)].;@attach %!/FACTION_ALERT=Rescinded [cname(%q<t1>)]'s invite.;@pemit %q<t1>=Your invitation to join the [cname(%q<fac>)] was rescinded.
 
-&INC.GETSTART #fac=@assert/inline hasattrp(%q<fac>/RANK_[setr(!,getconf(%q<fac>,STARTRANK),start)]_NAME)=@pemit %#=ERROR: The faction's STARTRANK is not configured properly. Contact leadership or staff.;
+&INC.GETSTART #fac=@assert/inline hasattrp(%q<fac>/RANK.[setr(!,getconf(%q<fac>,STARTRANK),start)].NAME)=@pemit %#=ERROR: The faction's STARTRANK is not configured properly. Contact leadership or staff.;
 
 &INC.GETINV #fac=@attach %!/FIND_FACTION=%0,fac,0;@break/inline match(get(%q<fac>/MEMBERS),%:)=@pemit %#=You're already a member!;@assert/inline match(setr(!,filterobjid(get(%q<fac>/INVITES)),data),%:)=@pemit %#=You haven't been invited!;
 
@@ -217,42 +230,42 @@
 
 &SW.KICK #fac=@attach %!/CURRENT_FACTION=fac;@assert/inline lte(setr(!,facgetrank(%q<fac>,%:),myrank),getconf(%q<fac>,KICK))=@pemit %#=Permission denied.;@attach #inc/GET_PLAYER=%0,t1;@assert/inline facismember(%q<fac>,%q<t1>,1)=@pemit %#=[cname(%q<t1>)] is not a member!;@assert/inline lt(%q<myrank>,facgetrank(%q<fac>,%q<t1>))=@pemit %#=Can only kick those of inferior rank.;@attach %!/REMOVE_MEMBER=%q<fac>,%q<t1>;@pemit %#=You kicked [cname(%q<t1>)] from the [cname(%q<fac>)]!;@pemit %q<t1>=You've been kicked from the [cname(%q<fac>)]!;@attach %!/FACTION_ALERT=Kicked [cname(%q<t1>)] from the Faction.
 
-&SW.ADDMEMBER #fac=@attach %!/CURRENT_FACTION=fac;@attach #inc/GET_PLAYER=%0,t1;@break/inline facismember(%q<fac>,%q<t1>,1)=@pemit %#=[cname(%q<t1>)] is already a member!;@if strlen(%1)={@attach #inc/VALID.POSINT=%1,rank;@assert/inline hasattrp(%q<fac>/RANK_%q<value>_NAME)=@pemit %#=The [cname(%q<fac>)] lacks that rank.;th setq(!,%q<value>,start)},{@attach %!/INC.GETSTART};@attach %!/ADD_MEMBER=%q<fac>,%q<t1>,%q<start>;@pemit %#=Added [cname(%q<t1>)] to the [cname(%q<fac>)] at Rank %q<start>.;@pemit %q<t1>=You have joined the [cname(%q<fac>)]! Welcome!;@attach %!/FACTION_ALERT=Added [cname(%q<t1>)] at Rank %q<start>.
+&SW.ADDMEMBER #fac=@attach %!/CURRENT_FACTION=fac;@attach #inc/GET_PLAYER=%0,t1;@break/inline facismember(%q<fac>,%q<t1>,1)=@pemit %#=[cname(%q<t1>)] is already a member!;@if strlen(%1)={@attach #inc/VALID.POSINT=%1,rank;@assert/inline hasattrp(%q<fac>/RANK.%q<value>.NAME)=@pemit %#=The [cname(%q<fac>)] lacks that rank.;th setq(!,%q<value>,start)},{@attach %!/INC.GETSTART};@attach %!/ADD_MEMBER=%q<fac>,%q<t1>,%q<start>;@pemit %#=Added [cname(%q<t1>)] to the [cname(%q<fac>)] at Rank %q<start>.;@pemit %q<t1>=You have joined the [cname(%q<fac>)]! Welcome!;@attach %!/FACTION_ALERT=Added [cname(%q<t1>)] at Rank %q<start>.
 
 &SW.TITLE #fac=@attach %!/CURRENT_FACTION=fac;@if strlen(%1)={@attach #inc/GET_PLAYER=%0,t1;th setq(!,%1,title)},{th setq(!,%0,title);th setq(!,%:,t1)};@assert/inline cor(lte(setr(!,facgetrank(%q<fac>,%:),myrank),1),setr(!,getconf(%q<fac>,TITLESELF),titleself),lt(%q<myrank>,getconf(%q<fac>,INVITE)))=@pemit %#=Permission denied. You must meet the INVITE rank or be a Leader to set titles.;@assert/inline lte(facgetrank(%q<fac>,%:),setr(!,getconf(%q<fac>,INVITE),needed))=@pemit %#=Permission Denied. You need Rank %q<needed> or better.;@assert/inline facismember(%q<fac>,%q<t1>)=@pemit %#=[cname(%q<t1>)] is not a member of [cname(%q<fac>)]!;@assert/inline cor(cand(%q<titleself>,strmatch(%:,%q<t1>)),lte(%q<myrank>,1),lt(facgetrank(%q<fac>,%q<t1>),%q<myrank>))=@pemit %#=You have no Factional authority over [cname(%q<t1>)].;th setq(!,default(%q<t1>/FAC.[edit(objid(%q<fac>),:,_)].TITLE,empty!),oldtitle);@if strlen(%q<title>)={@set %q<t1>=FAC.[edit(objid(%q<fac>),:,_)].TITLE:%q<title>;@if strmatch(%:,%q<t1>)={@pemit %#=You set your [cname(%q<fac>)] Title to: '%q<title>'. It was: %q<oldtitle>;@attach %!/FACTION_ALERT=Set own Title to '%q<title>'. Old Title was: %q<oldtitle>},{@pemit %#=Set [cname(%q<t1>)]'s Faction '[cname(%q<fac>)]' Title to: '%q<title>'. It was: %q<oldtitle>;@pemit %q<t1>=Your Faction '[cname(%q<fac>)]' Title was set to: '%q<title>'. It was: %q<oldtitle>;@attach %!/FACTION_ALERT=[cname(%q<t1>)]'s Title was set to: '%q<title>'. It was: %q<oldtitle>}},{@set %q<t1>=FAC.[edit(objid(%q<fac>),:,_)].TITLE:;@if strmatch(%:,%q<t1>)={@pemit %#=You clear your [cname(%q<fac>)] Title. It was: %q<oldtitle>;@attach %!/FACTION_ALERT=Cleared own Title. It was: %q<oldtitle>},{@pemit %#=Cleared [cname(%q<t1>)]'s Faction '[cname(%q<fac>)]' Title. It was: %q<oldtitle>;@pemit %q<t1>=Your Faction '[cname(%q<fac>)]' Title was cleared. It was: %q<oldtitle>;@attach %!/FACTION_ALERT=[cname(%q<t1>)]'s Title was cleared. It was: %q<oldtitle>}}
 
-&SW.ASSIGN #fac=@attach %!/CURRENT_FACTION=fac;@assert/inline lte(setr(!,facgetrank(%q<fac>,%:),myrank),2)=@pemit %#=Permission denied. Requires Rank 2 or better.;@attach #inc/GET_PLAYER=%0,t1;@break/inline strmatch(%q<t1>,%:)=Yeah that's not happening.;@assert/inline facismember(%q<fac>,%q<t1>)=@pemit %#=[cname(%q<t1>)] is not a member of [cname(%q<fac>)]!;@assert/inline lt(setr(!,facgetrank(%q<fac>,%q<t1>),oldrank),%q<myrank>)=@pemit %#=You have no Factional authority over [cname(%q<t1>)].;@attach #inc/VALID.POSINT=%1,Rank;@assert/inline gt(%q<myrank>,%q<value>)=@pemit %#=Can only assign ranks lesser than your own.;@set %q<fac>=MEMBERS_%q<oldrank>:[setdiff(filterobjid(get(%q<fac>/MEMBERS_%q<oldrank>)),%q<t1>)];@set %q<fac>=MEMBERS_%q<value>:[setunion(filterobjid(get(%q<fac>/MEMBERS_%q<value>)),%q<t1>)];@set %q<t1>=FAC.[edit(objid(%q<fac>),:,_)]:[set_kv(get(%q<t1>/FAC.[edit(objid(%q<fac>),:,_)]),Rank,%q<value>)];@pemit %#=You change [cname(%q<t1>)]'s Faction '[cname(%q<fac>)]' Rank to: %q<value>. Was: %q<oldrank>;@pemit %q<t1>=Your Faction '[cname(%q<fac>)]' Rank is now: %q<value>.;@attach %!/FACTION_ALERT=Changed [cname(%q<t1>)]'s Rank to: %q<value>. Was: %q<oldrank>
+&SW.ASSIGN #fac=@attach %!/CURRENT_FACTION=fac;@assert/inline lte(setr(!,facgetrank(%q<fac>,%:),myrank),2)=@pemit %#=Permission denied. Requires Rank 2 or better.;@attach #inc/GET_PLAYER=%0,t1;@break/inline strmatch(%q<t1>,%:)=Yeah that's not happening.;@assert/inline facismember(%q<fac>,%q<t1>)=@pemit %#=[cname(%q<t1>)] is not a member of [cname(%q<fac>)]!;@assert/inline lt(setr(!,facgetrank(%q<fac>,%q<t1>),oldrank),%q<myrank>)=@pemit %#=You have no Factional authority over [cname(%q<t1>)].;@attach #inc/VALID.POSINT=%1,Rank;@assert/inline gt(%q<myrank>,%q<value>)=@pemit %#=Can only assign ranks lesser than your own.;@set %q<fac>=MEMBERS.%q<oldrank>:[listdiff(filterobjid(get(%q<fac>/MEMBERS.%q<oldrank>)),%q<t1>)];@set %q<fac>=MEMBERS.%q<value>:[sortname(setunion(filterobjid(get(%q<fac>/MEMBERS.%q<value>)),%q<t1>))];@set %q<t1>=FAC.[edit(objid(%q<fac>),:,_)]:[set_kv(get(%q<t1>/FAC.[edit(objid(%q<fac>),:,_)]),Rank,%q<value>)];@attach %!/SORT_MEMBERS=%q<fac>;@pemit %#=You change [cname(%q<t1>)]'s Faction '[cname(%q<fac>)]' Rank to: %q<value>. Was: %q<oldrank>;@pemit %q<t1>=Your Faction '[cname(%q<fac>)]' Rank is now: %q<value>.;@attach %!/FACTION_ALERT=Changed [cname(%q<t1>)]'s Rank to: %q<value>. Was: %q<oldrank>
 
-&SW.MKRANK #fac=@attach %!/CURRENT_FACTION=fac;@assert/inline lte(facgetrank(%q<fac>,%:),1)=@pemit %#=Permission denied. Leader-only.;@assert/inline isint(%0)=@pemit %#=Must enter a rank #.;@break/inline hasattrp(%q<fac>/RANK_%0_%NAME)=@pemit %#=Rank already exists. Use /rnrank to rename it instead.;@assert/inline strlen(%1)=@pemit %#=What will you call the rank?;@set %q<fac>=RANK_%0_NAME:%1;@pemit %#=Rank %0: '%1' created for the [cname(%q<fac>)];@attach %!/FACTION_ALERT=Created Rank %0: %1
+&SW.MKRANK #fac=@attach %!/CURRENT_FACTION=fac;@assert/inline lte(facgetrank(%q<fac>,%:),1)=@pemit %#=Permission denied. Leader-only.;@assert/inline isint(%0)=@pemit %#=Must enter a rank #.;@break/inline hasattrp(%q<fac>/RANK.%0.%NAME)=@pemit %#=Rank already exists. Use /rnrank to rename it instead.;@assert/inline strlen(%1)=@pemit %#=What will you call the rank?;@set %q<fac>=RANK.%0.NAME:%1;@pemit %#=Rank %0: '%1' created for the [cname(%q<fac>)];@attach %!/FACTION_ALERT=Created Rank %0: %1
 
-&SW.RNRANK #fac=@attach %!/CURRENT_FACTION=fac;@assert/inline lte(facgetrank(%q<fac>,%:),1)=@pemit %#=Permission denied. Leader-only.;@assert/inline isint(%0)=@pemit %#=Must enter a rank #.;@assert/inline hasattrp(%q<fac>/RANK_%0_%NAME)=@pemit %#=Rank does not exist. Use /mknrank to rename it.;@set %q<fac>=RANK_%0_NAME:%1;@pemit %#=Rank %0: '%1' created for the [cname(%q<fac>)];@attach %!/FACTION_ALERT=Renamed Rank %0 to: %1
+&SW.RNRANK #fac=@attach %!/CURRENT_FACTION=fac;@assert/inline lte(facgetrank(%q<fac>,%:),1)=@pemit %#=Permission denied. Leader-only.;@assert/inline isint(%0)=@pemit %#=Must enter a rank #.;@assert/inline hasattrp(%q<fac>/RANK.%0.NAME)=@pemit %#=Rank does not exist. Use /mknrank to rename it.;@set %q<fac>=RANK.%0.NAME:%1;@pemit %#=Rank %0: '%1' created for the [cname(%q<fac>)];@attach %!/FACTION_ALERT=Renamed Rank %0 to: %1
 
-&SW.RMRANK #fac=@attach %!/CURRENT_FACTION=fac;@assert/inline lte(facgetrank(%q<fac>,%:),1)=@pemit %#=Permission denied. Leader-only.;@assert/inline isint(%0)=@pemit %#=Must enter a rank #.;@break/inline lte(%0,4)=@pemit %#=The built-in ranks 1-4 cannot be deleted.;@assert/inline hasattr(%q<fac>/RANK_%0_%NAME)=@pemit %#=Rank does not exist.;@break/inline words(filterobjid(get(%q<fac>/MEMBERS_%0)))=@pemit %#=Rank %0 has members! Change their ranks with /assign first.;@wipe %q<fac>/RANK_%0_*;@pemit %#=Rank %0 deleted from the [cname(%q<fac>)];@attach %!/FACTION_ALERT=Deleted Rank %0
+&SW.RMRANK #fac=@attach %!/CURRENT_FACTION=fac;@assert/inline lte(facgetrank(%q<fac>,%:),1)=@pemit %#=Permission denied. Leader-only.;@assert/inline isint(%0)=@pemit %#=Must enter a rank #.;@break/inline lte(%0,4)=@pemit %#=The built-in ranks 1-4 cannot be deleted.;@assert/inline hasattr(%q<fac>/RANK.%0.%NAME)=@pemit %#=Rank does not exist.;@break/inline words(filterobjid(get(%q<fac>/MEMBERS.%0)))=@pemit %#=Rank %0 has members! Change their ranks with /assign first.;@wipe %q<fac>/RANK.%0.*;@pemit %#=Rank %0 deleted from the [cname(%q<fac>)];@attach %!/FACTION_ALERT=Deleted Rank %0
 
 &REG_PERM #fac=[A-Za-z]{2,16}
 &FN.VALID_PERM #fac=if(regmatchi(%0,v(REG_PERM)),1,#-1 PERMS MUST BE ALPHABETICAL. Between 2 and 16 Characters. No spaces.)
 
-&INC.LIST_GRANTS #fac=@pemit %#=header(cname(%0): Rank Permissions);@if words(setr(!,lattrp(%0/RANK_*_PERM),grants))={@dolist/inline %q<grants>={@pemit %#=[ansi(hw,Rank [elementsmux(%d0,2,_)]: )][get(%0/%d0)]}};@if words(setr(!,lattrp(%0/GRANT_*),grants))={@pemit %#=separator(Explicit Grants);@dolist/inline %q<grants>={@pemit %#=[ansi(hw,[after(%d0,_)]:]%B[iter(sortname(filterobjid(get(%0/%d0))),cname(%i0),%b,\,%B)]}};@pemit %#=footer()
+&INC.LIST_GRANTS #fac=@pemit %#=header(cname(%0): Rank Permissions);@if words(setr(!,lattrp(%0/RANK.*.PERM),grants))={@dolist/inline %q<grants>={@pemit %#=[ansi(hw,Rank [elementsmux(%d0,2,_)]: )][get(%0/%d0)]}};@if words(setr(!,lattrp(%0/GRANT_*),grants))={@pemit %#=separator(Explicit Grants);@dolist/inline %q<grants>={@pemit %#=[ansi(hw,[after(%d0,_)]:]%B[iter(sortname(filterobjid(get(%0/%d0))),cname(%i0),%b,\,%B)]}};@pemit %#=footer()
 
-&INC.GRANT_PERM #fac=@assert/inline cand(strlen(%2),lmin(iter(%2,u(FN.VALID_PERM,%i0))))=@pemit %#=Your perm string did not validate. It can be a list of one of more permissions which are purely alphabetical and between 2-6 characters.;@if cand(isint(strlen(%1)),hasattrp(%0/RANK_%1_NAME))={@set %0=RANK_%1_PERM:[setunion(get(%0/RANK_%1_PERM),ucstr(%2))];@pemit %#=Permissions added to Faction '[cname(%0)]' Rank %1: %2;@attach #inc/MSG_ALERT=Permissions added to Faction '[cname(%0)]' Rank %1: %2;@attach %!/FACTION_ALERT=Permissions added to Faction '[cname(%0)]' Rank %1: %2},{@attach #inc/GET_PLAYER=%1,t1;@assert/inline match(get(%0/MEMBERS),%q<t1>)=@pemit %#=They are not a member!;@dolist/inline %2=%d0:[setunion(filterobjid(get(%0/%d0)),%q<t1>)];@set %q<t1>=FAC.[edit(objid(%0),:,_)]:[set_kv(get(%q<t1>/FAC.[edit(objid(%0),:,_)]),Rank,setunion(get_kv(get(%q<t1>/FAC.[edit(objid(%0),:,_)]),Rank),ucstr(%2)))];@pemit %#=Faction '[cname(%0)]' Permissions added to Member '[cname(%q<t1>)]': %2;@pemit %q<t1>=You have gained the following Faction '[cname(%0)]' Permissions: %2;@attach %!/FACTION_ALERT=Faction '[cname(%0)]' Permissions added to Member '[cname(%q<t1>)]': %2}
+&INC.GRANT_PERM #fac=@assert/inline cand(strlen(%2),lmin(iter(%2,u(FN.VALID_PERM,%i0))))=@pemit %#=Your perm string did not validate. It can be a list of one of more permissions which are purely alphabetical and between 2-6 characters.;@if cand(isint(strlen(%1)),hasattrp(%0/RANK.%1.NAME))={@set %0=RANK.%1.PERM:[setunion(get(%0/RANK.%1.PERM),ucstr(%2))];@pemit %#=Permissions added to Faction '[cname(%0)]' Rank %1: %2;@attach #inc/MSG_ALERT=Permissions added to Faction '[cname(%0)]' Rank %1: %2;@attach %!/FACTION_ALERT=Permissions added to Faction '[cname(%0)]' Rank %1: %2},{@attach #inc/GET_PLAYER=%1,t1;@assert/inline match(get(%0/MEMBERS),%q<t1>)=@pemit %#=They are not a member!;@dolist/inline %2=%d0:[setunion(filterobjid(get(%0/%d0)),%q<t1>)];@set %q<t1>=FAC.[edit(objid(%0),:,_)]:[set_kv(get(%q<t1>/FAC.[edit(objid(%0),:,_)]),Rank,setunion(get_kv(get(%q<t1>/FAC.[edit(objid(%0),:,_)]),Rank),ucstr(%2)))];@pemit %#=Faction '[cname(%0)]' Permissions added to Member '[cname(%q<t1>)]': %2;@pemit %q<t1>=You have gained the following Faction '[cname(%0)]' Permissions: %2;@attach %!/FACTION_ALERT=Faction '[cname(%0)]' Permissions added to Member '[cname(%q<t1>)]': %2}
 @@ %0 - fac, %1 target, %2 - permstring.
 
 &SW.GRANT #fac=@attach %!/CURRENT_FACTION=fac;@assert/inline lte(facgetrank(%q<fac>,%:),setr(!,getconf(%q<fac>,INVITE),needed))=@pemit %#=Permission Denied. You need Rank %q<needed> or better.;@if strlen(%0)={@attach %!/INC.GRANT_PERM=%q<fac>,%0,%1},{@attach %!/INC.LIST_GRANTS=%q<fac>}
 
-&INC.REVOKE_PERM #fac=@assert/inline cand(strlen(%2),lmin(iter(%2,u(FN.VALID_PERM,%i0))))=@pemit %#=Your perm string did not validate. It can be a list of one of more permissions which are purely alphabetical and between 2-6 characters.;@if cand(isint(strlen(%1)),hasattrp(%0/RANK_%1_NAME))={@set %0=RANK_%1_PERM:[setdiff(get(%0/RANK_%1_PERM),ucstr(%2))];@pemit %#=Permissions removed from Faction '[cname(%0)]' Rank %1: %2;@attach #inc/MSG_ALERT=Permissions removed from Faction '[cname(%0)]' Rank %1: %2;@attach %!/FACTION_ALERT=removed from Faction '[cname(%0)]' Rank %1: %2},{@attach #inc/GET_PLAYER=%1,t1;@assert/inline match(get(%0/MEMBERS),%q<t1>)=@pemit %#=They are not a member!;@dolist/inline %2=%d0:[setdiff(filterobjid(get(%0/%d0)),%q<t1>)];@set %q<t1>=FAC.[edit(objid(%0),:,_)]:[set_kv(get(%q<t1>/FAC.[edit(objid(%0),:,_)]),Rank,setdiff(get_kv(get(%q<t1>/FAC.[edit(objid(%0),:,_)]),Rank),ucstr(%2)))];@pemit %#=Faction '[cname(%0)]' Permissions removed from Member '[cname(%q<t1>)]': %2;@pemit %q<t1>=You have lost the following Faction '[cname(%0)]' Permissions: %2;@attach %!/FACTION_ALERT=Faction '[cname(%0)]' Permissions removed from Member '[cname(%q<t1>)]': %2}
+&INC.REVOKE_PERM #fac=@assert/inline cand(strlen(%2),lmin(iter(%2,u(FN.VALID_PERM,%i0))))=@pemit %#=Your perm string did not validate. It can be a list of one of more permissions which are purely alphabetical and between 2-6 characters.;@if cand(isint(strlen(%1)),hasattrp(%0/RANK.%1.NAME))={@set %0=RANK.%1.PERM:[setdiff(get(%0/RANK.%1.PERM),ucstr(%2))];@pemit %#=Permissions removed from Faction '[cname(%0)]' Rank %1: %2;@attach #inc/MSG_ALERT=Permissions removed from Faction '[cname(%0)]' Rank %1: %2;@attach %!/FACTION_ALERT=removed from Faction '[cname(%0)]' Rank %1: %2},{@attach #inc/GET_PLAYER=%1,t1;@assert/inline match(get(%0/MEMBERS),%q<t1>)=@pemit %#=They are not a member!;@dolist/inline %2=%d0:[setdiff(filterobjid(get(%0/%d0)),%q<t1>)];@set %q<t1>=FAC.[edit(objid(%0),:,_)]:[set_kv(get(%q<t1>/FAC.[edit(objid(%0),:,_)]),Rank,setdiff(get_kv(get(%q<t1>/FAC.[edit(objid(%0),:,_)]),Rank),ucstr(%2)))];@pemit %#=Faction '[cname(%0)]' Permissions removed from Member '[cname(%q<t1>)]': %2;@pemit %q<t1>=You have lost the following Faction '[cname(%0)]' Permissions: %2;@attach %!/FACTION_ALERT=Faction '[cname(%0)]' Permissions removed from Member '[cname(%q<t1>)]': %2}
 
 &SW.REVOKE #fac=@attach %!/CURRENT_FACTION=fac;@assert/inline lte(facgetrank(%q<fac>,%:),setr(!,getconf(%q<fac>,INVITE),needed))=@pemit %#=Permission Denied. You need Rank %q<needed> or better.;@if strlen(%0)={@attach %!/INC.REVOKE_PERM=%q<fac>,%0,%1},{@attach %!/INC.LIST_GRANTS=%q<fac>}
 
 &FN.RANK_COLUMN #fac=printf($-3s $-20s $-40s,Num,Name,Perms)
-&FN.RANK_ROW #fac=printf($-3s $-20s $-40s,%1,default(%0/RANK_%1_NAME,??),get(%0/RANK_%1_PERM))
+&FN.RANK_ROW #fac=printf($-3s $-20s $-40s,%1,default(%0/RANK.%1.NAME,??),get(%0/RANK.%1.PERM))
 
-&SW.RANKS #fac=@attach %!/CURRENT_FACTION=fac;@pemit %#=header(cname(%q<fac>): Ranks);@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.RANK_COLUMN));@if words(setr(!,sort(iter(lattrp(%q<fac>/RANK_*_NAME),elementsmux(%i0,2,_))),ranks))={@dolist/inline %q<ranks>={@pemit %#=u(FN.RANK_ROW,%q<fac>,%d0)}};@pemit %#=footer()
+&SW.RANKS #fac=@attach %!/CURRENT_FACTION=fac;@pemit %#=header(cname(%q<fac>): Ranks);@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.RANK_COLUMN));@if words(setr(!,sort(iter(lattrp(%q<fac>/RANK.*.NAME),elementsmux(%i0,2,_))),ranks))={@dolist/inline %q<ranks>={@pemit %#=u(FN.RANK_ROW,%q<fac>,%d0)}};@pemit %#=footer()
 
+&FACLOCKS #fac=[ansi(hc,Faction Locks)]%R%RFor restricting game resources to faction access, three eval Lock Keys are provided.%R%R[ansi(hw,LK.FACMEMBER/<factiondbref>)]%R%TCheck to see if the person is a faction member.%R%R[ansi(hw,LK.FACHASPERM/<factiondbref>_<PERMNAME>)]%R%TCheck to see if the person has a specific permission.%R%R[ansi(hw,LK.FACLTERANK/<factiondbref>_<rank#>)]%R%TCheck to see if the person has rank # or better.%R%RExample: [ansi(hw,@lock north=LK.FACMEMBER/#5)], [ansi(hw,@lock north=LK.FACHASPERM/#5_HQACCESS)], and [ansi(hw,@lock north=LK.FACLTERANK/#5_2)]
 
-&HLP_@FACTION #fac=The Faction System is meant to represent all manner of groups, organizations, guilds, agencies, and similar, and may also be useful for some out-of-character organization as well.%R%R[ansi(hc,Aliases:)]%B@fac, @faction, +fac, +faction%R%R[ansi(hc,Concepts)]%R%R[ansi(hw,Rank:)] All group members have a Rank. Leaders are Rank 1. Second in Command is rank 2. By default, Ranks 3 and 4 are Officer and Member. New Ranks at 5+ can be created or destroyed by leader. All Rank names can be changed.%R%R[ansi(hw,Permissions:)] Ranks and individual members may be granted PERMISSIONS, which are checked by locks. These have no other purpose.%R%R[ansi(hc,Administration Commands)]%R%R[ansi(hw,@fac \[<faction>\])]%R%TWithout arguments, view all visible factions. With, view a given faction's roster and details.%R%R[ansi(hw,@fac/create <name>)]%R%TCreate a Faction and become its leader.%R%R[ansi(hw,@fac/rename <faction>=<new name>)]%R%TRename a faction.%R%R[ansi(hw,@fac/select <faction>)]%R%T'Select' a faction. This will be used by numerous other commands.%R%R[ansi(hc,With a Faction Selected)]%R%R[ansi(hw,@fac/options \[<option>=<value>\])]%R%TWithout arguments, view current options. With, set new values, if you have permissions.%R%R[ansi(hw,@fac/ranks)]%R%TDisplay information about a faction's ranks.%R%R[ansi(hw,@fac/mkrank <number>=<name>)]%R%TCreate a new Rank and set its name.%R%R[ansi(hw,@fac/rnrank <number>=<name>)]%R%TRename a Rank.%R%R[ansi(hw,@fac/rmrank <number>)]%R%TDelete a Rank. There must not be any members at the rank, nor can it be the STARTRANK.%R%R[ansi(hw,@fac/invite \[<player>\])]%R%TExtend an invitation to join the group to <player>. Without arguments, display pending Invitations.%R%R[ansi(hw,@fac/rescind <player>)]%R%TRescind an outstanding invitation.%R%R[ansi(hw,@fac/leave)]%R%TLeave the selected Faction.%R%R[ansi(hw,@fac/kick <player>)]%R%TRemove a player from the Faction.%R%R[ansi(hw,@fac/acceptapp \[<player>\])]%R%TAccept a player's application to join. Without arguments, display pending applications.%R%R[ansi(hw,@fac/rejectapp <player>)]%R%TReject a pending application.%R%R[ansi(hw,@fac/title <title>)] or [ansi(hw,@fac/title <player>=<title>)]%R%TSet a title. The first form sets your own title, the latter can set another member's title.%R%R[ansi(hw,@fac/grant <rank or member>=<permission list>)]%R%TGrant Permissions to a specific member or to a rank. Ex: @fac/grant 3=HQENTRY RADIO%R%R[ansi(hw,@fac/revoke <rank or member>=<permission list>)]%R%TRemoves Permissions from a specific member or rank.%R%R[ansi(hw,Utility Commands)]%R%R[ansi(hw,@fac/apply <faction>)]%R%TApply to join a faction.%R%R[ansi(hw,@fac/cancel <faction>)]%R%TWithdraw your application to join.%R%R[ansi(hw,@fac/acceptinvite <faction>)]%R%TAccept an invitation into a Faction.%R%R[ansi(hc,Faction Locks)]%R%RFor restricting game resources to faction access, three eval Lock Keys are provided.%R%R[ansi(hw,LK.FACMEMBER/<factiondbref>)]%R%TCheck to see if the person is a faction member.%R%R[ansi(hw,LK.FACHASPERM/<factiondbref>_<PERMNAME>)]%R%TCheck to see if the person has a specific permission.%R%R[ansi(hw,LK.FACLTERANK/<factiondbref>_<rank#>)]%R%TCheck to see if the person has rank # or better.%R%RExample: [ansi(hw,@lock north=LK.FACMEMBER/#5)], [ansi(hw,@lock north=LK.FACHASPERM/#5_HQACCESS)], and [ansi(hw,@lock north=LK.FACLTERANK/#5_2)]
+&HLP_@FACTION #fac=The Faction System is meant to represent all manner of groups, organizations, guilds, agencies, and similar, and may also be useful for some out-of-character organization as well.%R%R[ansi(hc,Aliases:)]%B@fac, @faction, +fac, +faction%R%R[ansi(hc,Concepts)]%R%R[ansi(hw,Rank:)] All group members have a Rank. Leaders are Rank 1. Second in Command is rank 2. By default, Ranks 3 and 4 are Officer and Member. New Ranks at 5+ can be created or destroyed by leader. All Rank names can be changed.%R%R[ansi(hw,Permissions:)] Ranks and individual members may be granted PERMISSIONS, which are checked by locks. These have no other purpose.%R%R[ansi(hc,Administration Commands)]%R%R[ansi(hw,@fac \[<faction>\])]%R%TWithout arguments, view all visible factions. With, view a given faction's roster and details.%R%R[ansi(hw,@fac/create <name>)]%R%TCreate a Faction and become its leader.%R%R[ansi(hw,@fac/rename <faction>=<new name>)]%R%TRename a faction.%R%R[ansi(hw,@fac/select <faction>)]%R%T'Select' a faction. This will be used by numerous other commands.%R%R[ansi(hc,With a Faction Selected)]%R%R[ansi(hw,@fac/options \[<option>=<value>\])]%R%TWithout arguments, view current options. With, set new values, if you have permissions.%R%R[ansi(hw,@fac/ranks)]%R%TDisplay information about a faction's ranks.%R%R[ansi(hw,@fac/mkrank <number>=<name>)]%R%TCreate a new Rank and set its name.%R%R[ansi(hw,@fac/rnrank <number>=<name>)]%R%TRename a Rank.%R%R[ansi(hw,@fac/rmrank <number>)]%R%TDelete a Rank. There must not be any members at the rank, nor can it be the STARTRANK.%R%R[ansi(hw,@fac/invite \[<player>\])]%R%TExtend an invitation to join the group to <player>. Without arguments, display pending Invitations.%R%R[ansi(hw,@fac/rescind <player>)]%R%TRescind an outstanding invitation.%R%R[ansi(hw,@fac/leave)]%R%TLeave the selected Faction.%R%R[ansi(hw,@fac/kick <player>)]%R%TRemove a player from the Faction.%R%R[ansi(hw,@fac/acceptapp \[<player>\])]%R%TAccept a player's application to join. Without arguments, display pending applications.%R%R[ansi(hw,@fac/rejectapp <player>)]%R%TReject a pending application.%R%R[ansi(hw,@fac/title <title>)] or [ansi(hw,@fac/title <player>=<title>)]%R%TSet a title. The first form sets your own title, the latter can set another member's title.%R%R[ansi(hw,@fac/grant <rank or member>=<permission list>)]%R%TGrant Permissions to a specific member or to a rank. Ex: @fac/grant 3=HQENTRY RADIO%R%R[ansi(hw,@fac/revoke <rank or member>=<permission list>)]%R%TRemoves Permissions from a specific member or rank.%R%R[ansi(hw,Utility Commands)]%R%R[ansi(hw,@fac/apply <faction>)]%R%TApply to join a faction.%R%R[ansi(hw,@fac/cancel <faction>)]%R%TWithdraw your application to join.%R%R[ansi(hw,@fac/acceptinvite <faction>)]%R%TAccept an invitation into a Faction.%R%R[u(FACLOCKS)]
 +help/add Community/@faction=#fac/HLP_@FACTION
 +help/summary @faction=Organized Groups/Guilds/Gangs/etc.
-
 
 &SHLP_@FACTION #fac=Note: Staff are considered Rank 0 and to be pseudo-members of all Factions with all possible Permissions.%R%ROnly Staff may set certain @fac/options.%R%R[ansi(hc,Administration Commands)]%R%R[ansi(hw,@fac/create <faction>=<player>)]%R%TCreate a Faction with <player> as the Leader.%R%R[ansi(hw,@fac/config \[<option>=<value>)\])]%R%TConfigure the Faction system itself.%R%R[ansi(hw,@fac/delete <faction>=<verify>)]%R%TDelete a Faction. CAREFUL WITH THIS.%R%R[ansi(hw,@fac/addmember <player>=<rank>)]%R%TWith a Faction Selected, arbitrarily add a new member.
 

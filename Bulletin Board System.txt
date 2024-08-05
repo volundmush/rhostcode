@@ -39,9 +39,9 @@
 
 &GETID #bbs_fparent=[getconf(loc(%!),ABBREVIATION)][u(ORDER)]
 
-&LK.MYFACMEMBERS #bbs_fparent=[facismember(loc(%!),%:)]
-&LK.MYFACLEADERS #bbs_fparent=[lte(facgetrank(loc(%!,%:)),2)]
-&LK.MYFACLTERANK #bbs_fparent=[lte(facgetrank(loc(%!,%:)),%1)]
+&LK.MYFACMEMBERS #bbs_fparent=facismember(loc(%!),%:)
+&LK.MYFACLEADERS #bbs_fparent=lte(facgetrank(loc(%!,%:)),2)
+&LK.MYFACLTERANK #bbs_fparent=lte(facgetrank(loc(%!,%:)),%1)
 
 @lock/user #bbs_fparent|ReadLock=LK.MYFACMEMBERS/1
 @lock/user #bbs_fparent|PostLock=LK.MYFACMEMBERS/1

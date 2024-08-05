@@ -2,7 +2,7 @@
 
 @skip isdbref(tag(setr(1,theme)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No global room set!;@assert/inline isdbref(setr(0,create(Theme System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=[globalroom()];@parent %q0=#info_lib}
 
-&CMD.@THEME #theme=$^(?s)(?\:@|\+)?(theme|world|tinfo)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?))?(?\:=(.*))?$:@if strmatch(%1,tinfo)={@attach %!/DO_INFO},{@attach #inc/GET_SWITCH=%2,THEME;@attach %!/SW.THEME.[strfirstof(%q<switch>,MAIN)]=trim(%3),trim(%4),%5}
+&CMD.@THEME #theme=$^(?s)(?\:@|\+)?(theme|world|origin|tinfo)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?))?(?\:=(.*))?$:@if strmatch(%1,tinfo)={@attach %!/DO_INFO},{@attach #inc/GET_SWITCH=%2,THEME;@attach %!/SW.THEME.[strfirstof(%q<switch>,MAIN)]=trim(%3),trim(%4),%5}
 @set #theme/CMD.@THEME=regexp
 
 &INFO.ATTR #theme=THEME
@@ -24,8 +24,8 @@
 
 &SW.THEME.CREATE #theme=@skip gtebittype(%#,2)={@break/inline isapproved(%#)=@pemit %#=You are approved and have no business creating a theme!;@break/inline isobjid(get(%#/GAME.THEME))=@pemit %#=You are already bound to a theme! No need for another.};@assert/inline setr(!,u(FN.VALID_THEME_NAME,stripansi(%0)),res)=@pemit %#=%q<res>;@assert/inline isdbref(setr(!,create(stripansi(%0),,t),theme))=@pemit %#=%q<theme>;th setq(!,objid(%q<theme>),theme);@if has_markup(%0)={@name/ansi %q<theme>=%0},{@name %q<theme>=%0};@set %q<theme>=INDESTRUCTIBLE;@attach #inc/MSG_ALERT=Created Theme: %0;@if !isapproved(%#)={@set %q<theme>=OWNER:%:;@attach %!/DO_ADD=%q<theme>,%:}
 
-&DO_ADD #theme=@set %0=MEMBERS:[setunion(filterobjid(get(%0/MEMBERS)),objid(%1))];@set %1=GAME.THEME:[objid(%0)]
-&DO_REMOVE #theme=@set %0=MEMBERS:[setunion(filterobjid(get(%0/MEMBERS)),objid(%1))];@set %1=GAME.THEME:
+&DO_ADD #theme=@set %0=MEMBERS:[sortname(setunion(filterobjid(get(%0/MEMBERS)),objid(%1)))];@set %1=GAME.THEME:[objid(%0)]
+&DO_REMOVE #theme=@set %0=MEMBERS:[sortname(setunion(filterobjid(get(%0/MEMBERS)),objid(%1)))];@set %1=GAME.THEME:
 @@ %0 - Theme Objid, %1 - member objid
 
 &DO_DELETE #theme=@dolist/inline get(%0/MEMBERS)={@set %d0=GAME.THEME:};@set %0=!INDESTRUCTIBLE !SAFE;@destroy/override %0
@@ -61,7 +61,10 @@
 
 &SW.THEME.UNAPPROVE #theme=@attach %!/FINDTHEME=%0,theme;@assert/inline u(FIL.APPROVED,%q<theme>)=@pemit %#=It is not approved!;@set %q<theme>=APPROVED:;@pemit %#=Theme '[cname(%q<theme>)]' un-approved!;@attach #inc/MSG_ALERT=Theme '[cname(%q<theme>)]' un-approved!
 
-&INC.THEME.DISPLAY #theme=@attach %!/FINDTHEME=%0,theme
+&FN.ROSTER.COLUMNS #theme=printf($-23s $11s,Name,LastOn/Idle)
+&FN.ROSTER.ROW #theme=printf($-23s $11s,cname(%0),lastidle(%0))
+
+&INC.THEME.DISPLAY #theme=@attach %!/FINDTHEME=%0,theme;@pemit %#=header(Theme: [cname(%q<theme>)]);@if strlen(setr(!,get(%q<theme>/DESCRIBE),desc))={@pemit %#=%q<desc>};@if words(setr(!,u(FN.LIST_FILENAMES,%q<theme>),files),|)={@pemit %#=separator(+tinfo Files);@pemit %#=columns(%q<files>,26,3,l,1,1,,%b,,1,|,%B,1)};@if words(setr(!,filterobjid(get(%q<theme>/MEMBERS)),mem))={@pemit %#=separator(Cast of Characters);@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.ROSTER.COLUMNS));@dolist/inline %q<mem>={@pemit %#=u(FN.ROSTER.ROW,%d0,%q<theme>)}};@if or(isobjid(setr(!,get(%q<theme>/OWNER),owner)),words(setr(!,filterobjid(get(%q<theme>/ADMINS)),admin)))={@pemit %#=separator(Metadata);@if isobjid(%q<owner>)={@pemit %#=[ansi(hw,Owner/Founder:)]%B[cname(%q<owner>)]};@if words(%q<admins>)={@pemit %#[ansi(hw,Admins:)]%B[iter(%q<admins>,cname(%i0),%b,\,%b)]}};@pemit %#=footer()
 
 &SW.THEME.MAIN #theme=@if strlen(%0)={@attach %!/INC.THEME.DISPLAY},{@attach %!/INC.THEME.LIST}
 

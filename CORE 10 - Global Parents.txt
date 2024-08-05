@@ -44,9 +44,9 @@
 @aenter #globobj
 @aleave #globobj
 
-&LK.TRUE #globobj=[t(%1)]
-&LK.GTEBITTYPE #globobj=[if(gtebittype(%#,%1),%1)]
-&LK.ISAPPROVED #globobj=[isapproved(%#)]
+&LK.TRUE #globobj=t(%1)
+&LK.GTEBITTYPE #globobj=if(gtebittype(%#,%1),%1)
+&LK.ISAPPROVED #globobj=isapproved(%#)
 
 @@ Players
 &TIMEZONE #globplayer=UTC

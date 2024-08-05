@@ -1,0 +1,13 @@
+@skip isdbref(tag(setr(1,navi)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(Navigation System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom()}
+
+&CMD.PORT #navi=$^(?s)(?\:@|\+)?(port)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2;@attach %!/SW.[strfirstof(%q<switch>,MAIN)]=%3,%4
+@set #navi/CMD.PORT=regexp
+
+&SWITCHES.0 #navi=LIST
+
+&SW.MAIN #navi=@assert/inline strmatch(%0)=@pemit %#=@port where? @port/list to search.;
+
+&SW.LIST #navi=
+
+&HLP.PORT #navi=
++help/add Navigation/@port=#navi/HLP.PORT

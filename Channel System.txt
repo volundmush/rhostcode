@@ -188,9 +188,9 @@
 
 @skip isdbref(tag(setr(1,chan_parent)))={@assert/inline isdbref(tag(chan))=@pemit %#=ERROR: No Channel object set!;@assert/inline isdbref(setr(0,create(Channel System Parent,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE NO_COMMAND;@tag/add %q1=%q0;@tel %q0=[tag(stor)]}
 
-&LK.MODERATE #chan_parent=[t(match(v(MODERATORS),%:))]
-&LK.ADMIN #chan_parent=[t(match(v(ADMINS),%:))]
-&LK.MEMBER #chan_parent=[t(match(v(MEMBERS),%:))]
+&LK.MODERATE #chan_parent=t(match(v(MODERATORS),%:))
+&LK.ADMIN #chan_parent=t(match(v(ADMINS),%:))
+&LK.MEMBER #chan_parent=t(match(v(MEMBERS),%:))
 
 @lock/user #chan_parent|TalkLock=LK.TRUE/1
 @lock/user #chan_parent|ModerateLock=LK.GTEBITTYPE/4
