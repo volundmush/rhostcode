@@ -32,7 +32,7 @@
 &CONFIG.LOCKEDFIELDS.DEFAULT #finger=SEX|QUOTE|PROFILE|SKILLS|SPECIES
 &CONFIG.LOCKEDFIELDS.TYPE #finger=WORD
 
-&SW.MAIN #finger=@attach #inc/GET_PLAYER=strfirstof(%0,%#),target;@attach %!/RENDER_FINGER=%q<target>
+&SW.MAIN #finger=@attach #inc/GET_PLAYER=strfirstof(%0,%#),target;@attach %!/RENDER_FINGER=%q<target>;@trigger %q<target>/AFINGER=%:
 
 &RENDER_FINGER #finger=th setq(!,ansi(confoverride(%#,BORDER),if(confoverride(%1,SCREENREADER),%b,|)),bord);@pemit %#=header(cname(%0),,,1);th setq(!,getconf(%!,LEFT),col1);th setq(!,getconf(%!,RIGHT),col2);th iter(1 2,setq(!,lmax(iter(r(col%i0),strlen(elementsmux(%i0,2,~)),|,%b)),rjust%i0));th setq(!,floor(fdiv(sub(width(%#),7),2)),col1width);th setq(!,ceil(fdiv(sub(width(%#),7),2)),col2width);th iter(1 2,setq(!,trim(iter(r(col%i0),ansi(%q<co>,rjust(strfirstof(elementsmux(%i0,2,~),capnames(elementsmux(%i0,1,~))),r(rjust%i1))):%B[strfirstof(u(%!/GETTER.[elementsmux(%i0,1,~)],%0,%:),elementsmux(%i0,3,~))],|,%R),r,%R),col%i0data));@pemit %#=printf($1.&:%q<bord>:s $%q<col1width>|-"s $1.&:%q<bord>:s $%q<col2width>|-"s $1.&:%q<bord>:s,%R,%q<col1data>,%R,%q<col2data>,%R);th setq(!,sub(width(%#),4),cenwidth);@dolist/inline/delimit | [getconf(%!,VERTICAL)]={@if strlen(setr(!,strfirstof(u(GETTER.[elementsmux(%d0,1,~)],%0,%:),elementsmux(%d0,3,~)),txt))={@pemit %#=subheader(strfirstof(elementsmux(%d0,2,~),capnames(elementsmux(%d0,1,~))),,,1);@pemit %#=printf($1.&:%q<bord>:s $%q<cenwidth>|-"s $1.&:%q<bord>:s,%R,%q<txt>,%R)}};@pemit %#=footer(,,,1)
 
@@ -53,7 +53,7 @@
 &HLP.SETTABLE #finger=%R%R[ansi(hw,Fields settable by players:)]%R[edit(getconf(%!,PLAYERFIELDS),|,\,%B)][if(globalconf(REQAPPROVAL),%R%R[ansi(hw,Fields locked after approval:)]%R[edit(getconf(%!,LOCKEDFIELDS),|,\\,%B)])]%R%R[ansi(hw,Fields only Staff may set:)]%R[edit(getconf(%!,ADMINFIELDS),|,\,%B)]
 
 +help/add Character/@finger=#finger/HLP.FINGER
-&HLP.FINGER #finger=[ansi(hc,Aliases:)] @finger, finger, +finger%R%R[ansi(hw,@finger \[<player>\])]%R%TDisplays overview of character information about <player>. Defaults to self if <player> is blank.%R%R[ansi(hw,@finger/set <field>=<value>)]%R%TSets a field.[u(HLP.SETTABLE)]
+&HLP.FINGER #finger=[ansi(hc,Aliases:)] @finger, finger, +finger%R%R[ansi(hw,@finger \[<player>\])]%R%TDisplays overview of character information about <player>. Defaults to self if <player> is blank.%R%R[ansi(hw,@finger/set <field>=<value>)]%R%TSets a field.[u(HLP.SETTABLE)]%R%R[ansi(hc,Afinger)]%R%TBeing a target of +finger triggers the AFINGER attribute. You can use this to be alerted when others +finger you. Example:%R&afinger me=think \[cname(%%0)\] has +finger'd you.
 
 +shelp/add Character/@finger=#finger/SHLP.FINGER
 &SHLP.FINGER #finger=[ansi(hc,Admin Commands)]%R%R[ansi(hw,@finger/config \[<option>=<value>\])]%R%TView/set config options. Much of @finger can be configured.%R%R[ansi(hw,@finger <player>/<field>=<value>)]%R%TSet a specific player's fields.[u(HLP.SETTABLE)]%R%R[ansi(hc,Modifying Finger)]%R%RNew fields are easy to add to @finger by adding GETTER and SETTER attributes to the #finger object. Sex and species are included as examples.

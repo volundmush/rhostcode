@@ -55,6 +55,9 @@
 @aenter #globroom=@attach %!/GAME.AENTER
 @aleave #globroom
 
+&LK.TELEPORT #globroom=privatize(1,if(isdbref(setr(!,upzone(%!),up)),u(%q<up>/FN.ACCESS,%#),0))
+@lock/TportLock #globroom=LK.TELEPORT/1
+
 &FN.LOCATION #globroom=iter(revwords(upzones(%!)),cname(%i0)[if(gtebittype(%#,2),%B\([num(%i0)]\))],%b,%b=>%b)
 
 &FN.INFOBOX #globroom=[wrap([ansi(hw,Location:)]%b[u(FN.LOCATION,%!)],sub(width(%#),2),left,setr(!,ansi(confoverride(%#,BORDER),|),bord),%q<bord>,,)]
@@ -129,3 +132,5 @@
 @lock/ZoneToLock #reg_parent=LK.BUILDERS/1
 @lock/ZoneWizLock #reg_parent=LK.BUILDERS/1
 @set #reg_parent=!ZONEMASTER
+
+&FN.ACCESS #reg_parent=cor(elock(%!/TportLock,%0),privatize(1,if(isdbref(setr(!,upzone(%!),up)),u(%q<up>/FN.ACCESS,%0),0)))

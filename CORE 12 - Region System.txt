@@ -19,6 +19,10 @@
 
 &FN.ROOTS #reg=filter(FIL.ROOTS,u(FN.SEARCH))
 
+&FIL.ROOM #reg=hastype(%0,ROOM)
+
+&FN.ROOMS #reg=filter(FIL.ROOM,lzone(%0))
+
 &FIL.BRANCH #reg=hastotem(%0,REGION)
 &FN.BRANCHES #reg=filter(FIL.BRANCH,setunion(lcon(%0,THING),zlcon(%0,THING)))
 

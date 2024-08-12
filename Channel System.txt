@@ -33,7 +33,7 @@
 &FN.COLUMNS_MAIN #chan_lib=ansi(confoverride(%#,COLUMN),printf($4-s $3s $-15s $|"-45s $:0:3s/$:0:3s,DBRF,Sta,Name,Description,Cur,Mem))
 &INC.LIST_MAIN #chan_lib=@pemit %#=printf($4-s $3s $-15s $|"-45s $:0:3s/$:0:3s,num(%0),u(FN.PLAYER_STATUS,%0,%#),cname(%0),default(%0/DESCRIBE,No description.),words(setinter(filterobjid(setr(!,get(%0/JOINED),mem)),%q<online>)),words(%q<mem>))
 
-&FN.NAMES #chan_lib=elist(iter(filterobjid(%0),cname(%i0),%b,|),|,,|)
+&FN.NAMES #chan_lib=elist(iter(filterobjid(%0),cname(%i0),%b,|),,|)
 
 &SW.WHO #chan_lib=@attach %!/INC.FIND;@pemit %#=[u(FN.NAMES,get(%q<chan>/JOINED)))]
 
@@ -111,7 +111,7 @@
 &CHECK.ADMINLOCK #chan_lib=match(get(%0/ADMINS),objid(%1))
 &CHECK.MODERATELOCK #chan_lib=cor(u(CHECK.ADMINLOCK,%0,%1),match(get(%0/MODERATORS),objid(%1)))
 &CHECK.JOINLOCK #chan_lib=cor(u(CHECK.MODERATELOCK,%0,%1),match(get(%0/MEMBERS),objid(%1)))
-&CHECK #chan_lib=localize(if(u(CHANNEL_ADMIN,%0,%2),1,cand(cor(elock(%0/user|%1,num(%2)),u(CHECK.%1,%0,%2)),u(CHECK_HELPER_EXTRA,%0,%1,%2))))
+&CHECK #chan_lib=localize(if(u(CHANNEL_ADMIN,%2),1,cand(cor(elock(%0/user|%1,num(%2)),u(CHECK.%1,%0,%2)),u(CHECK_HELPER_EXTRA,%0,%1,%2))))
 @@ %0 - channel, %1 - permission, %2 - object
 
 &BASE_FORMAT #chan_lib=<[cname(%1)][if(strlen(%6),:%B[ansi(hg,%6)])]> [if(%7,%2,[if(strlen(%4),%4%B)][parsestr(%2,%0,",",,&[if(strlen(%5),%5 [chr(40)][cname(%3)][chr(41)],cname(%3))])])]

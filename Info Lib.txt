@@ -74,7 +74,7 @@
 
 &INC.INFO.FINISH_SET #info_lib=@assert/inline strlen(%2)=@pemit %#=%5 field empty. To delete a file use %q<comm>/delete.;@if %3={th setq(!,set_kv(set_kv(%q<meta>,Locked,secs()),LockedBy,%:),meta)};@set %q<target>=%q<attr>.META:[set_kv(set_kv(%q<meta>,Author,%:),DateModified,secs())];@set %q<target>=%q<attr>.%6:%2;@set %q<target>=%q<attr>.NAME:%q<fname>;@attach %!/REPORT=%#,%q<target>,%q<fname>,%6 Set!
 
-&SW.INFO.RENAME #info_lib=@attach %!/INC`FINDFILE=%q<filename>;@assert/inline setr(!,u(FN.VALID_FILENAME,%1),res)=@pemit %#=%q<res>;@dolist/inline lattr(%q<target>/%q<attr>.*)={@mvattr %q<target>=%d0,[u(FN.FILENAME,%0)].[elementsmux(%d0,4,.,.)]};@attach %!/REPORT=%#,%q<target>,%q<fname>,Renamed to: %1
+&SW.INFO.RENAME #info_lib=@attach %!/INC.INFO.FINDFILE=%q<filename>;@assert/inline setr(!,u(FN.VALID_FILENAME,%2),res)=@pemit %#=%q<res>;@set %q<target>=%q<attr>.NAME:%2;@dolist/inline lattr(%q<target>/%q<attr>.*)={@mvattr %q<target>=%d0,[u(FN.FILENAME,%2)].[elementsmux(%d0,4,.,.)]};@attach %!/REPORT=%#,%q<target>,%q<fname>,Renamed to: %2
 
 &DO_REPORT #info_lib=@if strmatch(num(%0),num(%1))={@pemit %0=%2},{@pemit %1=[ansi(hw,By)] [cname(%0)]: %2;@pemit %0=[ansi(hw,For)] [cname(%1)]: %2}
 

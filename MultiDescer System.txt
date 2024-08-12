@@ -1,0 +1,13 @@
+@@ Dependencies: Info Lib
+
+@skip isdbref(tag(setr(1,mdesc)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No global room set!;@assert/inline isdbref(setr(0,create(MultiDescer System,,t)))=@pemit %#=ERROR: Could not create code object: %q0;@set %q0=INDESTRUCTIBLE;@tag/add %q1=%q0;@tel %q0=globalroom();@parent %q0=#info_lib}
+
+&CMD.MDESC #mdesc=$^(?s)(?\:@|\+)?(mdesc)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach %!/DO_INFO=%0,%1,%2,%3,%#,%4
+@set #desc/CMD.MDESC=regexp
+
+&SWITCHES.INFO.0 #mdesc=GET|RENAME|DELETE|USE
+
+&SW.INFO.USE #mdesc=
+
+&HLP.MDESC #mdesc=
++help/add Character/@mdesc=
