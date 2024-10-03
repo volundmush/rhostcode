@@ -22,7 +22,7 @@
 
 &FN.VALID_THEME_NAME #theme=ofparse(3,if(strlen(%0),1,#-1 NO NAME ENTERED),if(contains_character(%0,/),#-1 THEME NAMES CANNOT HAVE A / IN THEM SORRY Fate/Stay Night AND .hack//GU),if(valid(name,%0),1,#-1 THAT'S NOT A GOOD NAME FOR A THING OBJECT. TRY FEWER SPECIAL CHARACTERS),1)
 
-&SW.THEME.CREATE #theme=@skip gtebittype(%#,2)={@break/inline isapproved(%#)=@pemit %#=You are approved and have no business creating a theme!;@break/inline isobjid(get(%#/GAME.THEME))=@pemit %#=You are already bound to a theme! No need for another.};@assert/inline setr(!,u(FN.VALID_THEME_NAME,stripansi(%0)),res)=@pemit %#=%q<res>;@assert/inline isdbref(setr(!,create(stripansi(%0),,t),theme))=@pemit %#=%q<theme>;th setq(!,objid(%q<theme>),theme);@if has_markup(%0)={@name/ansi %q<theme>=%0},{@name %q<theme>=%0};@set %q<theme>=INDESTRUCTIBLE;@attach #inc/MSG_ALERT=Created Theme: %0;@if !isapproved(%#)={@set %q<theme>=OWNER:%:;@attach %!/DO_ADD=%q<theme>,%:}
+&SW.THEME.CREATE #theme=@skip gtebittype(%#,2)={@break/inline isapproved(%#)=@pemit %#=You are approved and have no business creating a theme!;@break/inline isobjid(get(%#/GAME.THEME))=@pemit %#=You are already bound to a theme! No need for another.};@assert/inline setr(!,u(FN.VALID_THEME_NAME,stripansi(%0)),res)=@pemit %#=%q<res>;@assert/inline isdbref(setr(!,create(stripansi(%0),,t),theme))=@pemit %#=%q<theme>;th setq(!,objid(%q<theme>),theme);@if has_markup(%0)={@name/ansi %q<theme>=%0},{@name %q<theme>=%0};@set %q<theme>=INDESTRUCTIBLE;@pemit %#=Theme created!;@attach #inc/MSG_ALERT=Created Theme: %0;@if !isapproved(%#)={@set %q<theme>=OWNER:%:;@attach %!/DO_ADD=%q<theme>,%:}
 
 &DO_ADD #theme=@set %0=MEMBERS:[sortname(setunion(filterobjid(get(%0/MEMBERS)),objid(%1)))];@set %1=GAME.THEME:[objid(%0)]
 &DO_REMOVE #theme=@set %0=MEMBERS:[sortname(setunion(filterobjid(get(%0/MEMBERS)),objid(%1)))];@set %1=GAME.THEME:
@@ -72,6 +72,8 @@
 &INC.INFO.TARGET #theme=@attach %!/FINDTHEME=%0,target;th setq(!,%1,filename)
 
 &INC.INFO.CANSET #theme=@assert/inline cor(gtebittype(%#,5),u(FN.ISADMIN,%q<target>,%:))=@pemit %#=Permission denied.
+
+&INFO.ADMIN #theme=if(u(FIL.APPROVED,%q<target>),gtebittype(%0,2),t(match(get(%q<target>/OWNER)%B[get(%q<target>/ADMINS)],objid(%0))))
 
 @@ Help stuff
 +help/add Community/@theme=#theme/HLP_@THEME

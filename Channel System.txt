@@ -26,7 +26,7 @@
 &SW.LIST #chan_lib=@attach %!/INC.LIST=u(FN.VISIBLE_CHANNELS,%#),MAIN
 
 &INC.ADMIN #chan_lib=@assert/inline u(CHANNEL_ADMIN,%#,%q<chan>)=@pemit %#=Permission Denied.
-&INC.FIND #chan_lib=@assert/inline setr(!,u(FN.FIND_CHANNEL,%#,stripansi(%0)),chan)=@pemit %#=%q<chan>
+&INC.FIND #chan_lib=@assert/inline isobjid(setr(!,u(FN.FIND_CHANNEL,%#,stripansi(%0)),chan))=@pemit %#=%q<chan>
 
 &INC.LIST #chan_lib=@pemit %#=header(u(FN.SYS_NAME) Channels);@pemit %#=u(FN.COLUMNS_%1);@pemit %#=separator();th setq(!,lwhoid(),online);@dolist/inline %0={@attach %!/INC.LIST_%1=%d0};@pemit %#=footer()
 
@@ -39,7 +39,7 @@
 
 &SW.CONFIG #chan_lib=@attach %!/CONFIG=%0,%1,%!
 
-&SW.OPTIONS #chan_lib=@attach %!/INC.FIND=trim(before(%0,/));@assert/inline u(CHECK,%q<chan>,,%:)=@pemit %#=Permission denied.;@attach %!/CONFIG=trim(after(%0,/)),%1,%q<chan>
+&SW.OPTIONS #chan_lib=@attach %!/INC.FIND=trim(before(%0,/));@assert/inline u(CHECK,%q<chan>,,%:)=@pemit %#=Permission denied.;@attach #inc/CONFIG=trim(after(%0,/)),%1,%q<chan>
 
 &SW.EXAMINE #chan_lib=@attach %!/INC.FIND;@attach %!/INC.ADMIN;@pemit %#=header(Examine: [cname(%q<chan>)] (%q<chan>));@pemit %#=[ansi(hw,JOINED:)]%B[u(FN.NAMES,get(%q<chan>/JOINED))];@pemit %#=[ansi(hw,GAGGING:)]%B[u(FN.NAMES,get(%q<chan>/GAGGING))];@if words(setr(!,get(%q<chan>/RESTRICT),restrict),|)={@pemit %#=separator(Restricted);@dolist/inline/delimit | %q<restrict>={@pemit %#=[cname(before(%d0,~))] - until [fancytime(after(%d0,~))]}};@pemit %#=separator(Locks);@dolist/inline/delimit | [get(%!/LOCKS)]={@pemit %#=[ansi(hw,%d0:)] [lock(%q<chan>/user|%d0)]};@pemit %#=footer()
 
@@ -106,7 +106,7 @@
 
 &LOCKS #chan_lib=TalkLock|ModerateLock|AdminLock
 
-&CHECK_HELPER_EXTRA #chan_lib=switch(%1,TalkLock,if(setr(!,secs_remain(get_kv(get(%0/CHANINFO.[v(CHAN.GAG)]),objid(%2))),gag),0[null(pemit(%2,You are banned from [cname(%0)] for: [etime(%q<gag>)]))]),1)
+&CHECK_HELPER_EXTRA #chan_lib=switch(%1,TalkLock,if(setr(!,secs_remain(get_kv(get(%0/CHANINFO.[v(CHAN.GAG)]),objid(%2))),gag),0[null(pemit(%2,You are banned from [cname(%0)] for: [etime(%q<gag>)]))],1),1)
 
 &CHECK.ADMINLOCK #chan_lib=match(get(%0/ADMINS),objid(%1))
 &CHECK.MODERATELOCK #chan_lib=cor(u(CHECK.ADMINLOCK,%0,%1),match(get(%0/MODERATORS),objid(%1)))
