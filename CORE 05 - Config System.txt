@@ -3,8 +3,8 @@
 
 @skip isdbref(tag(setr(1,conf)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master_room set!;@assert/inline isdbref(setr(0,create(Config System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom()}
 
-&CMD.+GLOBALCONFIG #conf=$^(?s)(?\:\+)?(globalconfig)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@assert/inline gtebittype(%#,5)=@pemit %#=error();@attach #inc/GET_SWITCHES=%2;@attach %!/SW.[strfirstof(%q<switch>,MAIN)]=trim(%3),trim(%4)
-@set #conf/CMD.+GLOBALCONFIG=regexp
+&CMD.GLOBALCONFIG #conf=$^(?s)(?\:\+)(globalconfig)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@assert/inline gtebittype(%#,5)=@pemit %#=error();@attach #inc/GET_SWITCHES=%2;@attach %!/SW.[strfirstof(%q<switch>,MAIN)]=trim(%3),trim(%4)
+@set #conf/CMD.GLOBALCONFIG=regexp
 
 &FN.LIST_CONFIGS #conf=setunion(iter(lattrp(%0/CONFIG.*.*),elementsmux(%i0,2,.),%b,|),,|,|,i)
 
@@ -41,6 +41,5 @@
 &SW.MAIN #conf=@if strlen(%0)={@assert/inline gtebittype(%#,6)=@pemit %#=Permission denied.};@attach #inc/CONFIG=%0,%1,%!
 
 @@ Help stuffs.
-+shelp/add Configuration/+globalconfig=#conf/SHLP_GAMECONFIG
-
-&SHLP_GAMECONFIG #conf=The Global Configuration affects softcoded config options that affect the whole game.%R%R[ansi(hc,Commands)]%R%R[ansi(hw,+globalconfig)]%R%TDisplay current configuration.%R%R[ansi(hw,+globalconfig <option>=<value>)]%R%TSet an option.%R%R[ansi(hc,Extending)]%RIf you @decompile #conf you'll see the attributes beginning with &CONFIG.<type>. create more of those to add more options. The .TYPE fields must align with VALID_<type> found on #inc.
+&SHLP.GAMECONFIG #conf=The Global Configuration affects softcoded config options that affect the whole game.%R%R[ansi(hc,Commands)]%R%R[ansi(hw,+globalconfig)]%R%TDisplay current configuration.%R%R[ansi(hw,+globalconfig <option>=<value>)]%R%TSet an option.%R%R[ansi(hc,Extending)]%RIf you @decompile #conf you'll see the attributes beginning with &CONFIG.<type>. create more of those to add more options. The .TYPE fields must align with VALID_<type> found on #inc.
++shelp/add Configuration/+globalconfig=#conf/SHLP.GAMECONFIG

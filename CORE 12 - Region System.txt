@@ -3,8 +3,8 @@
 @skip isdbref(tag(setr(1,reg)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(Region System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom()}
 
 @@ Commands and stuff.
-&CMD.@REGION #reg=$^(?s)(?\:@|\+)?(reg|region|zdig|zopen)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:th setq(!,switch(%1,reg,region,region,region,zdig,zdig,zopen,zopen),family);@attach #inc/GET_SWITCH=%2,%q<family>;@attach %!/SW.%q<family>.[strfirstof(%q<switch>,MAIN)]=%3,%4
-@set #reg/CMD.@REGION=regexp
+&CMD.REGION #reg=$^(?s)(?\:\+)(reg|region|zdig|zopen)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:th setq(!,switch(%1,reg,region,region,region,zdig,zdig,zopen,zopen),family);@attach #inc/GET_SWITCH=%2,%q<family>;@attach %!/SW.%q<family>.[strfirstof(%q<switch>,MAIN)]=%3,%4
+@set #reg/CMD.REGION=regexp
 
 &LOCK_USE #reg=[gtebittype(%#,2)]
 @lock/use #reg=LOCK_USE/1
@@ -49,7 +49,7 @@
 
 &FN.SAFEDELETE #reg=ofparse(3,if(!words(lzone(%0)),1,#-1 ZONE HAS MEMBERS. DEAL WITH THEM FIRST.),if(!lcon(%0,,,,,1),1,#-1 ZONE HAS lcon() CONTENTS. DEAL WITH IT FIRST.),if(!zlcon(%0,,,,,1),1,#-1 ZONE HAS zlcon() CONTENTS. DEAL WITH IT FIRST),1)
 
-&SW.REGION.DELETE #reg=@attach %!/INC.FINDREG=%0,reg;@assert/inline setr(!,u(FN.SAFEDELETE,%q<reg>),res)=@pemit %#=ERROR: %q<res>;@assert/inline t(match([name(%q<reg>)]|[objid(%q<reg>)],%0,|))=@pemit %#=ERROR: Must have =<objid|name> to verify. Enter as: [ansi(hw,@region/destroy [name(%q<reg>)]=[objid(%q<reg>)])] for instance.;@pemit %#=Destroyed Region [objid(%q<reg>)] '[cname(%q<reg>)]';@attach #inc/MSG_ALERT=Destroyed Region [objid(%q<reg>)] '[cname(%q<reg>)]';@attach %!/DESTROY_REGION=%q<reg>
+&SW.REGION.DELETE #reg=@attach %!/INC.FINDREG=%0,reg;@assert/inline setr(!,u(FN.SAFEDELETE,%q<reg>),res)=@pemit %#=ERROR: %q<res>;@assert/inline t(match([name(%q<reg>)]|[objid(%q<reg>)],%0,|))=@pemit %#=ERROR: Must have =<objid|name> to verify. Enter as: [ansi(hw,+region/destroy [name(%q<reg>)]=[objid(%q<reg>)])] for instance.;@pemit %#=Destroyed Region [objid(%q<reg>)] '[cname(%q<reg>)]';@attach #inc/MSG_ALERT=Destroyed Region [objid(%q<reg>)] '[cname(%q<reg>)]';@attach %!/DESTROY_REGION=%q<reg>
 
 &SW.REGION.GRANT #reg=@attach %!/INC.FINDREG=%0,reg;@attach #inc/GET_PLAYER=%1,t1;@assert/inline gtebittype(%q<t1>,2)=@pemit %#=They must be at least bittype 2 (Guildmaster) to have build rights.;@break/inline t(match(setr(!,get(%q<reg>/BUILDERS),builders),%q<t1>))=@pemit %#=They are already a Builder for Region [objid(%q<reg>)] '[cname(%q<reg>)]';@set %q<reg>=BUILDERS:[setunion(%q<builders>,objid(%q<t1>))];@pemit %#=Added '[cname(%q<t1>)]' to Builders of Region [objid(%q<reg>)] '[cname(%q<reg>)]';@attach #inc/MSG_ALERT=Added '[cname(%q<t1>)]' to Builders of Region [objid(%q<reg>)] '[cname(%q<reg>)]';@pemit %q<t1>=You have been added to the Builders of Region [objid(%q<reg>)] '[cname(%q<reg>)]'
 
@@ -57,9 +57,9 @@
 
 &INIT.REGION #reg=@set %0=ZONEMASTER INDESTRUCTIBLE;@totem %0=REGION;@parent %0=#reg_parent;@chown/preserve %0=[tag(gm)]
 
-&DESTROY_REGION #reg=@set %0=!INDESTRUCTIBLE;@zone/purge %0;@set %0=!ZONEMASTER;@totem %0=!REGION;@destroy/override %0
+&DESTROY_REGION #reg=@set %0=!INDESTRUCTIBLE;+zone/purge %0;@set %0=!ZONEMASTER;@totem %0=!REGION;@destroy/override %0
 
-&ZONEASSIGN #reg=@dolist/inline %0={@zone/add %d0=%1;@chown/preserve %d0=[tag(gm)]};
+&ZONEASSIGN #reg=@dolist/inline %0={+zone/add %d0=%1;@chown/preserve %d0=[tag(gm)]};
 
 &ZBUILD #reg=th setq(z,lzone(%l));@if words(setr(!,filter(#lambda/[lit(isdbref(%0))],%q<results>),goodobj))={@pemit %#=Created [words(%q<goodobj>)] objects: %q<goodobj>.;@if cand(isdbref(%qz),elock(%qz/ZoneToLock,%#))={@attach %!/ZONEASSIGN=%q<goodobj>,%qz;@pemit %#=Assigned them to Zone %qz: [cname(%qz)] and @chowned to [tag(gm)]: [cname(tag(gm))].}}
 
@@ -67,11 +67,11 @@
 
 &SW.ZOPEN.MAIN #reg=@assert/inline strlen(setr(!,objeval(%#,open(%0,%1),3),results));@attach %!/ZBUILD
 
-+shelp/add Building/@region=#reg/SHLP_@REGION
-&SHLP_@REGION #reg=[ansi(hc,Aliases:)]%B+reg, +region, @reg, @region, reg, region%R%RThe Region System is designed for organizing ZONEMASTER THING objects to ease collaborative building. It also provides a hierarchial structure for laying out game maps.%R%R[ansi(hc,Administrator Commands)]%R%R[ansi(hw,@reg)]%R%TList all Regions as a tree structure.%R%R[ansi(hw,@reg <name>)]%R%TSearch for regions of a certain name.%R%R[ansi(hw,@reg/create <region>)]%R%TCreates a root Region.%R%R[ansi(hw,@reg/delete <region>=<name or objid>)]%R%TDelete a region.%R%R[ansi(hw,@reg/grant <region>=<player>)]%R%TGrant building rights to a player who's Guildmaster or higher.%R%R[ansi(hw,@reg/revoke <region>=<player>)]%R%TRevoke building rights.%R%R[ansi(hc,Hierarchy)]%RRegions are, fundamentally, THING objects with the ZONEMASTER flag set and the REGION totem applied. Although newly created Regions are 'root' regions, you can @tel them inside the inventory of another Region to turn them into Sub-Regions. Alternatively, they can also be placed inside a ROOM assigned to another Region to achieve the same result. This might be used with all manner of code that expands on the concept of Regions. For instance, there might be a Region which represents a chunk of a solar system, that contains other REGION objects for each Planet, and a special command can target the REGIONS to land on the planet.%R%RThe logic for detecting sub-regions uses lcon(region) and zlcon(region) which means a sub-region will not be detected if the object is located inside the inventory of a thing or player.%R%RCircular relationships shouldn't cause anything to explode, but are best avoided.%R%R[ansi(hc,Upzones)]%RThe reverse of the @reg display, upzone(<target>) and upzones(<target>) functions provide a list of all ZONEMASTERS a target is recursively inside. Not all of them need be regions, but it should always end in a chain of them.
++shelp/add Building/+region=#reg/SHLP.REGION
+&SHLP.REGION #reg=The Region System is designed for organizing ZONEMASTER THING objects to ease collaborative building. It also provides a hierarchial structure for laying out game maps.%R%R[ansi(hc,Administrator Commands)]%R%R[ansi(hw,+region)]%R%TList all Regions as a tree structure.%R%R[ansi(hw,+region <name>)]%R%TSearch for regions of a certain name.%R%R[ansi(hw,+region/create <region>)]%R%TCreates a root Region.%R%R[ansi(hw,+region/delete <region>=<name or objid>)]%R%TDelete a region.%R%R[ansi(hw,+region/grant <region>=<player>)]%R%TGrant building rights to a player who's Guildmaster or higher.%R%R[ansi(hw,+region/revoke <region>=<player>)]%R%TRevoke building rights.%R%R[ansi(hc,Hierarchy)]%RRegions are, fundamentally, THING objects with the ZONEMASTER flag set and the REGION totem applied. Although newly created Regions are 'root' regions, you can @tel them inside the inventory of another Region to turn them into Sub-Regions. Alternatively, they can also be placed inside a ROOM assigned to another Region to achieve the same result. This might be used with all manner of code that expands on the concept of Regions. For instance, there might be a Region which represents a chunk of a solar system, that contains other REGION objects for each Planet, and a special command can target the REGIONS to land on the planet.%R%RThe logic for detecting sub-regions uses lcon(region) and zlcon(region) which means a sub-region will not be detected if the object is located inside the inventory of a thing or player.%R%RCircular relationships shouldn't cause anything to explode, but are best avoided.%R%R[ansi(hc,Upzones)]%RThe reverse of the +reg display, upzone(<target>) and upzones(<target>) functions provide a list of all ZONEMASTERS a target is recursively inside. Not all of them need be regions, but it should always end in a chain of them.
 
-+shelp/add Building/@zopen=#reg/SHLP_@ZOPEN
-&SHLP_@ZOPEN #reg=[ansi(hc,Aliases:)]%Bzopen, @zopen, +zopen%R%RThis is basically a version of [ansi(hw,@open)] which will detect if you are inside a Zoned Room. If you pass the Zone's ZoneToLock, then it will automatically assign the created exit to that Room's Zone and @chown/preserve the exit to #gm. It does not support return exits.
++shelp/add Building/+zopen=#reg/SHLP.ZOPEN
+&SHLP.ZOPEN #reg=This is basically a version of [ansi(hw,@open)] which will detect if you are inside a Zoned Room. If you pass the Zone's ZoneToLock, then it will automatically assign the created exit to that Room's Zone and @chown/preserve the exit to #gm. It does not support return exits.
 
-+shelp/add Building/@zdig=#reg/SHLP_@ZDIG
-&SHLP_@ZDIG #reg=[ansi(hc,Aliases:)]%Bzdig, @zdig, +zdig%R%RThis is a specialized version of [ansi(hw,@dig)] which will detect if you are inside a Zoned Room. If you pass the Zone's ZoneToLock, then it will automatically assign the created room and exits to that Room's Zone and @chown/preserve them to #gm. It does not support any switches like /teleport.
++shelp/add Building/+zdig=#reg/SHLP.ZDIG
+&SHLP.ZDIG #reg=This is a specialized version of [ansi(hw,@dig)] which will detect if you are inside a Zoned Room. If you pass the Zone's ZoneToLock, then it will automatically assign the created room and exits to that Room's Zone and @chown/preserve them to #gm. It does not support any switches like /teleport.

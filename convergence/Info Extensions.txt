@@ -1,7 +1,7 @@
 @dolist/inline/delimit | abi~Ability|res~Resource|npc~NPC|com~Complication|ext~Extra|app~Application|copy~Copy={@skip isdbref(tag(setr(1,[before(%d0,~)]_info)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No global room set!;@assert/inline isdbref(setr(0,create(after(%d0,~) Info System,,t)))=@pemit %#=ERROR: Could not create code object: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=[globalroom()];@parent %q0=#info_lib}}
 
-&CMD.+ABILITY #abi_info=$^(?s)(?\:\+)?(abi|ability)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?)?)?(?\:=(.*))?$:@attach %!/DO_INFO
-@set #abi_info/CMD.+ABILITY=regexp
+&CMD.ABILITY #abi_info=$^(?s)(?\:\+)(abi|ability)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?)?)?(?\:=(.*))?$:@attach %!/DO_INFO
+@set #abi_info/CMD.ABILITY=regexp
 
 &INFO.ATTR #abi_info=ABI
 &INFO.NAME #abi_info=Ability
@@ -9,8 +9,8 @@
 &INFO.CMD #abi_info=+ABILITY
 &INFO.CMD_SHORT #abi_info=+abi
 
-&CMD.+RESOURCE #res_info=$^(?s)(?\:\+)?(res|resource)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?)?)?(?\:=(.*))?$:@attach %!/DO_INFO
-@set #res_info/CMD.+RESOURCE=regexp
+&CMD.RESOURCE #res_info=$^(?s)(?\:\+)(res|resource)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?)?)?(?\:=(.*))?$:@attach %!/DO_INFO
+@set #res_info/CMD.RESOURCE=regexp
 
 &INFO.ATTR #res_info=RES
 &INFO.NAME #res_info=Resource
@@ -18,8 +18,8 @@
 &INFO.CMD #res_info=+RESOURCE
 &INFO.CMD_SHORT #res_info=+res
 
-&CMD.+NPC #npc_info=$^(?s)(?\:\+)?(npc)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?)?)?(?\:=(.*))?$:@attach %!/DO_INFO
-@set #npc_info/CMD.+NPC=regexp
+&CMD.NPC #npc_info=$^(?s)(?\:\+)(npc)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?)?)?(?\:=(.*))?$:@attach %!/DO_INFO
+@set #npc_info/CMD.NPC=regexp
 
 &INFO.ATTR #npc_info=NPC
 &INFO.NAME #npc_info=NPC
@@ -27,8 +27,8 @@
 &INFO.CMD #npc_info=+NPC
 &INFO.CMD_SHORT #npc_info=+npc
 
-&CMD.+COMPLICATION #com_info=$^(?s)(?\:\+)?(com|complication)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?)?)?(?\:=(.*))?$:@attach %!/DO_INFO
-@set #com_info/CMD.+COMPLICATION=regexp
+&CMD.COMPLICATION #com_info=$^(?s)(?\:\+)(com|complication)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?)?)?(?\:=(.*))?$:@attach %!/DO_INFO
+@set #com_info/CMD.COMPLICATION=regexp
 
 &INFO.ATTR #com_info=COM
 &INFO.NAME #com_info=Complication
@@ -36,24 +36,24 @@
 &INFO.CMD #com_info=+COMPLICATION
 &INFO.CMD_SHORT #com_info=+com
 
-&CMD.+EXTRA #ext_info=$^(?s)(?\:\+)?(ext|extra)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?)?)?(?\:=(.*))?$:@attach %!/DO_INFO
-@set #ext_info/CMD.+EXTRA=regexp
+&CMD.EXTRA #ext_info=$^(?s)(?\:\+)(ext|extra)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?)?)?(?\:=(.*))?$:@attach %!/DO_INFO
+@set #ext_info/CMD.EXTRA=regexp
 
 &INFO.ATTR #ext_info=EXT
 &INFO.NAME #ext_info=Extra
 &INFO.PLURAL #ext_info=Extra Data
 &INFO.CMD #ext_info=+EXTRA
 
-&CMD.+APPLICATION #app_info=$^(?s)(?\:\+)?(app|application)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?)?)?(?\:=(.*))?$:@attach %!/DO_INFO
-@set #app_info/CMD.+APPLICATION=regexp
+&CMD.APPLICATION #app_info=$^(?s)(?\:\+)(app|application)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?)?)?(?\:=(.*))?$:@attach %!/DO_INFO
+@set #app_info/CMD.APPLICATION=regexp
 
 &INFO.ATTR #app_info=APP
 &INFO.NAME #app_info=Application
 &INFO.PLURAL #app_info=Application Info
 &INFO.CMD #app_info=+APPLICATION
 
-&CMD.+COPY #copy_info=$^(?s)(?\:\+)?(cop|copy)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?)?)?(?\:=(.*))?$:@attach %!/DO_INFO
-@set #copy_info/CMD.+COPY=regexp
+&CMD.COPY #copy_info=$^(?s)(?\:\+)(cop|copy)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?)?)?(?\:=(.*))?$:@attach %!/DO_INFO
+@set #copy_info/CMD.COPY=regexp
 
 &INFO.ATTR #copy_info=COPY
 &INFO.NAME #copy_info=Copy
@@ -63,8 +63,8 @@
 
 @skip isdbref(tag(setr(1,superpower)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No glogbal room set!;@assert/inline isdbref(setr(0,create(Super Power Sheet Tracker,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=[globalroom()]}
 
-&CMD.+LIST #superpower=$^(?s)(?\:\+)?(list|sheet)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?)?)?(?\:=(.*))?$:th setq(!,%1,family);@attach #inc/GET_SWITCH=%2,%q<family>;@attach %!/SW.%q<family>.[strfirstof(%q<switch>,MAIN)]=trim(%3),trim(%4),%5
-@set #superpower/CMD.+LIST=regexp
+&CMD.LIST #superpower=$^(?s)(?\:\+)(list|sheet)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?)?)?(?\:=(.*))?$:th setq(!,%1,family);@attach #inc/GET_SWITCH=%2,%q<family>;@attach %!/SW.%q<family>.[strfirstof(%q<switch>,MAIN)]=trim(%3),trim(%4),%5
+@set #superpower/CMD.LIST=regexp
 
 &SWITCHES.LIST.0 #superpower=FULL
 &SWITCHES.SHEET.0 #superpower=ALL

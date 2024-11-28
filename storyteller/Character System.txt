@@ -94,8 +94,8 @@
 
 &PROG #stdata=@attach/nobreak %!/PROG_CHECKCOMMAND=%0;@skip [t(%q<quit>)]={@attach %!/SETPROG}
 
-&CMD.@SHEET #stdata=$^(?s)(?\:@|\+)?(sheet)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2;@attach %!/SW.[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
-@set #stdata/CMD.@SHEET=regexp
+&CMD.SHEET #stdata=$^(?s)(?\:@|\+)?(sheet)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2;@attach %!/SW.[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
+@set #stdata/CMD.SHEET=regexp
 
 &SWITCHES.0 #stdata=EDIT
 

@@ -2,8 +2,8 @@
 
 @skip isdbref(tag(setr(1,radio)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No global room set!;@assert/inline isdbref(setr(0,create(Radio System,,t)))=@pemit %#=ERROR: Could not create code object: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom();@parent %q0=#chan_lib}
 
-&CMD.@RADIO #radio=$^(?s)(?\:@|\+)?(rad|radio)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2;@attach %!/SW.[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
-@set #radio/CMD.@RADIO=regexp
+&CMD.RADIO #radio=$^(?s)(?\:\+)(rad|radio)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2;@attach %!/SW.[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
+@set #radio/CMD.RADIO=regexp
 
 &FN.SYS_NAME #radio=Radio
 &CHAN.TYPE #radio=RADIO
@@ -47,5 +47,5 @@
 
 &CONFIG.CANLOG.DEFAULT #chan_parent=1
 
-+help/add Communications/@radio=#radio/HLP_RADIO
-&HLP_RADIO #radio=[ansi(hw,Command Aliases:)] +rad, +radio, @rad, @radio%R%RThe Radio System is a player-run channel system which co-exists with public channels. It shares most of its code with the Public Channels. Its commands/switches are the same as in [ansi(hw,+help @channel)]. Below are the additions/differences.%R%R[ansi(hc,Sending Messages)]%R%RYou can send messages by typing [ansi(hw,.<channel> <message>)], where <channel> is able to partial match by prefix. For example, to speak on a channel named MyRadio, you could use [ansi(hw,.MyRadio hello!)] or [ansi(hw,.my yo!)]%R%R[ansi(hc,Permissions and Membership)]%RThe OWNER of a Radio Channel is considered a super-admin of the channel, as if they were a Wizard.%R[ansi(hw,@rad/chown <channel>=<player>)]%R%TTo transfer ownership.%R%R[ansi(hc,Lock Keys)]%RIn addition to the Channel Special locks...%R[ansi(hw,LK.OWNER/1)]%R%TEvals true if checker is the owner.%R%R[ansi(hc,Default Radio Locks)]%R[iter(TalkLock ModerateLock AdminLock,[ansi(hw,%i0)]: [lock(#radio_parent/user|%i0)],%B,%R)]
++help/add Communications/+radio=#radio/HLP.RADIO
+&HLP.RADIO #radio=The Radio System is a player-run channel system which co-exists with public channels. It shares most of its code with the Public Channels. Its commands/switches are the same as in [ansi(hw,+help @channel)]. Below are the additions/differences.%R%R[ansi(hc,Sending Messages)]%R%RYou can send messages by typing [ansi(hw,.<channel> <message>)], where <channel> is able to partial match by prefix. For example, to speak on a channel named MyRadio, you could use [ansi(hw,.MyRadio hello!)] or [ansi(hw,.my yo!)]%R%R[ansi(hc,Permissions and Membership)]%RThe OWNER of a Radio Channel is considered a super-admin of the channel, as if they were a Wizard.%R[ansi(hw,+radio/chown <channel>=<player>)]%R%TTo transfer ownership.%R%R[ansi(hc,Lock Keys)]%RIn addition to the Channel Special locks...%R[ansi(hw,LK.OWNER/1)]%R%TEvals true if checker is the owner.%R%R[ansi(hc,Default Radio Locks)]%R[iter(TalkLock ModerateLock AdminLock,[ansi(hw,%i0)]: [lock(#radio_parent/user|%i0)],%B,%R)]

@@ -1,9 +1,9 @@
 @skip isdbref(tag(setr(1,meet)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(Meetup System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom()}
 
-&CMD.MEET #meet=$^(?s)(?\:@|\+)?(meet|summon|join)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2,%1;@attach %!/TARGET=%0;@attach %!/SW.%1.[strfirstof(%q<switch>,MAIN)]=%3,%4
+&CMD.MEET #meet=$^(?s)(?\:\+)(meet|summon|join)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2,%1;@attach %!/TARGET=trim(%3);@attach %!/SW.%1.[strfirstof(%q<switch>,MAIN)]=%3,%4
 @set #meet/CMD.MEET=regexp
 
-&TARGET #meet=@attach #inc/GET_PLAYER=%0,target;@assert/inline hasflag(%q<target>,CONNECTED)=@pemit %#=Sorry but [cname(%q<target>)] is offline.;@assert/inline cor(gtebittype(%#,4),cand(isapproved(%#),isapproved(%q<target>)))=@pemit %#=[cname(%q<target>)] is not approved! Or you aren't...
+&TARGET #meet=@attach #inc/GET_PLAYER=%0,target;@break/inline strmatch(%:,%q<target>)=@pemit %#=What good would that do?;@assert/inline hasflag(%q<target>,CONNECTED)=@pemit %#=Sorry but [cname(%q<target>)] is offline.;@assert/inline cor(gtebittype(%#,4),cand(isapproved(%#),isapproved(%q<target>)))=@pemit %#=[cname(%q<target>)] is not approved! Or you aren't...
 
 &FIL.VALID_MEET #meet=lte(sub(%1,%0),%2)
 &FN.VALID_SUMMONS #meet=filter(FIL.VALID_MEET,get(%0/GAME.MEET.%1),|,|,secs(),mul(60,10))
@@ -18,25 +18,25 @@
 &SWITCHES.SUMMON.0 #meet=AGREE
 &SWITCHES.JOIN.0 #meet=AGREE
 
-&SW.MEET.MAIN #meet=@assert/inline u(FN.VALID_SUMMON,%q<target>,MEET,%:)=@pemit %#=You've asked to meet with [cname(%q<target>)].;@attach %!/ADD_SUMMONS=%q<target>,MEET,%:;@pemit %#=Asked to meet with [cname(%q<target>)].;@pemit %q<target>=%k has asked to meet with you. To meet with %k, type [ansi(hw,@meet/join %n)] or [ansi(hw,@meet/summon %n)] within ten minutes.
+&SW.MEET.MAIN #meet=@assert/inline u(FN.VALID_SUMMON,%q<target>,MEET,%:)=@pemit %#=You've asked to meet with [cname(%q<target>)].;@attach %!/ADD_SUMMONS=%q<target>,MEET,%:;@pemit %#=Asked to meet with [cname(%q<target>)].;@pemit %q<target>=%k has asked to meet with you. To meet with %k, type [ansi(hw,+meet/join %n)] or [ansi(hw,+meet/summon %n)] within ten minutes.
 &SW.MEET.SUMMON #meet=@assert/inline u(FN.VALID_SUMMON,%:,MEET,%q<target>)=@pemit %#=No meet has been extended.;@attach %!/DO_SUMMON=%:,%q<target>;@attach %!/REM_SUMMONS=%:,MEET,%q<target>
 &SW.MEET.JOIN #meet=@assert/inline u(FN.VALID_SUMMON,%:,MEET,%q<target>)=@pemit %#=No meet has been extended.;@attach %!/DO_JOIN=%:,%q<target>;@attach %!/REM_SUMMONS=%:,MEET,%q<target>
 
-&SW.SUMMON.MAIN #meet=@if gtebittype(%#,4)={@attach %!/DO_SUMMON=%:,%q<target>},{@assert/inline u(FN.VALID_SUMMON,%q<target>,SUMMON,%:)=@pemit %#=You've already extended a summons to [cname(%q<target>)].;@attach %!/ADD_SUMMONS=%q<target>,SUMMON,%:;@pemit %#=Extended a Summons to [cname(%q<target>)].;@pemit %q<target>=%k has extended a summons. To meet with %k, type [ansi(hw,@summon/agree %n)] within ten minutes.}
+&SW.SUMMON.MAIN #meet=@if gtebittype(%#,4)={@attach %!/DO_SUMMON=%:,%q<target>},{@assert/inline u(FN.VALID_SUMMON,%q<target>,SUMMON,%:)=@pemit %#=You've already extended a summons to [cname(%q<target>)].;@attach %!/ADD_SUMMONS=%q<target>,SUMMON,%:;@pemit %#=Extended a Summons to [cname(%q<target>)].;@pemit %q<target>=%k has extended a summons. To meet with %k, type [ansi(hw,+summon/agree %n)] within ten minutes.}
 &SW.SUMMON.AGREE #meet=@assert/inline u(FN.VALID_SUMMON,%:,SUMMON,%q<target>)=@pemit %#=No summons has been extended.;@attach %!/DO_SUMMON=%q<target>,%:;@attach %!/REM_SUMMONS=%:,SUMMON,%q<target>
 
 &DO_SUMMON #meet=@remit [loc(%0)]=[cname(%0)] is whisked away by a summons.;@tel %0=[loc(%1)];@remit [loc(%1)]=[cname(%0)] appears in a flash courtesy of [cname(%1)]'s summons.
 
-&SW.JOIN.MAIN #meet=@if gtebittype(%#,4)={@attach %!/DO_SUMMON=%:,%q<target>},{@assert/inline u(FN.VALID_SUMMON,%q<target>,JOIN,%:)=@pemit %#=You've already asked to join [cname(%q<target>)].;@attach %!/ADD_SUMMONS=%q<target>,JOIN,%:;@pemit %#=Requested to join [cname(%q<target>)] sent.;@pemit %q<target>=%k has asked to join you at your current location. To meet with %k, type [ansi(hw,@join/agree %n)] within ten minutes.}
+&SW.JOIN.MAIN #meet=@if gtebittype(%#,4)={@attach %!/DO_SUMMON=%:,%q<target>},{@assert/inline u(FN.VALID_SUMMON,%q<target>,JOIN,%:)=@pemit %#=You've already asked to join [cname(%q<target>)].;@attach %!/ADD_SUMMONS=%q<target>,JOIN,%:;@pemit %#=Requested to join [cname(%q<target>)] sent.;@pemit %q<target>=%k has asked to join you at your current location. To meet with %k, type [ansi(hw,+join/agree %n)] within ten minutes.}
 &SW.JOIN.AGREE #meet=@assert/inline u(FN.VALID_SUMMON,%:,JOIN,%q<target>)=@pemit %#=No join request has been extended.;@attach %!/DO_JOIN=%:,%q<target>;@attach %!/REM_SUMMONS=%:,JOIN,%q<target>
 
 &DO_JOIN #meet=@remit [loc(%0)]=[cname(%0)] disappears in a flash to join someone.;@tel %0=[loc(%1)];@remit [loc(%1)]=[cname(%0)] appears in a flash to join [cname(%1)].
 
-+help/add Navigation/@meet=#meet/HLP.MEET
-&HLP.MEET #meet=The Meetup system is used to allow players to skip navigating the grid and teleport straight to each other as a convenience.%R%R[ansi(hc,Aliases:)] @meet, meet, +meet%R%R[ansi(hc,Commands)]%R%R[ansi(hw,@meet <player>)]%R%TExtends a meet request to <player> which is good for ten minutes.%R%R[ansi(hw,@meet/join <player>)]%R%TAnswer a request and join <player>.%R%R[ansi(hw,@meet/summon <player>)]%R%TAnswer a request by summoning <player>.
++help/add Navigation/+meet=#meet/HLP.MEET
+&HLP.MEET #meet=The Meetup system is used to allow players to skip navigating the grid and teleport straight to each other as a convenience.%R%R[ansi(hc,Commands)]%R%R[ansi(hw,+meet <player>)]%R%TExtends a meet request to <player> which is good for ten minutes.%R%R[ansi(hw,+meet/join <player>)]%R%TAnswer a request and join <player>.%R%R[ansi(hw,+meet/summon <player>)]%R%TAnswer a request by summoning <player>.
 
-+help/add Navigation/@summon=#meet/HLP.SUMMON
-&HLP.SUMMON #meet=A convenient way of inviting others to join you at your current location.%R%R[ansi(hc,Aliases:)] @summon, summon, +summon%R%R[ansi(hc,Commands)]%R%R[ansi(hw,@summon <player>)]%R%TExtends a meet request to <player> which is good for ten minutes.%R%R[ansi(hw,@summon/agree <player>)]%R%TAnswer a summon request and join <player>.
++help/add Navigation/+summon=#meet/HLP.SUMMON
+&HLP.SUMMON #meet=A convenient way of inviting others to join you at your current location.%R%R[ansi(hc,Commands)]%R%R[ansi(hw,+summon <player>)]%R%TExtends a meet request to <player> which is good for ten minutes.%R%R[ansi(hw,+summon/agree <player>)]%R%TAnswer a summon request and join <player>.
 
-+help/add Navigation/@join=#meet/HLP.JOIN
-&HLP.JOIN #meet=A convenient way of asking to join another at their current location.%R%R[ansi(hc,Aliases:)] @join, join, +join%R%R[ansi(hc,Commands)]%R%R[ansi(hw,@join <player>)]%R%TRequests to join <player> at their location, which is good for ten minutes.%R%R[ansi(hw,@join/agree <player>)]%R%TAllow <player> to join you at your current location.
++help/add Navigation/+join=#meet/HLP.JOIN
+&HLP.JOIN #meet=A convenient way of asking to join another at their current location.%R%R[ansi(hc,Commands)]%R%R[ansi(hw,+join <player>)]%R%TRequests to join <player> at their location, which is good for ten minutes.%R%R[ansi(hw,+join/agree <player>)]%R%TAllow <player> to join you at your current location.

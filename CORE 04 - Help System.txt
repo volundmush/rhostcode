@@ -5,8 +5,8 @@
 
 @skip isdbref(tag(setr(1,help)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No global room set!;@assert/inline isdbref(setr(0,create(Help System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=[globalroom()]}
 
-&CMD.+HELP #help=$^(?s)(?\:\+)?(help|shelp)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.+?))?$:@attach %!/START=%1,%2,%3,%4
-@set #help/CMD.+HELP=regexp
+&CMD.HELP #help=$^(?s)(?\:\+)(help|shelp)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.+?))?$:@attach %!/START=%1,%2,%3,%4
+@set #help/CMD.HELP=regexp
 
 &SWITCHES.0 #help=
 &SWITCHES.5 #help=HELP|ADD|CATEGORY|RENAMECATEGORY|RENAME|DELETE|SUMMARY

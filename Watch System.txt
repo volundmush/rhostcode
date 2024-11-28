@@ -1,7 +1,7 @@
 @skip isdbref(tag(setr(1,watch)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(Watch System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom()}
 
 @@ Commands and stuff.
-&CMD.WATCH #watch=$^(?s)(?\:@|\+)?(watch|friend)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2;@attach %!/SW.[strfirstof(%q<switch>,MAIN)]=%3,%4
+&CMD.WATCH #watch=$^(?s)(?\:\+)(watch|friend)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2;@attach %!/SW.[strfirstof(%q<switch>,MAIN)]=%3,%4
 @set #watch/CMD.WATCH=regexp
 
 &SWITCHES.0 #watch=WHO|ADD|ACCADD|REM|ACCREM
@@ -25,5 +25,5 @@
 
 @adisconnect #watch=
 
-&HLP.WATCH #watch=The Watch system allows you to monitor when specific players connect and disconnect.%R[ansi(hc,Aliases:)] @watch, watch, +watch, @friend, friend, +friend%R%R[ansi(hc,Commands)]%R%R[ansi(hw,@watch)]%R%TDisplays your account and personal watch lists.%R%R[ansi(hw,@watch/who)]%R%TShows only online players from your account and personal lists.%R%R[ansi(hw,@watch/add <player>)]%R%TAdd a player to personal watch list.%R%R[ansi(hw,@watch/rem <player>)]%R%TRemoves a player from your personal watch list.%R%R[ansi(hw,@watch/accadd <player>)]%R%TAdds a player to account watch list.%R%R[ansi(hw,@watch/accrem <player>)]%R%TRemoves a player from account watch list.%R%R[ansi(hc,Reminder: Be Considerate)]%RNot everyone wants to be pounced the moment they log on. Watch is a tool for convenience to stay in touch with friends, not being some kind of creepy clingy stalker.
-+help/add Community/@watch=#watch/HLP.WATCH
+&HLP.WATCH #watch=The Watch system allows you to monitor when specific players connect and disconnect.%R[ansi(hc,Aliases:)] +watch, +friend%R%R[ansi(hc,Commands)]%R%R[ansi(hw,+watch)]%R%TDisplays your account and personal watch lists.%R%R[ansi(hw,+watch/who)]%R%TShows only online players from your account and personal lists.%R%R[ansi(hw,+watch/add <player>)]%R%TAdd a player to personal watch list.%R%R[ansi(hw,+watch/rem <player>)]%R%TRemoves a player from your personal watch list.%R%R[ansi(hw,+watch/accadd <player>)]%R%TAdds a player to account watch list.%R%R[ansi(hw,+watch/accrem <player>)]%R%TRemoves a player from account watch list.%R%R[ansi(hc,Reminder: Be Considerate)]%RNot everyone wants to be pounced the moment they log on. Watch is a tool for convenience to stay in touch with friends, not being some kind of creepy clingy stalker.
++help/add Community/+watch=#watch/HLP.WATCH

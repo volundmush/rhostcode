@@ -1,7 +1,7 @@
 @skip isdbref(tag(setr(1,where)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(Where System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom()}
 
 @@ Commands and stuff.
-&CMD.WHERE #where=$^(?s)(?\:@|\+)?(where)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2;@attach %!/SW.[strfirstof(%q<switch>,MAIN)]=%3,%4
+&CMD.WHERE #where=$^(?s)(?\:\+)?(where)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2;@attach %!/SW.[strfirstof(%q<switch>,MAIN)]=%3,%4
 @set #where/CMD.WHERE=regexp
 
 &FN.WHERE.COLUMNS #where=printf($-&18s $-23s $-&[sub(78,23,1,18,1)]s,Region,Room,Players)
@@ -9,8 +9,8 @@
 
 &SW.MAIN #where=@pemit %#=header(Where is Everybody);@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.WHERE.COLUMNS));@pemit %#=separator();@dolist/inline sortname(setdiff(iter(lwho(0,%#,1),objeval(%#,loc(%i0),3)),#-1))={@pemit %#=u(FN.WHERE.ROW,%d0,itemize(iter(objeval(%#,lcon(%d0/CONNECT),3),cname(%i0),%b,|),|))};@pemit %#=footer()
 
-+help/add Community/@where=#who/HLP.WHERE
-&HLP.WHERE #where=[ansi(hc,Aliases:)] @where, where, +where%R%R[ansi(hw,@where)]%R%TThe Where Command displays online player characters, grouped by location.
++help/add Community/+where=#who/HLP.WHERE
+&HLP.WHERE #where=[ansi(hw,+where)]%R%TThe Where Command displays online player characters, grouped by location.
 
 &I_@WHEREIS #hobj=[if(isdbref(tag(where),not(strmatch(first(%m),@where)),1)]
 &I_@WHEREALL #hobj=[if(isdbref(tag(where),not(strmatch(first(%m),@where)),1)]

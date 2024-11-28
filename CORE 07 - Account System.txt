@@ -29,8 +29,8 @@
 @@ %0 - dbref of account. %1 - name of character. Must've already been validated.
 
 @@ Commands and stuff.
-&CMD.@ACCOUNT #acc=$^(?s)(?\:@|\+)?(acc|account)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2;@attach %!/SW.[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
-@set #acc/CMD.@ACCOUNT=regexp
+&CMD.ACCOUNT #acc=$^(?s)(?\:\+)(acc|account)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2;@attach %!/SW.[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
+@set #acc/CMD.ACCOUNT=regexp
 
 &SWITCHES.0 #acc=OPTIONS|RENAME|PASSWORD
 &SWITCHES.4 #acc=BIND|UNBIND|UNBOUND|CREATE|LIST|INACTIVE
@@ -151,8 +151,8 @@
 &FN.INACTIVE_ROW #acc=u(FN.ACCLIST_ROW,%0)
 
 @@ Help
-+help/add System/@account=#acc/HLP_ACCOUNT
-&HLP_ACCOUNT #acc=[ansi(hw,Command Aliases:)] @acc, @account, +acc, +account%R%R[ansi(hc,Player Commands)]%R%R[ansi(hw,@acc)]%R%TDisplay your current account details.%R%R[ansi(hw,@acc/password <old>=<new>)]%R%TChange your password. Use this instead of @password!%R%R[ansi(hw,@acc/rename <new name>)]%R%TRename your account. Supports ansi() colors.%R%R[ansi(hw,@acc/options)]%R%TDisplay available account options and current settings.%R%R[ansi(hw,@acc/options <option>=<value>)]%R%TChange an account option's value.
++help/add System/+account=#acc/HLP.ACCOUNT
+&HLP.ACCOUNT #acc=[ansi(hc,Player Commands)]%R%R[ansi(hw,@acc)]%R%TDisplay your current account details.%R%R[ansi(hw,@acc/password <old>=<new>)]%R%TChange your password. Use this instead of @password!%R%R[ansi(hw,@acc/rename <new name>)]%R%TRename your account. Supports ansi() colors.%R%R[ansi(hw,@acc/options)]%R%TDisplay available account options and current settings.%R%R[ansi(hw,@acc/options <option>=<value>)]%R%TChange an account option's value.
 
-+shelp/add System/@account=#acc/SHLP_ACCOUNT
-&SHLP_ACCOUNT #acc=[ansi(hc,NOTE:)]%RAny command which expects an <account> can take either a player name (their account will be auto-detected) OR a name beginning with @ to force an account lookup.%R%R[ansi(hc,Administrator Commands)]%R%R[ansi(hw,@account <account>)]%R%TDisplay details about an account.%R%R[ansi(hw,@account/list)]%R%TDisplay all accounts in system.%R%R[ansi(hw,@account/create <name>=<password>)]%R%TCreates a new account.%R%R[ansi(hw,@account/newpassword <account>=<password>)]%R%TSets a new password for the account.%R%R[ansi(hw,@account/rename <account>=<new name>)]%R%TRename an account.%R%R[ansi(hw,@account/bind <character>=<account>)]%R%TMakes <character> a member of <account>.%R%R[ansi(hw,@account/unbind <character>)]%R%TMakes <character> account-less. Not really a good idea.%R%R[ansi(hw,@account/inactive)]%R%TLists accounts that are currently inactive.%R%R[ansi(hw,@account/config)]%R%TDisplays the account system configuration.%R%R[ansi(hw,@account/config <parameter>=<value>)]%R%TSet an account system configuration option.
++shelp/add System/+account=#acc/SHLP.ACCOUNT
+&SHLP.ACCOUNT #acc=[ansi(hc,NOTE:)]%RAny command which expects an <account> can take either a player name (their account will be auto-detected) OR a name beginning with @ to force an account lookup.%R%R[ansi(hc,Administrator Commands)]%R%R[ansi(hw,+account <account>)]%R%TDisplay details about an account.%R%R[ansi(hw,+account/list)]%R%TDisplay all accounts in system.%R%R[ansi(hw,+account/create <name>=<password>)]%R%TCreates a new account.%R%R[ansi(hw,+account/newpassword <account>=<password>)]%R%TSets a new password for the account.%R%R[ansi(hw,+account/rename <account>=<new name>)]%R%TRename an account.%R%R[ansi(hw,+account/bind <character>=<account>)]%R%TMakes <character> a member of <account>.%R%R[ansi(hw,+account/unbind <character>)]%R%TMakes <character> account-less. Not really a good idea.%R%R[ansi(hw,+account/inactive)]%R%TLists accounts that are currently inactive.%R%R[ansi(hw,+account/config)]%R%TDisplays the account system configuration.%R%R[ansi(hw,+account/config <parameter>=<value>)]%R%TSet an account system configuration option.
