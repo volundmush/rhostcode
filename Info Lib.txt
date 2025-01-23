@@ -11,12 +11,12 @@
 
 @@ Replace targeting on a child to target something other than a player?
 
-&FN.IS_TARGET #info_lib=isdbref(setr(!,pmatch(%0),target))
-&INC.INFO.GET_TARGET #info_lib=@attach #inc/GET_PLAYER=%0,t1;th setq(!,%q<t1>,target)
+&FN.IS_TARGET #info_lib=isdbref(pmatch(%0))
+&INC.INFO.GET_TARGET #info_lib=@attach #inc/GET_PLAYER=%0,target;
 &INC.INFO.DEFAULT_TARGET #info_lib=@attach %!/INC.INFO.GET_TARGET=%#
 
 @@ Used to determine the object and info file name.
-&INC.INFO.TARGET #info_lib=@switch/first/inline [t(strlen(%0))][t(strlen(%1))]=10,{@if u(FN.IS_TARGET,%0)={th setq(!,%1,filename)},{@attach %!/INC.INFO.DEFAULT_TARGET;th setq(!,%0,filename)}},00,{@attach %!/INC.INFO.DEFAULT_TARGET},11,{@attach %!/INC.INFO.GET_TARGET=%0;th setq(!,%1,filename)};th setq(!,iter(%q<filename>,trim(%i0),|,|),filename)
+&INC.INFO.TARGET #info_lib=@switch/first/inline [t(strlen(%0))][t(strlen(%1))]=10,{@attach %!/INC.INFO.DEFAULT_TARGET;th setq(!,%0,filename)},00,{@attach %!/INC.INFO.DEFAULT_TARGET},11,{@attach %!/INC.INFO.GET_TARGET=%0;th setq(!,%1,filename)};th setq(!,iter(%q<filename>,trim(%i0),|,|),filename)
 
 &MAX_NAME_LENGTH #info_lib=23
 
@@ -25,7 +25,7 @@
 &FN.BADCHARS #info_lib=lmax(iter(v(BADCHARS)),strmatch(%0,*%i0*))
 @@ %0 - The name to be checked.
 
-&FN.VALID_FILENAME #info_lib=ofparse(3,if(strlen(%0),1,#-1 FILENAMES MAY NOT BE EMPTY),if(lte(strlen(%0),v(MAX_NAME_LENGTH)),1,#-1 FILENAMES MUST BE <=[v(MAX_NAME_LENGTH)] CHARACTERS,if(contains_characters(%0,v(BADCHARS)),1,#-1 FILENAMES MAY NOT CONTAIN [v(BADCHARS)]),if(u(FN.IS_TARGET,%0),#-1 FILENAMES MAY NOT BE PLAYER/TARGET NAMES,1)))
+&FN.VALID_FILENAME #info_lib=ofparse(3,if(strlen(%0),1,#-1 FILENAMES MAY NOT BE EMPTY),if(lte(strlen(%0),v(MAX_NAME_LENGTH)),1,#-1 FILENAMES MUST BE <=[v(MAX_NAME_LENGTH)] CHARACTERS),if(contains_characters(%0,v(BADCHARS)),1,#-1 FILENAMES MAY NOT CONTAIN [v(BADCHARS)]),if(u(FN.IS_TARGET,%0),#-1 FILENAMES MAY NOT BE PLAYER/TARGET NAMES,1)))
 @@ %0 - The name being checked.
 
 &FN.PREFIX #info_lib=INFO.[v(INFO.ATTR)]
@@ -47,7 +47,7 @@
 
 &INC.INFO.CANSET #info_lib=
 
-&INC.INFO.SETFILE #info_lib=@attach %!/INC.INFO.CANSET;@assert/inline setr(!,u(FN.VALID_FILENAME,setr(!,%q<filename>,fname)),results)=@pemit %#=%q<results>;@assert/inline valid(attrname,setr(!,u(FN.FILENAME,%q<fname>),attr))=@pemit %#=Code Error: Invalid Attribute name. Try simplifying the name or contact a coder for advice.;th setq(!,get(%q<target>/%q<attr>.BODY),contents)
+&INC.INFO.SETFILE #info_lib=@attach %!/INC.INFO.CANSET;@assert/inline t(setr(!,u(FN.VALID_FILENAME,setr(!,%q<filename>,fname)),results))=@pemit %#=%q<results>;@assert/inline valid(attrname,setr(!,u(FN.FILENAME,%q<fname>),attr))=@pemit %#=Code Error: Invalid Attribute name. Try simplifying the name or contact a coder for advice.;th setq(!,get(%q<target>/%q<attr>.BODY),contents)
 @@ use INC.INFO.SETFILE when creating/replacing files using info or summary setting/replacing.
 
 &SW.INFO.LOCK #info_lib=@assert/inline strlen(%q<filename>)=@pemit %#=[v(INFO.NAME)] name empty.;@dolist/inline/nobreak/delimit | %q<filename>={@attach %!/INC.INFO.FINDFILE=%d0;@assert/inline t(get_kv(%q<meta>,Locked))=@pemit %#=[v(INFO.NAME)] File '%q<fname>' is already Locked!;@set %q<target>=%q<attr>.META:[set_kv(set_kv(%q<meta>,LockedBy,%:),Locked,secs())];@attach %!/REPORT=%#,%q<target>,%q<fname>,Locked

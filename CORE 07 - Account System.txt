@@ -78,10 +78,6 @@
 &CONFIG.BORDER.DEFAULT #acc_parent=
 &CONFIG.BORDER.TYPE #acc_parent=COLOR
 
-&CONFIG.HDRSTAR.DESC #acc_parent=Color for header *
-&CONFIG.HDRSTAR.DEFAULT #acc_parent=
-&CONFIG.HDRSTAR.TYPE #acc_parent=COLOR
-
 &CONFIG.HDRTEXT.DESC #acc_parent=Color for header text
 &CONFIG.HDRTEXT.DEFAULT #acc_parent=
 &CONFIG.HDRTEXT.TYPE #acc_parent=COLOR

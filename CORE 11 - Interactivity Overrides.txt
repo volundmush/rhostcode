@@ -12,14 +12,14 @@
 @skip isdbref(tag(setr(1,interact)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(Interaction System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom()}
 
 @@ Commands and stuff.
-&TARGET #hobj=cor(default(%!/I_%0.BYPASS,0),not(strlen(%1)),isobjid(%1),isdbref(%1),istag(%1))
+&TARGET #hobj=cor(default(%!/I_%0.BYPASS,0),not(strlen(%1)),isobjid(%1),isdbref(%1),istag(%1),match(%1,me here))
 
 &I_LOOK #hobj=[u(TARGET,LOOK,rest(%-m))]
 &I_GIVE #hobj=
 &I_GET #hobj=[u(TARGET,GET,rest(%-m))]
 &I_DROP #hobj=[u(TARGET,DROP,rest(%-m))]
 
-&CMD.INTERACT #interact=$^(?s)(?\:@|\+)?(look|give|get|drop)(?\:/(\\S+)?)?(?\: +(.+?))?$:@set #hobj=I_%1.BYPASS:1;@attach #inc/GET_SWITCH=%2,%1;@attach/nobreak %!/SW.%1.[strfirstof(%q<switch>,MAIN)]=%3;@set #hobj=I_%1.BYPASS:0
+&CMD.INTERACT #interact=$^(?s)(?\:@|\+)?(l|lo|loo|look|gi|giv|give|ge|get|dr|dro|drop)(?\:/(\\S+)?)?(?\: +(.+?))?$:th setq(!,switch(%1,l*,look,gi*,give,ge*,get,d*,drop),cmd);@set #hobj=I_%q<cmd>.BYPASS:1;@attach #inc/GET_SWITCH=%2,%q<cmd>;@attach/nobreak %!/SW.%q<cmd>.[strfirstof(%q<switch>,MAIN)]=%3;@set #hobj=I_%q<cmd>.BYPASS:0
 @set #interact/CMD.INTERACT=regexp
 
 &FIL.EQUIPPED #interact=cor(hastoggle(%0,WIELDED),hastoggle(%0,WORN))
@@ -33,7 +33,7 @@
 
 &FN.MATCH #interact=t(strlen(grab(gm_keywords_for(%1,%0),%2*,|)))
 
-&FN.CHECK #interact=switch(%1,me,%0,here,objid(loc(%0)),iter(strfirstof(%2,LOCATION EXITS CARRIED EQUIPPED),squish(iter(u(FN.CHECK.%i0,%0),if(u(FN.MATCH,%0,%i0,%1),objid(%i0)[ibreak(0)][ibreak(1)])))))
+&FN.CHECK #interact=trim(switch(%1,me,%0,here,objid(loc(%0)),iter(strfirstof(%2,LOCATION EXITS CARRIED EQUIPPED),squish(iter(u(FN.CHECK.%i0,%0),if(u(FN.MATCH,%0,%i0,%1),objid(%i0)[ibreak(0)][ibreak(1)]))))))
 @@ %0 - target, %1 - input text, %2 - types
 
 &SW.LOOK.MAIN #interact=@assert/inline isobjid(setr(!,u(FN.CHECK,%:,%0),res))=@pemit %#=I don't see that here.;@sudo %#={look %q<res>}

@@ -7,7 +7,9 @@
 &FN.WHERE.COLUMNS #where=printf($-&18s $-23s $-&[sub(78,23,1,18,1)]s,Region,Room,Players)
 &FN.WHERE.ROW #where=printf($-&18s $-23s $-&[sub(78,23,1,18,1)]s,iter(upzones(%0),cname(%i0),%b,%B->%B),cname(%0),%1)
 
-&SW.MAIN #where=@pemit %#=header(Where is Everybody);@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.WHERE.COLUMNS));@pemit %#=separator();@dolist/inline sortname(setdiff(iter(lwho(0,%#,1),objeval(%#,loc(%i0),3)),#-1))={@pemit %#=u(FN.WHERE.ROW,%d0,itemize(iter(objeval(%#,lcon(%d0/CONNECT),3),cname(%i0),%b,|),|))};@pemit %#=footer()
+&FIL.SEES #where=cor(strmatch(%1,%0),sees(%1,%0))
+
+&SW.MAIN #where=@pemit %#=header(Where is Everybody);@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.WHERE.COLUMNS));@pemit %#=separator();@dolist/inline sortname(setdiff(iter(setr(0,lwho(0,%#)),objeval(%#,loc(%i0),3)),#-1))={@pemit %#=u(FN.WHERE.ROW,%d0,itemize(iter(filter(FIl.SEES,lcon(%d0/CONNECT),%B,|,%#),cname(%i0),|,|),|))};@pemit %#=footer()
 
 +help/add Community/+where=#who/HLP.WHERE
 &HLP.WHERE #where=[ansi(hw,+where)]%R%TThe Where Command displays online player characters, grouped by location.

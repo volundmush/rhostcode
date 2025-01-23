@@ -191,7 +191,7 @@
 
 &GPFN.MYONAMEFORENACTOR #gfun=u(FN.ONAME_FOR,%@,%#)
 
-&FMT._UPPER #gfun=privatize(1,if(isupper(setr(!,left(%2,1),first)),if(eq(0,comp(%0,%1)),ucstr(%2),creplace(%2,0,ucstr(%q<first>))),%2))
+&FMT._UPPER #gfun=privatize(1,if(isupper(setr(!,left(%2,1),first)),if(eq(0,comp(%0,%1)),ucstr(%2),creplace(%2,1,ucstr(%q<first>))),%2))
 
 &FMT.YOU #gfun=u(FMT._UPPER,%0,YOU,if(strmatch(setr(!,num(strfirstof(%1,%3)),target),num(%2)),you,gm_oname_for(%q<target>,%2)))
 
