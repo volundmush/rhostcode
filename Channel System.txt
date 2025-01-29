@@ -4,7 +4,7 @@
 @@ the chan_lib is the parent of all channel-like systems.
 @skip isdbref(tag(setr(1,chan_lib)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Channel System Library,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE NO_COMMAND;@tag/add %q1=%q0;@tel %q0=#stor}
 
-&SWITCHES #chan_lib=setunion(LIST|WHO|ON|OFF|GAG|UNGAG|JOIN|LEAVE|RESTRICT|UNRESTRICT|TITLE|OPTIONS|ALTEREGO,CREATE|RENAME|DELETE|EXAMINE|LOCK|UNLOCK|CONFIG|MEMADD|MEMREM|MODADD|MODREM|ADMADD|ADMREM[if(isdbref(tag(scene)),|LOG|STOPLOG)],|,|)
+&SWITCHES #chan_lib=setunion(LIST|WHO|ON|OFF|GAG|UNGAG|JOIN|LEAVE|RESTRICT|UNRESTRICT|TITLE|OPTIONS|ALTEREGO,CREATE|RENAME|DELETE|EXAMINE|LOCK|UNLOCK|CONFIG|MEMADD|MEMREM|MODADD|MODREM|ADMADD|ADMREM|DESCRIBE[if(isdbref(tag(scene)),|LOG|STOPLOG)],|,|)
 
 &CHAN.TYPE #chan_lib=CHANNELS
 &CHAN.GAG #chan_lib=GAGGED
@@ -44,6 +44,8 @@
 &SW.EXAMINE #chan_lib=@attach %!/INC.FIND;@attach %!/INC.ADMIN;@pemit %#=header(Examine: [cname(%q<chan>)] (%q<chan>));@pemit %#=[ansi(hw,JOINED:)]%B[u(FN.NAMES,get(%q<chan>/JOINED))];@pemit %#=[ansi(hw,GAGGING:)]%B[u(FN.NAMES,get(%q<chan>/GAGGING))];@if words(setr(!,get(%q<chan>/RESTRICT),restrict),|)={@pemit %#=separator(Restricted);@dolist/inline/delimit | %q<restrict>={@pemit %#=[cname(before(%d0,~))] - until [fancytime(after(%d0,~))]}};@pemit %#=separator(Locks);@dolist/inline/delimit | [get(%!/LOCKS)]={@pemit %#=[ansi(hw,%d0:)] [lock(%q<chan>/user|%d0)]};@pemit %#=footer()
 
 &SW.DELETE #chan_lib=@attach %!/INC.FIND;@attach %!/INC.ADMIN;@assert/inline match(name(%q<chan>)|[num(%q<chan>)]|[objid(%q<chan>)],%1,|)=@pemit %#=Verify failed. Right side argument must be the channel's full name, dbref, or objid.;th setq(!,cname(%q<chan>),channame);@attach #inc/MSG_ALERT=Channel '%q<channame>' deleted.;th u(FN.CEMIT,%q<channame>,:has deleted the channel.);@set %q<chan>=!SAFE !INDESTRUCTIBLE;@destroy/override %q<chan>
+
+&SW.DESCRIBE #chan_lib=@attach %!/INC.FIND;@attach %!/INC.ADMIN;@assert/inline strlen(%1)=@pemit %#=Set the description to what?;@desc %q<chan>=%1;@pemit %#=The description was changed.
 
 &INC.CREATE_CHECK #chan_lib=@assert/inline gtebittype(%#,5)=@pemit %#=Permission denied!
 

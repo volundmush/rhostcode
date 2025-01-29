@@ -8,6 +8,7 @@
 &INFO.PLURAL #abi_info=Abilities
 &INFO.CMD #abi_info=+ABILITY
 &INFO.CMD_SHORT #abi_info=+abi
+&INFO.LOCKAPPROVE #abi_info=1
 
 &CMD.RESOURCE #res_info=$^(?s)(?\:\+)(res|resource)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?)?)?(?\:=(.*))?$:@attach %!/DO_INFO
 @set #res_info/CMD.RESOURCE=regexp
@@ -17,6 +18,7 @@
 &INFO.PLURAL #res_info=Resources
 &INFO.CMD #res_info=+RESOURCE
 &INFO.CMD_SHORT #res_info=+res
+&INFO.LOCKAPPROVE #res_info=1
 
 &CMD.NPC #npc_info=$^(?s)(?\:\+)(npc)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?)?)?(?\:=(.*))?$:@attach %!/DO_INFO
 @set #npc_info/CMD.NPC=regexp
@@ -26,6 +28,7 @@
 &INFO.PLURAL #npc_info=NPCs
 &INFO.CMD #npc_info=+NPC
 &INFO.CMD_SHORT #npc_info=+npc
+&INFO.LOCKAPPROVE #npc_info=1
 
 &CMD.COMPLICATION #com_info=$^(?s)(?\:\+)(com|complication)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?)?)?(?\:=(.*))?$:@attach %!/DO_INFO
 @set #com_info/CMD.COMPLICATION=regexp
@@ -35,6 +38,7 @@
 &INFO.PLURAL #com_info=Complications
 &INFO.CMD #com_info=+COMPLICATION
 &INFO.CMD_SHORT #com_info=+com
+&INFO.LOCKAPPROVE #com_info=1
 
 &CMD.EXTRA #ext_info=$^(?s)(?\:\+)(ext|extra)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?)?)?(?\:=(.*))?$:@attach %!/DO_INFO
 @set #ext_info/CMD.EXTRA=regexp
@@ -43,6 +47,7 @@
 &INFO.NAME #ext_info=Extra
 &INFO.PLURAL #ext_info=Extra Data
 &INFO.CMD #ext_info=+EXTRA
+&INFO.LOCKAPPROVE #ext_info=1
 
 &CMD.APPLICATION #app_info=$^(?s)(?\:\+)(app|application)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?)?)?(?\:=(.*))?$:@attach %!/DO_INFO
 @set #app_info/CMD.APPLICATION=regexp
@@ -51,6 +56,7 @@
 &INFO.NAME #app_info=Application
 &INFO.PLURAL #app_info=Application Info
 &INFO.CMD #app_info=+APPLICATION
+&INFO.LOCKAPPROVE #app_info=1
 
 &CMD.COPY #copy_info=$^(?s)(?\:\+)(cop|copy)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?)?)?(?\:=(.*))?$:@attach %!/DO_INFO
 @set #copy_info/CMD.COPY=regexp
@@ -74,12 +80,12 @@
 &NPCS #superpower=tag(npc_info)
 &COMPLICATIONS #superpower=tag(com_info)
 
-&DO_LIST #superpower=@attach #inc/GET_PLAYER=strfirstof(%0,%#),target;th setq(!,,choice);@if strlen(%1)={@attach %!/INC`PARTIAL=%1,ABILITIES|COPY|RESOURCES|NPCS|COMPLICATIONS,|,choice,choice};@dolist/inline/delimit | [strfirstof(%q<choice>,ABILITIES|COPY|RESOURCES|NPCS|COMPLICATIONS)]={th setq(!,u(%d0),obj);@if words(setr(!,u(%q<obj>/FN.LIST_FILENAMES,%q<target>),filenames),|)={@pemit %#=header(cname(%q<target>)'s [get(%q<obj>/INFO.PLURAL)][if(%2,%B- Full)]);@dolist/inline/delimit | %q<filenames>={th setq(!,u(%q<obj>/FN.FILENAME,%d0),attr);th setq(!,get(%q<target>/%q<attr>.BODY),body);th setq(!,get(%q<target>/%q<attr>.SUMMARY),summary);@pemit %#=separator(%d0 - [if(%2,Body,if(strlen(%q<summary>),Summary,Body))]);@pemit %#=if(%2,%q<body>,strfirstof(%q<summary>,%q<body>))}}};@pemit %#=footer()
+&DO_LIST #superpower=@attach #inc/GET_PLAYER=strfirstof(%0,%#),target;th setq(!,,choice);@if strlen(%1)={@attach %!/INC`PARTIAL=%1,ABILITIES|COPY|RESOURCES|NPCS|COMPLICATIONS,|,choice,choice};@dolist/inline/delimit | [strfirstof(%q<choice>,ABILITIES|COPY|RESOURCES|NPCS|COMPLICATIONS)]={th setq(!,u(%d0),obj);@if words(setr(!,u(%q<obj>/FN.LIST_ATTRS_ORDER,%q<target>),attrs))={@pemit %#=header(cname(%q<target>)'s [get(%q<obj>/INFO.PLURAL)][if(%2,%B- Full)]);@dolist/inline %q<attrs>={th setq(!,get(%q<target>/%d0.BODY),body);th setq(!,get(%q<target>/%d0.SUMMARY),summary);@pemit %#=separator(get(%q<target>/%d0.NAME) - [if(%2,Body,if(strlen(%q<summary>),Summary,Body))]);@pemit %#=if(%2,%q<body>,strfirstof(%q<summary>,%q<body>))}}};@pemit %#=footer()
 
 &SW.LIST.MAIN #superpower=@attach %!/DO_LIST=%0,%1,0
 &SW.LIST.FULL #superpower=@attach %!/DO_LIST=%0,%1,1
 
-&DO_SHEET #superpower=@attach #inc/GET_PLAYER=strfirstof(%0,%#),target;@attach #inc/PARTIAL=%1,ABILITIES|COPY|RESOURCES|NPCS|COMPLICATIONS,|,choice,choice;@dolist/inline/delimit | [strfirstof(%q<choice>,ABILITIES|COPY|RESOURCES|NPCS|COMPLICATIONS)]={th setq(!,u(%d0),obj);@if words(setr(!,u(%q<obj>/FN.LIST_FILENAMES,%q<target>),files),|)={@pemit %#=header(cname(%q<target>)'s [u(%q<obj>/INFO.PLURAL)]);@pemit %#=columns(%q<files>,26,3,l,1,1,,%b,,1,|,%B,1)[if(strlen(%q<files>),%R%R[center(setr(!,lcstr(u(%q<obj>/INFO.CMD_SHORT)),cmd) [cname(%q<target>)]/<entry>,setr(!,floor(fdiv(width(%#),2)),half))][center(+list/full [cname(%q<target>)]/[after(%q<cmd>,+)],%q<half>)])]}};@pemit %#=footer(+sheet [cname(%q<target>)])
+&DO_SHEET #superpower=@attach #inc/GET_PLAYER=strfirstof(%0,%#),target;@attach #inc/PARTIAL=%1,ABILITIES|COPY|RESOURCES|NPCS|COMPLICATIONS,|,choice,choice;@dolist/inline/delimit | [strfirstof(%q<choice>,ABILITIES|COPY|RESOURCES|NPCS|COMPLICATIONS)]={th setq(!,u(%d0),obj);@if words(setr(!,u(%q<obj>/FN.LIST_ATTRS_ORDER,%q<target>),files),|)={@pemit %#=header(cname(%q<target>)'s [u(%q<obj>/INFO.PLURAL)]);@pemit %#=columns(iter(%q<files>,left(\([default(%q<target>/%i0.ORDER,?)]\)%B[get(%q<target>/%i0.NAME)],37),%b,|),37,2,l,1,1,,%b,,1,|,%B,1)[if(strlen(%q<files>),%R%R[center(setr(!,lcstr(u(%q<obj>/INFO.CMD_SHORT)),cmd) [cname(%q<target>)]/<entry>,setr(!,floor(fdiv(width(%#),2)),half))][center(+list/full [cname(%q<target>)]/[after(%q<cmd>,+)],%q<half>)])]}};@pemit %#=footer(+sheet [cname(%q<target>)])
 
 &SW.SHEET.MAIN #superpower=@attach %!/DO_SHEET=%0,%1,0
 &SW.SHEET.ALL #superpower=@attach %!/DO_SHEET=%0,%1,1

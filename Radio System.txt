@@ -23,7 +23,7 @@
 
 &CHAN_PARENT #radio=tag(radio_parent)
 
-&INC.CREATE_CHECK #radio=
+&INC.CREATE_CHECK #radio=@attach #inc/CHECK_APP_GUEST
 
 &SW.CREATE #radio=@attach [parent(%!)]/SW.CREATE;@set %q<chan>=OWNER:%:
 

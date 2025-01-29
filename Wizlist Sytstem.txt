@@ -1,0 +1,19 @@
+@@ REQUIRED: Faction System
+
+@skip isdbref(tag(setr(1,wizlist)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(Wizlist System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom()}
+
+&SWITCHES.0 #wizlist=CONFIG
+
+&SW.CONFIG #wizlist=@attach #inc/CONFIG=%0,trim(%1),%!
+
+&CONFIG.ADMIN.DESC #wizlist=The DBREF of the Admin object/faction.
+&CONFIG.ADMIN.DEFAULT #wizlist=#-1
+&CONFIG.ADMIN.TYPE #wizlist=DBREF
+
+&CMD.WIZLIST #wizlist=$^(?s)(?\:\+)(staff|wizlist|wizlist)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2;@attach %!/SW.[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
+@set #wizlist/CMD.WIZLIST=regexp
+
+&SW.MAIN #wizlist=@assert/inline isobjid(setr(!,objid(getconf(%!,ADMIN)),db))=@pemit %#=ERROR: Admin Object hasn't been set. A wizard needs to +wizlist/config admin=<object>.;@pemit %#=header(mudname() Staff);@pemit %#=ansi(confoverride(%#,COLUMN),u(#fac/FN.ROSTER.COLUMNS));@dolist/inline get(%q<db>/MEMBERS)={@pemit %#=u(#fac/FN.ROSTER.ROW,%d0,%q<db>,1)};@pemit %#=footer()
+
+&HLP.WIZLIST #wizlist=The Wizlist System keeps track of the game's staff and whether they're online. It's basically a specialized kind of +who.%R%R[ansi(hc,Commands)]%R[ansi(hw,+wizlist)]%R%TDisplays online staff. Also responds to [ansi(hw,+staff)] and [ansi(hw,+immlist)] and a few othjer common variants.
++help/add Community/+wizlist=#wizlist/HLP.WIZLIST

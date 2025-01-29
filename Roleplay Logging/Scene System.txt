@@ -71,7 +71,7 @@
 
 &Q.INSERT.SCENE #scene=INSERT INTO scene (scene_title,scene_date_created,scene_date_scheduled) VALUES (?,FROM_UNIXTIME(?),FROM_UNIXTIME(?))
 
-&SW.SCENE.CREATE #scene=@assert/inline strlen(%0)=@pemit %#=No name entered!;@attach #inc/DOSQL=INSERT.SCENE/scene,%0,secs(),strfirstof(%2,secs());@if strlen(%1)={@attach #inc/DOSQL=UPDATE.SCENE,scene_pitch,%1,%q<scene>};@attach #inc/DOSQL=INSERT.ACTOR,%q<scene>,%q<ent>,2,secs();@if strlen(%2)={@attach %!/MSG_SCENE=%q<scene>,0,lwho(),Scheduled for $fancytime(%2) by $you()},{@attach %!/MSG_SCENE=%q<scene>,0,lcon(%l,LISTEN,,,1),Scene has been created by $you()!}
+&SW.SCENE.CREATE #scene=@attach #inc/CHECK_APP_GUEST;@assert/inline strlen(%0)=@pemit %#=No name entered!;@attach #inc/DOSQL=INSERT.SCENE/scene,%0,secs(),strfirstof(%2,secs());@if strlen(%1)={@attach #inc/DOSQL=UPDATE.SCENE,scene_pitch,%1,%q<scene>};@attach #inc/DOSQL=INSERT.ACTOR,%q<scene>,%q<ent>,2,secs();@if strlen(%2)={@attach %!/MSG_SCENE=%q<scene>,0,lwho(),Scheduled for $fancytime(%2) by $you()},{@attach %!/MSG_SCENE=%q<scene>,0,lcon(%l,LISTEN,,,1),Scene has been created by $you()!}
 
 &SW.SCENE.SCHEDULE #scene=@attach #inc/VALID.FUTURE=before(%0,/);@attach %!/SW.SCENE.CREATE=after(%0,/),%1,%q<value>
 
@@ -125,9 +125,9 @@
 &SW.SCENE.RECALL #scene=@attach %!/FINDSCENE=%0,scene;@if strlen(%1)={@attach #inc/VALID.POSINT=%1,Pose Count},{th setq(!,10,value)};@assert/inline words(setr(!,mysql2(SELECT.RECALL,%q<scene>,%q<value>),poses))=@pemit %#=No poses to recall!;@pemit %#=header(Last %q<value> logged actions for Scene %q<scene>);@dolist/inline/delimit | [revwords(%q<poses>,|)]={@pemit %#=separator([chr(91)][ansi(hg,elements(%d0,1,^))][chr(93)]%B[ansi(hw,By)]%B[elements(%d0,4,^)][chr(44)]%B[ansi(hw,via:)]%B[elements(%d0,3,^)]);@pemit %#=mysql(SELECT.POSE,pose_text,%q<scene>,elements(%d0,1,^))};@pemit %#=footer()
 
 @@ PLOT Section
-&SWITCHES.PLOT.0 #scene=ADDHELPER|REMHELPER|ADDSCENE|REMSCENE|STARTED|ENDED
+&SWITCHES.PLOT.0 #scene=ADDHELPER|REMHELPER|ADDSCENE|REMSCENE
 
-&SWITCHES.PLOT.5 #scene=CREATE|ADDRUNNER|REMRUNNER|TITLE|PITCH|OUTCOME
+&SWITCHES.PLOT.5 #scene=CREATE|ADDRUNNER|REMRUNNER|TITLE|PITCH|OUTCOME|STARTED|ENDED
 
 &Q.SELECT.PLOT #scene=SELECT ! FROM plot_view WHERE plot_id=?
 &Q.SELECT.PLOT_SCENES #scene=SELECT scene_id FROM scene_plot WHERE plot_id=?
@@ -162,16 +162,16 @@
 
 &Q.INSERT.RUNNER #scene=INSERT INTO plot_runner (plot_id,entity_id,runner_type) VALUES (?,?,?) ON DUPLICATE KEY UPDATE runner_type=VALUES(runner_type)
 
-&SW.PLOT.CREATE #scene=@assert/inline strlen(stripansi(%0))=@pemit %#=No plot title entered!;@attach #inc/DOSQL=INSERT.PLOT/plot,stripansi(%0),secs();@attach #inc/MSG_ALERT=Plot %q<plot> '[stripansi(%0)]' Created.
+&SW.PLOT.CREATE #scene=@attach #inc/CHECK_APP_GUEST;@assert/inline strlen(stripansi(%0))=@pemit %#=No plot title entered!;@attach #inc/DOSQL=INSERT.PLOT/plot,stripansi(%0),secs();@attach #inc/MSG_ALERT=Plot %q<plot> '[stripansi(%0)]' Created.
 
 &Q.SELECT.RUNNER #scene=SELECT ! from plot_runner_view WHERE plot_id=? AND !=?
 &Q.DELETE.RUNNER #scene=DELETE pr FROM plot_runner AS pr LEFT JOIN entity AS e on e.entity_id=pr.entity_id WHERE e.entity_objid=? AND pr.plot_id=?
 
+&INC.CHANGEFIELD #scene=@attach %!/FINDPLOT=%0,plot;@assert/inline cor(gtebittype(%#,5),gte(mysql(SELECT.RUNNER,runner_type,%q<plot>,entity_objid,%:),%1))=@pemit %#=Permission denied.;@assert/inline cor(gtebittype(%#,5),!isint(mysql(SELECT.PLOT,plot_date_end_secs,%q<plot>)))=@pemit %#=Permission denied. The plot has ended.
+
 &SW.PLOT.ADDRUNNER #scene=@attach %!/FINDPLOT=%0,plot;@attach #inc/GET_PLAYER=%1,t1;@break/inline eq(mysql(SELECT.RUNNER,%q<plot>,entity_objid,%q<t1>),2)=@pemit %#=[cname(%q<t1>)] is already a runner!;@attach #inc/DOSQL=INSERT.RUNNER,%q<plot>,u(FN.PREPENT,%q<t1>),2;@attach %!/MSG_PLOT=%q<plot>,0,%:,Added a Runner: [cname(%q<t1>)]
 
 &SW.PLOT.REMRUNNER #scene=@attach %!/FINDPLOT=%0,plot;@attach #inc/GET_PLAYER=%1,t1;@assert/inline eq(mysql(SELECT.RUNNER,runner_type,%q<plot>,entity_objid,%q<t1>),2)=@pemit %#=[cname(%q<t1>)] is not a runner!;@attach %!/MSG_PLOT=%q<plot>,0,%:,Removed a Runner: [cname(%q<t1>)];@attach #inc/DOSQL=DELETE.RUNNER,%q<t1>,%q<plot>
-
-&INC.CHANGEFIELD #scene=@attach %!/FINDPLOT=%0,plot;@assert/inline cor(gtebittype(%#,5),gte(mysql(SELECT.RUNNER,runner_type,%q<plot>,entity_objid,%:),%1))=@pemit %#=Permission denied.;@assert/inline cor(gtebittype(%#,5),!isint(mysql(SELECT.PLOT,plot_date_end_secs,%q<plot>)))=@pemit %#=Permission denied. The plot has ended.
 
 &SW.PLOT.ADDHELPER #scene=@attach %!/INC.CHANGEFIELD=%0,2;@attach #inc/GET_PLAYER=%1,t1;@break/inline gt(mysql(SELECT.RUNNER,runner_type,%q<plot>,entity_objid,%q<t1>),0)=@pemit %#=[cname(%q<t1>)] is already a helper or runner!;@attach #inc/DOSQL=INSERT.RUNNER,%q<plot>,u(FN.PREPENT,%q<t1>),1;@attach %!/MSG_PLOT=%q<plot>,0,%:,Added a Helper: [cname(%q<t1>)]
 

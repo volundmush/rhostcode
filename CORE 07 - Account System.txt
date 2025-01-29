@@ -11,8 +11,12 @@
 &FN.VALID_ACCOUNT_NAME #acc=ofparse(3,if(strlen(%0),1,#-1 ACCOUNT NAMES CANNOT BE EMPTY),if(!strmatch(%0,@*),1,#-1 ACCOUNT NAMES MAY NOT START WITH @),if(!strmatch(%0,"*),1,#-1 ACCOUNT NAMES SHOULD NOT BEGIN WITH QUOTES),if(lte(strlen(%0),25),1,#-1 ACCOUNT NAMES MUST BE LESS THAN 26 CHARACTERS),if(valid(name,%0),1,#-1 ACCOUNT NAME CONTAINS INVALID FORMATTING),if(words(setdiff(u(FN.FIND_ACCOUNT,stripansi(%0)),objid(%1))),#-1 ACCOUNT NAME IN USE,1))
 @@ %0 - name to check. %1 - A dbref to exclude when checking for duplicates.
 
-&FN.CREATE_ACCOUNT #acc=privatize(1,if(isdbref(setr(0,create(%0,,t))),[null([parent(%q0,#acc_parent)][tel(%q0,%!,1)][totemset(%q0,ACCOUNT)][set(%q0,SAFE)][attrpass(%q0/_PASSWORD,%1,SET)][iter(lattr(%!/FN.CREATE_ACCOUNT_*),ulocal(%!/%i0,%0,%1))])][objid(%q0)],%q0))
-@@ %0 - name to use. This should already have been validated. %1 - password to set. Also needs to have been used valid(password,%1) on it.
+&FN.CREATE_ACCOUNT_IP #acc=[if(strlen(%3),set(%0,CREATOR_IP:%3))]
+
+&FIL.CREATOR_IP #acc=strmatch(get(%0/CREATOR_IP),%1)
+
+&FN.CREATE_ACCOUNT #acc=if(cand(strlen(%2),gt(words(filter(FIL.CREATOR_IP,u(FN.LIST_ACCOUNTS),%b,%b,%2)),2)),#-1 TOO MANY ACCOUNTS FOR THIS SITE. CONTACT ADMIN.,privatize(1,if(isdbref(setr(0,create(%0,,t))),[null([parent(%q0,#acc_parent)][tel(%q0,%!,1)][totemset(%q0,ACCOUNT)][set(%q0,SAFE)][attrpass(%q0/_PASSWORD,%1,SET)][iter(lattr(%!/FN.CREATE_ACCOUNT_*),ulocal(%!/%i0,%q0,%0,%1,%2))])][objid(%q0)],%q0)))
+@@ %0 - name to use. This should already have been validated. %1 - password to set. Also needs to have been used valid(password,%1) on it. %2 - optional IP address to set and check against.
 
 &FN.SET_PASSWORD #acc=null(iter(%0 [u(FN.CHARACTERS,%0)],attrpass(%i0/_PASSWORD,%1,SET)))
 @@ %0 - dbref of account. %1 - password. needs to have already been validated.

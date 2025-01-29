@@ -1,0 +1,15 @@
+@skip isdbref(tag(setr(1,approve)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(Approval System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom()}
+
+@lock/use #approve=LK.GTEBITTYPE/4
+
+&CMD.APPROVE #approve=$^(?s)(?\:\+)(approve|unapprove)(?\:/(\\S+)?)?(?\: +(.*))?$:@assert/inline globalconf(REQAPPROVAL)=@pemit %#=ERROR: globalconf(REQAPPROVAL) is False. Approval System disabled.;@attach #inc/GET_SWITCH=%2;@attach %!/SW.%1.[strfirstof(%q<switch>,MAIN)]=trim(%3)
+@set #approve/CMD.APPROVE=regexp
+
+&SW.APPROVE.MAIN #approve=@attach #inc/GET_PLAYER=%0,t1;@break/inline default(%q<t1>/GAME.APPROVED,0)=@pemit %#=[cname(%q<t1>)] is already approved.;@set %q<t1>=GAME.APPROVED:[secs()];@pemit %q<t1>=You are now approved!;@attach %!/ON_APPROVE=%q<t1>;@attach #inc/MSG_ALERT=Approved Character '[cname(%q<t1>)]'
+
+&ON_APPROVE #approve=@set %0=!WANDERER
+
+&SW.UNAPPROVE.MAIN #approve=@attach #inc/GET_PLAYER=%0,t1;@assert/inline default(%q<t1>/GAME.APPROVED,0)=@pemit %#=[cname(%q<t1>)] is not approved.;@wipe %q<t1>/GAME.APPROVED;@pemit %q<t1>=You are no longer approved!;@attach %!/ON_APPROVE=%q<t1>;@attach #inc/MSG_ALERT=Un-Approved Character '[cname(%q<t1>)]'
+
+&SHLP.APPROVE #approve=The Approval System keeps track of character approvals.%R%R[ansi(hc,Commands)]%R[ansi(hw,+approve <name>)]%R%TApproves a character if needed.%R%R[ansi(hw,+unapprove <character>)]%R%TRemoves approval.
++shelp/add Character/+approve=#approve/SHLP.APPROVE
