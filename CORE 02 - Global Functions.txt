@@ -74,7 +74,7 @@
 
 &GFN.FILTEROBJID #gfun=filter(#lambda/[lit(isobjid(%0))],%0)
 
-&GFN.FANCYTIME #gfun=if(cor(!strlen(%0),isint(%0)),runintz(if(strlen(%2),if(isdbref(%2),gettz(%2),%2),gettz(%#)),timefmt(switch(%1,2,$a $b $02D $02I:$02M$p $Z,3,$b $02D $02I:$02M$p $Y $Z,day,$b $02D $Y,date,$m/$d/$Y,strfirstof(%3,$b $02D $02H:$02T$P $i)),strfirstof(%0,secs()))),<invalid date>)
+&GFN.FANCYTIME #gfun=if(cor(!strlen(%0),isint(%0)),runintz(if(strlen(%2),if(isdbref(%2),gettz(%2),%2),gettz(%#)),timefmt(switch(%1,2,$a $b $02D $02I:$02M$p $Z,3,$b $02D $02I:$02M$p $Y $Z,day,$b $02D $Y,date,$m/$d/$Y,strfirstof(%3,$b $02D $02H:$02T$P $j)),strfirstof(%0,secs()))),<invalid date>)
 
 &GFN.DECOMPOSE #gfun=translate(%0,p)
 

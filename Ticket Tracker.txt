@@ -67,7 +67,7 @@
 &SWITCHES.TICKET.0 #tick=CREATE|NEW|REPLY|STAFFCOMMENT|CLAIM|UNCLAIM|ASSIGN|UNASSIGN|ADDHELPER|REMHELPER|COMPLETE|DENY|CANCEL|REOPEN|DUE|SCAN|NEXT|PENDING
 &SWITCHES.TICKET.5 #tick=ARCHIVE
 
-&TICKET_ALERT #tick=@if words(setr(!,filter(%1,lwhoid()),targets))={@pemit/list %q<targets>=[ansi(c,TICKETS:)] [ansi(hw,New Activity By)] %k [ansi(hw,For)] Ticket [cname(%q<ticket>)]: '[get(%q<ticket>/TITLE)]' - %0}
+&TICKET_ALERT #tick=@if words(setr(!,filter(%1,lwhoid(),%b,%b,%q<ticket>),targets))={@pemit/list %q<targets>=[ansi(c,TICKETS:)] [ansi(hw,New Activity By)] %k [ansi(hw,For)] Ticket [cname(%q<ticket>)]: '[get(%q<ticket>/TITLE)]' - %0}
 
 &HEAR_CREATE #tick=u(CAN_REPLY,%0,%1)
 
@@ -95,7 +95,7 @@
 
 &FN.NAMES #tick=iter(filterobjid(%0),cname(%i0),%b,chr(44)%B)
 
-&DISPLAY_TICKET #tick=@attach %!/FINDTICKET=%0,ticket;@assert/inline u(CAN_SEE,%q<ticket>,%:)=@pemit %#=Permission denied.;@pemit %#=header(Ticket [cname(%q<ticket>)]);@pemit %#=printf($-36s $-36s,ljust(rjust(ansi(h,Category:),10),10) [cname(get(%q<ticket>/BUCKET))],ljust(rjust(ansi(h,Due:),10),10) [fancytime(get(%q<ticket>/DUE))]);@pemit %#=printf($-36s $-36s,ljust(rjust(ansi(h,Title:),10),10) [get(%q<ticket>/TITLE)],ljust(rjust(ansi(h,Status:),10),10) [get(%q<ticket>/STATUS)]);@pemit %#=printf($-36s $-36s,ljust(rjust(ansi(h,Handlers:),10),10) [u(FN.NAMES,get(%q<ticket>/HANDLERS))],ljust(rjust(ansi(h,Helpers:),10),10) [u(FN.NAMES,get(%q<ticket>/HELPERS))]);@pemit %#=separator();@pemit %#=cname(get(%q<ticket>/OWNER)) [ansi(hw,created on [fancytime(csecs(%q<ticket>))]:)];@pemit %#=get(%q<ticket>/DESC);@dolist/inline sort(lattr(%q<ticket>/EV.*))={@if u(HEAR_[elements(setr(!,get(%q<ticket>/%d0),ev),1,|)],%:)={@pemit %#=separator();@pemit %#=if(isobjid(elements(%q<ev>,2,|)),cname(elements(%q<ev>,2,|)),elements(%q<ev>,3,|)%B\(Deleted\)) [ansi(hw,u(FN.ACTION,elements(%q<ev>,1,|)) on [fancytime(elements(%q<ev>,4,|))])];@pemit %#=after(%q<ev>,[elements(get(%q<ticket>/%d0),4,|)]|)}};@pemit %#=footer();@set %q<ticket>=CHECKED_%#:[secs()]
+&DISPLAY_TICKET #tick=@attach %!/FINDTICKET=%0,ticket;@assert/inline u(CAN_SEE,%q<ticket>,%:)=@pemit %#=Permission denied.;@pemit %#=header(Ticket [cname(%q<ticket>)]);@pemit %#=printf($-36s $-36s,ljust(rjust(ansi(h,Category:),10),10) [cname(get(%q<ticket>/BUCKET))],ljust(rjust(ansi(h,Due:),10),10) [fancytime(get(%q<ticket>/DUE))]);@pemit %#=printf($-36s $-36s,ljust(rjust(ansi(h,Title:),10),10) [get(%q<ticket>/TITLE)],ljust(rjust(ansi(h,Status:),10),10) [get(%q<ticket>/STATUS)]);@pemit %#=printf($-36s $-36s,ljust(rjust(ansi(h,Handlers:),10),10) [u(FN.NAMES,get(%q<ticket>/HANDLERS))],ljust(rjust(ansi(h,Helpers:),10),10) [u(FN.NAMES,get(%q<ticket>/HELPERS))]);@pemit %#=separator();@pemit %#=cname(get(%q<ticket>/OWNER)) [ansi(hw,created on [fancytime(csecs(%q<ticket>))]:)];@pemit %#=get(%q<ticket>/DESC);@dolist/inline sort(lattr(%q<ticket>/EV.*))={@if u(HEAR_[elements(setr(!,get(%q<ticket>/%d0),ev),1,|)],%q<ticket>,%:)={@pemit %#=separator();@pemit %#=if(isobjid(elements(%q<ev>,2,|)),cname(elements(%q<ev>,2,|)),elements(%q<ev>,3,|)%B\(Deleted\)) [ansi(hw,u(FN.ACTION,elements(%q<ev>,1,|)) on [fancytime(elements(%q<ev>,4,|))])];@pemit %#=after(%q<ev>,[elements(get(%q<ticket>/%d0),4,|)]|)}};@pemit %#=footer();@set %q<ticket>=CHECKED_%#:[secs()]
 
 &FN.VISIBLE_TICKETS #tick=sort(filter(CAN_SEE,u(FN.TICKETS),%b,%b,objid(%0)))
 
@@ -105,70 +105,70 @@
 &SW.TICKET.MAIN #tick=@if strlen(%0)={@attach %!/DISPLAY_TICKET},{@attach %!/LIST_TICKETS=Visible Tickets,u(FN.VISIBLE_TICKETS,%:)}
 
 &CAN_REPLY #tick=cor(strmatch(get(%0/OWNER),%1),u(FIL.BUCKET_CANADMIN,get(%0/BUCKET),%1),match(setunion(get(%0/HANDLERS),get(%0/HELPERS)),%1))
-&HEAR_REPLY #tick=u(CAN_REPLY,%0,%1)
+&HEAR_REPLY #tick=u(CAN_REPLY,%1,%0)
 @@ %0 - the ticket, %1 - objid of one being checked.
 
 &SW.TICKET.REPLY #tick=@attach %!/FINDTICKET=%0,ticket;@assert/inline u(CAN_REPLY,%q<ticket>,%:)=@pemit %#=Permission denied.;@assert/inline strlen(%1)=@pemit %#=Must enter a reply!;@attach %!/ADDEVENT=%q<ticket>,%:,REPLY,%1;@attach %!/TICKET_ALERT=Reply added!,HEAR_REPLY
 
 &CAN_COMMENT #tick=cor(u(FIL.BUCKET_CANADMIN,get(%0/BUCKET),%1),match(setunion(get(%q<ticket>/HANDLERS)),%1))
-&HEAR_COMMENT #tick=u(CAN_COMMENT,%0,%1)
+&HEAR_COMMENT #tick=u(CAN_COMMENT,%1,%0)
 
 &SW.TICKET.STAFFCOMENT #tick=@attach %!/FINDTICKET=%0,ticket;@assert/inline u(CAN_COMMENT,%q<ticket>,%:)=@pemit %#=Permission denied.;@assert/inline strlen(%1)=@pemit %#=Must enter a comment!;@attach %!/ADDEVENT=%q<ticket>,%:,COMMENT,%1;@attach %!/TICKET_ALERT=Staff comment added!,HEAR_COMMENT
 
 &CAN_CLAIM #tick=u(FIL.BUCKET_CANADMIN,get(%0/BUCKET),%1)
-&HEAR_CLAIM #tick=u(CAN_CLAIM,%0,%1)
+&HEAR_CLAIM #tick=u(CAN_CLAIM,%1,%0)
 
 &SW.TICKET.CLAIM #tick=@attach %!/FINDTICKET=%0,ticket;@assert/inline u(CAN_CLAIM,%q<ticket>,%:)=@pemit %#=Permission denied.;@break/inline t(match(get(%q<ticket>/HANDLERS),%:))=@pemit %#=You are already working on '[cname(%q<ticket>)]: [get(%q<ticket>/TITLE)]';@set %q<ticket>=HANDLERS:[setunion(filterobjid(get(%q<ticket>/HANDLERS)),%:)];@attach %!/ADDEVENT=%q<ticket>,%:,CLAIM,Handler Appointed: %k;@attach %!/TICKET_ALERT=Claimed the Ticket.,HEAR_CLAIM
 
 &CAN_UNCLAIM #tick=u(FIL.BUCKET_CANADMIN,get(%0/BUCKET),%1)
-&HEAR_UNCLAIM #tick=u(CAN_UNCLAIM,%0,%1)
+&HEAR_UNCLAIM #tick=u(CAN_UNCLAIM,%1,%0)
 
 &SW.TICKET.UNCLAIM #tick=@attach %!/FINDTICKET=%0,ticket;@assert/inline u(CAN_UNCLAIM,%q<ticket>,%:)=@pemit %#=Permission denied.;@assert/inline t(match(get(%q<ticket>/HANDLERS),%:))=@pemit %#=You are not working on '[cname(%q<ticket>)]: [get(%q<ticket>/TITLE)]';@set %q<ticket>=HANDLERS:[setdiff(filterobjid(get(%q<ticket>/HANDLERS)),%:)];@attach %!/ADDEVENT=%q<ticket>,%:,UNCLAIM,Handler Removed: %k;@attach %!/TICKET_ALERT=Reversed claim of the Ticket.,HEAR_UNCLAIM
 
 &CAN_ASSIGN #tick=u(FIL.BUCKET_CANADMIN,get(%0/BUCKET),%1)
-&HEAR_ASSIGN #tick=u(CAN_ASSIGN,%0,%1)
+&HEAR_ASSIGN #tick=u(CAN_ASSIGN,%1,%0)
 
 &SW.TICKET.ASSIGN #tick=@attach %!/FINDTICKET=%0,ticket;@assert/inline u(CAN_ASSIGN,%q<ticket>,%:)=@pemit %#=Permission denied.;@attach #inc/GET_PLAYER=%1,t1;@break/inline t(match(get(%q<ticket>/HANDLERS),%q<t1>))=@pemit %#=[cname(%q<t1>)] is already working on '[cname(%q<ticket>)]: [get(%q<ticket>/TITLE)]';@set %q<ticket>=HANDLERS:[setunion(filterobjid(get(%q<ticket>/HANDLERS)),%q<t1>)];@attach %!/ADDEVENT=%q<ticket>,%:,ASSIGN,Handler Assigned: [cname(%q<t1>)];@attach %!/TICKET_ALERT=Assigned the Ticket to [cname(%q<t1>)],HEAR_ASSIGN
 
 &CAN_UNASSIGN #tick=u(FIL.BUCKET_CANADMIN,get(%0/BUCKET),%1)
-&HEAR_UNASSIGN #tick=u(CAN_UNASSIGN,%0,%1)
+&HEAR_UNASSIGN #tick=u(CAN_UNASSIGN,%1,%0)
 
 &SW.TICKET.UNASSIGN #tick=@attach %!/FINDTICKET=%0,ticket;@assert/inline u(CAN_UNASSIGN,%q<ticket>,%:)=@pemit %#=Permission denied.;@attach #inc/GET_PLAYER=%1,t1;@assert/inline t(match(get(%q<ticket>/HANDLERS),%q<t1>))=@pemit %#=[cname(%q<t1>)] is not working on '[cname(%q<ticket>)]: [get(%q<ticket>/TITLE)]';@set %q<ticket>=HANDLERS:[setdiff(filterobjid(get(%q<ticket>/HANDLERS)),%q<t1>)];@attach %!/ADDEVENT=%q<ticket>,%:,UNASSIGN,Handler Removed: [cname(%q<t1>)];@attach %!/TICKET_ALERT=Removed handlership from [cname(%q<t1>)],HEAR_UNASSIGN
 
 &CAN_ADDHELPER #tick=cor(match(get(%0/CLAIMED),%1),u(FIL.BUCKET_CANADMIN,get(%0/BUCKET),%1))
-&HEAR_ADDHELPER #tick=u(CAN_REPLY,%0,%1)
+&HEAR_ADDHELPER #tick=u(CAN_REPLY,%1,%0)
 
 &SW.TICKET.ADDHELPER #tick=@attach %!/FINDTICKET=%0,ticket;@assert/inline u(CAN_ADDHELPER,%q<ticket>,%:)=@pemit %#=Permission denied.;@attach #inc/GET_PLAYER=%1,t1;@break/inline t(match(get(%q<ticket>/HELPERS),%q<t1>))=@pemit %#=[cname(%q<t1>)] is already working on '[cname(%q<ticket>)]: [get(%q<ticket>/TITLE)]';@set %q<ticket>=HELPERS:[setunion(filterobjid(get(%q<ticket>/HELPERS)),%q<t1>)];@attach %!/ADDEVENT=%q<ticket>,%:,ADDHELPER,Helper Assigned: [cname(%q<t1>)];@attach %!/TICKET_ALERT=Added [cname(%q<t1>)] as a helper.,HEAR_ADDHELPER
 
 &CAN_REMHELPER #tick=cor(match(get(%0/CLAIMED),%1),u(FIL.BUCKET_CANADMIN,get(%0/BUCKET),%1))
-&HEAR_REMHELPER #tick=u(CAN_REPLY,%0,%1)
+&HEAR_REMHELPER #tick=u(CAN_REPLY,%1,%0)
 
 &SW.TICKET.REMHELPER #tick=@attach %!/FINDTICKET=%0,ticket;@assert/inline u(CAN_REMHELPER,%q<ticket>,%:)=@pemit %#=Permission denied.;@attach #inc/GET_PLAYER=%1,t1;@assert/inline t(match(get(%q<ticket>/HELPERS),%q<t1>))=@pemit %#=[cname(%q<t1>)] is not working on '[cname(%q<ticket>)]: [get(%q<ticket>/TITLE)]';@set %q<ticket>=HELPERS:[setdiff(filterobjid(get(%q<ticket>/HELPERS)),%q<t1>)];@attach %!/ADDEVENT=%q<ticket>,%:,REMHELPER,Helper Removed: [cname(%q<t1>)];@attach %!/TICKET_ALERT=Removed [cname(%q<t1>)] as a helper.,HEAR_REMHELPER
 
 &FINISH #tick=@attach %!/FINDTICKET=%0,ticket;@assert/inline u(CAN_%2,%q<ticket>,%:)=@pemit %#=Permission denied.;@assert/inline strlen(%1)=@pemit %#=Must enter a finishing message!;@attach %!/ADDEVENT=%q<ticket>,%:,%2,%1;@attach %!/TICKET_ALERT=%3 Ticket.,HEAR_%2
 
 &CAN_COMPLETE #tick=cor(match(get(%0/CLAIMED),%1),u(FIL.BUCKET_CANADMIN,get(%0/BUCKET),%1))
-&HEAR_COMPLETE #tick=u(CAN_REPLY,%0,%1)
+&HEAR_COMPLETE #tick=u(CAN_REPLY,%1,%0)
 
 &SW.TICKET.COMPLETE #tick=@attach %!/FINISH=%0,%1,COMPLETE,Completed;@set %q<ticket>=STATUS:Completed
 
 &CAN_DENY #tick=cor(match(get(%0/CLAIMED),%1),u(FIL.BUCKET_CANADMIN,get(%0/BUCKET),%1))
-&HEAR_DENY #tick=u(CAN_REPLY,%0,%1)
+&HEAR_DENY #tick=u(CAN_REPLY,%1,%0)
 
 &SW.TICKET.DENY #tick=@attach %!/FINISH=%0,%1,DENY,Denied;@set %q<ticket>=STATUS:Denied
 
 &CAN_CANCEL #tick=cor(strmatch(get(%0/OWNER),%1),match(get(%0/CLAIMED),%1),u(FIL.BUCKET_CANADMIN,get(%0/BUCKET),%1))
-&HEAR_CANCEL #tick=u(CAN_REPLY,%0,%1)
+&HEAR_CANCEL #tick=u(CAN_REPLY,%1,%0)
 
 &SW.TICKET.CANCEL #tick=@attach %!/FINISH=%0,%1,CANCEL,Canceled;@set %q<ticket>=STATUS:Canceled
 
 &CAN_REOPEN #tick=cor(match(get(%0/CLAIMED),%1),u(FIL.BUCKET_CANADMIN,get(%0/BUCKET),%1))
-&HEAR_REOPEN #tick=u(CAN_REPLY,%0,%1)
+&HEAR_REOPEN #tick=u(CAN_REPLY,%1,%0)
 
 &SW.TICKET.REOPEN #tick=@attach %!/FINISH=%0,%1,REOPEN,Re-opened;@set %q<ticket>=STATUS:Pending
 
 &CAN_DUE #tick=cor(match(get(%0/CLAIMED),%1),u(FIL.BUCKET_CANADMIN,get(%0/BUCKET),%1))
-&HEAR_DUE #tick=u(CAN_REPLY,%0,%1)
+&HEAR_DUE #tick=u(CAN_REPLY,%1,%0)
 
 &SW.TICKET.DUE #tick=@attach %!/FINDTICKET=%0,ticket;@assert/inline u(CAN_DUE,%q<ticket>,%:)=@pemit %#=Permission denied.
 
@@ -204,7 +204,7 @@
 &SW.MYTICKETS.OLD #tick=@attach %!/LIST_TICKETS=Visible Pending Tickets,filter(FIL.NSTATUS,u(FN.VISIBLE_TICKETS,%:),%b,%b,Pending)
 
 +help/add IssueTracker/+bucket=#tick/HLP.BUCKET
-&HLP.BUCKET #tick=The Issue Ticket Tracker is split between two commands: +ticket and +ticket. It is used to track ongoing requests, tasks, jobs, etc. +ticket is a largely admin-oriented command.%R%R[ansi(hc,Administration Commands)]%R%R[ansi(hw,+ticket/create <name>\[=<description>\])]%R%TCreate a new Bucket. Can optionally provide a short description.%R%R[ansi(hw,+ticket/rename <name>=<new name>)]%R%TRename a bucket.%R%R[ansi(hw,+ticket/delete <bucket>=<name or objid>)]%R%TDelete a bucket. Can only work if emptied of tickets.%R%R[ansi(hw,+ticket/describe <bucket>=<description>)]%R%TSet a description.%R%R[ansi(hw,+ticket/grant <bucket>=<player>)]%R%TAssign a player as a bucket administrator able to claim and operate on tickets.%R%R[ansi(hw,+ticket/revoke <bucket>=<player>)]%R%TRevoke said privileges.%R%R[ansi(hw,+ticket/options <bucket>\[/<option>=<value>\])]%R%TView or set bucket options such as due date.%R%R[ansi(hw,+ticket/lock <bucket>/<locktype>=<lock key>)]%R%TLock a Bucket. Locktype can be POST or ADMIN. PostLock is used for who can create a Ticket in this category. AdminLock is an alternate way of /grant'ing the right to manage the bucket.%R%R[ansi(hw,+ticket/unlock <bucket>/<locktype>)]%R%TRestore the default locks.%R%R[ansi(hc,Player Commands)]%R%R[ansi(hw,+ticket)]%R%TList all Buckets you can create tickets to.%R%R[ansi(hw,+ticket <bucket>)]%R%TView all tickets for that bucket. Requires management rights.
+&HLP.BUCKET #tick=The Issue Ticket Tracker is split between two commands: +ticket and +ticket. It is used to track ongoing requests, tasks, jobs, etc. +ticket is a largely admin-oriented command.%R%R[ansi(hc,Administration Commands)]%R%R[ansi(hw,+bucket/create <name>\[=<description>\])]%R%TCreate a new Bucket. Can optionally provide a short description.%R%R[ansi(hw,+bucket/rename <name>=<new name>)]%R%TRename a bucket.%R%R[ansi(hw,+bucket/delete <bucket>=<name or objid>)]%R%TDelete a bucket. Can only work if emptied of tickets.%R%R[ansi(hw,+bucket/describe <bucket>=<description>)]%R%TSet a description.%R%R[ansi(hw,+bucket/grant <bucket>=<player>)]%R%TAssign a player as a bucket administrator able to claim and operate on tickets.%R%R[ansi(hw,+bucket/revoke <bucket>=<player>)]%R%TRevoke said privileges.%R%R[ansi(hw,+bucket/options <bucket>\[/<option>=<value>\])]%R%TView or set bucket options such as due date.%R%R[ansi(hw,+bucket/lock <bucket>/<locktype>=<lock key>)]%R%TLock a Bucket. Locktype can be POST or ADMIN. PostLock is used for who can create a Ticket in this category. AdminLock is an alternate way of /grant'ing the right to manage the bucket.%R%R[ansi(hw,+bucket/unlock <bucket>/<locktype>)]%R%TRestore the default locks.%R%R[ansi(hc,Player Commands)]%R%R[ansi(hw,+bucket)]%R%TList all Buckets you can create tickets to.%R%R[ansi(hw,+bucket <bucket>)]%R%TView all tickets for that bucket. Requires management rights.
 
 +help/add IssueTracker/+ticket=#tick/HLP.TICKET
 &HLP.TICKET #tick=The Issue Ticket Tracker is split between two commands: +ticket and +ticket. It is used to track ongoing requests, tasks, jobs, etc. +ticket is the more commonly used command.%R[ansi(hc,Aliases:)] +ticket, +job, +jobs, +tickets... also +myjob(s) and @myjob(s)%R%R[ansi(hc,Ticket Management)]%R%R[ansi(hw,+ticket)]%R%TList all Tickets you can see. That being: those of a Bucket you have rights to, those you own, are a handler, or a helper of.%R%R[ansi(hw,+ticket <ticket>)]%R%TDisplay details about a Ticket, including its ongoing discussion thread.%R%R[ansi(hw,+ticket/pending)]%R%TShow only Pending Tickets.%R%R[ansi(hw,+ticket/create <bucket>/<title>=<description>)]%R%TSubmits a new Ticket.%R%R[ansi(hw,+ticket/reply <ticket>=<text>)]%R%TAdd a new message to the ongoing discussion thread for the ticket.%R%R[ansi(hw,+ticket/staffcomment <ticket>=<text>)]%R%TAdd a comment that only Handlers/Staff/Bucket-Admin can see as part of the ticket's thread.%R%R[ansi(hw,+ticket/claim <ticket>)]%R%TAssign yourself as a Ticket's handler. Must be a Bucket admin to do this.%R%R[ansi(hw,+ticket/unclaim <ticket>)]%R%TStop being a Ticket's handler.%R%R[ansi(hw,+ticket/assign <ticket>=<player>)]%R%TAssign a player as a Ticket's handler.%R%R[ansi(hw,+ticket/unassign <ticket>=<player>)]%R%TRemove a Ticket's handler.%R%R[ansi(hw,+ticket/addhelper <ticket>=<player>)]%R%TAdd a Helper to a ticket. A Helper can see everything the owner does and use /reply.%R%R[ansi(hw,+ticket/remhelper <ticket>=<player>)]%R%TRemoves a ticket's Helper.%R%R[ansi(hw,+ticket/complete <ticket>=<text>)]%R%TMark a Ticket as completed with a final message. Only Handlers/Admin can do it.%R%R[ansi(hw,+ticket/deny <ticket>=<text>)]%R%TMark a Ticket as denied with a final message. Only Handlers/Admin can do it.%R%R[ansi(hw,+ticket/cancel <ticket>=<text>)]%R%TMark a Ticket as canceled with a final message. Only Handlers/Admin and the Owner can do it.%R%R[ansi(hw,+ticket/reopen <ticket>=<text>)]%R%TMark a finished Ticket as Pending with a new message. Used on those which are Completed, Denied, or Canceled. Only Handlers/Admin can do it.%R%R[ansi(hw,+ticket/due <ticket>=<duration>)]%R%TSet a new Due Date on a Ticket. <duration> is something like 8d 5h for 8 days, 5 hours.%R%R[ansi(hw,+ticket/scan)]%R%TShow an index of all visible Tickets with new activity.%R%R[ansi(hw,+ticket/next)]%R%TShow the next visible Ticket with new activity as if you had used [ansi(hw,+ticket <ticket>)] on it.%R%R[ansi(hw,+ticket/archive <ticket>)]%R%TSave a copy of a finished Ticket to deep/cold storage and delete it from the Ticket Queue. Wizard Only. Difficult to retrieve, so this is best used for very old tickets cluttering the queue.%R%R[ansi(hc,+myjob Commands)]%RThese are provided for those who are very accustomed to Anomaly Jobs.%R%R[ansi(hw,+myjob)] or [ansi(hw,+myjobs)]%R%TDisplay all currently open Tickets you own or have been assigned.%R%R[ansi(hw,+myjob/old)] or [ansi(hw,+myjobs/old)]%R%TShow all closed Tickets instead.%R%R+myjob also supports many of the switches of +ticket, like /reply and /complete.

@@ -1,0 +1,85 @@
+&CMD.CRS #scene=$^(?s)(?\:\+)(meter|challenge)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:th setq(!,switch(%1,meter,meter,challenge,challenge),family);@assert/inline isint(setr(!,u(FN.PREPENT,%#),ent))=@pemit %#=Couldn't create Entity: %q<ent>;@attach #inc/GET_SWITCH=%2,%q<family>;@attach %!/SW.%q<family>.[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
+@set #scene/CMD.CRS=regexp
+
+&SWITCHES.METER.0 #scene=CREATE|SET|SETSILENT|GAIN|REMOVE
+
+&Q.SELECT.METER_AT #scene=SELECT meter_id,scene_meter_id,meter_history_id,meter_name,meter_value,meter_target_number,meter_size,meter_type,UNIX_TIMESTAMP(meter_valid_from),UNIX_TIMESTAMP(meter_valid_to),meter_active,scene_id FROM meter_view WHERE meter_valid_from<=FROM_UNIXTIME(?) AND (meter_valid_to IS NULL OR meter_valid_to>FROM_UNIXTIME(?)) ORDER BY scene_meter_id ASC
+
+&FN.METER.FORMAT.POSITIVE #scene=if(%0,iter(lnum(33),[setq(!,if(%i0,fdiv(%i0,33),0.0),ratio)][if(gte(%0,%q<ratio>),ansi(/[ryg(sub(100,mul(%q<ratio>,100)))],%B),%B)],%B,))
+&FN.METER.FORMAT.NEGATIVE #scene=if(%0,iter(lnum(33),[setq(!,if(%i0,fdiv(%i0,33),0.0),ratio)][if(gte(%0,%q<ratio>),ansi(/[ryg(mul(%q<ratio>,100))],%B),%B)],%B,))
+
+&FN.METER.FORMAT.BALANCE.RIGHT #scene=space(16)[iter(lnum(17),[setq(!,if(%i0,fdiv(%i0,17),0.0),ratio)][if(gte(%0,%q<ratio>),ansi(/[ryg(sub(100,mul(%q<ratio>,100)))],%B),%B)],%B,)]
+&FN.METER.FORMAT.BALANCE.LEFT #scene=reverse(u(FN.METER.FORMAT.BALANCE.RIGHT,%0))
+
+&FN.METER.FORMAT.BALANCE #scene=if(gte(%0,0.5),u(FN.METER.FORMAT.BALANCE.RIGHT,mul(2,sub(%0,0.5))),u(FN.METER.FORMAT.BALANCE.LEFT,mul(2,sub(0.5,%0))))
+
+&FN.METER.COLUMNS #scene=printf($-2s $-19s $-3s $-8s $-8s $-33s,ID,Name,TN,Type,Status,Render)
+&FN.METER.ROW #scene=printf($-2s $-19s $-3s $-8s $-8s $-33s,elementsmux(%0,2,^),elementsmux(%0,4,^),elementsmux(%0,6,^),setr(!,switch(elementsmux(%0,8,^),0,Positive,1,Negative,2,Balance),type),if(elementsmux(%0,11,^),rjust(elementsmux(%0,5,^),2,0)/[rjust(elementsmux(%0,7,^),2,0)],Res),u(FN.METER.FORMAT.%q<type>,fbound(if(elementsmux(%0,5,^),fdiv(elementsmux(%0,5,^),elementsmux(%0,7,^)),0),0,1)))
+
+&SW.METER.MAIN #scene=@if strlen(%0)={@attach %!/FINDSCENE=%0,scene},{@attach %!/LOCALSCENE};@if strlen(%1)={@attach #inc/VALID.TIME=%1},{th setq(!,secs(),value)};@assert/inline words(setr(!,mysql2(SELECT.METER_AT,%q<value>,%q<value>),data),|)={@pemit %#=No meters to display.};@pemit %#=header(Challenge Meters for Scene %q<scene>);@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.METER.COLUMNS));@pemit %#=separator();@dolist/inline/delimit | %q<data>={@pemit %#=u(FN.METER.ROW,%d0)};@pemit %#=footer(For [fancytime(%q<value>)])
+
+&Q.SELECT.METER_MAX_SCENE #scene=SELECT COALESCE(MAX(scene_meter_id),0)+1 FROM meter WHERE scene_id=?
+&Q.INSERT.METER #scene=INSERT INTO meter (scene_meter_id, scene_id) VALUES (?,?)
+&Q.INSERT.METER_HISTORY #scene=INSERT INTO meter_history (meter_id,meter_name,meter_value,meter_target_number,meter_size,meter_type) VALUES (?,?,?,?,?,?)
+
+&SW.METER.CREATE #scene=@attach %!/LOCALSCENE;@attach %!/CANCONTROL;@assert/inline mysql(SELECT.SCENE_ACTIVE,%q<scene>)=@pemit %#=Scene %q<scene> is not active. Cannot alter meters.;@assert/inline strlen(setr(!,stripansi(trim(%0)),name))=@pemit %#=No name entered!;@attach #inc/VALID.POSINT=elementsmux(%1,1,/),Target Number;th setq(!,%q<value>,tn);@attach #inc/PARTIAL=elementsmux(%1,2,/),Positive|Negative|Balance,|,type,Meter Type;@attach #inc/VALID.POSINT=elementsmux(%1,3,/),Meter Size;th setq(!,%q<value>,size);@break cand(strmatch(Balance,%q<type>),eq(mod(%q<size>,2),0))=@pemit %#=Balance type meters must have odd max values.;th setq(!,switch(%q<type>,Positive,0,Negative,%q<size>,Balance,ceil(fdiv(%q<size>,2))),value);th setq(!,mysql(SELECT.METER_MAX_SCENE,%q<scene>),nextid);@attach #inc/DOSQL=INSERT.METER/meter_id,%q<nextid>,%q<scene>;@attach #inc/DOSQL=INSERT.METER_HISTORY/history_id,%q<meter_id>,%q<name>,%q<value>,%q<tn>,%q<size>,switch(%q<type>,Positive,0,Negative,1,Balance,2);@attach %!/MSG_SCENE=%q<scene>,0,lcon(%l,LISTEN,,,1),$you() created Challenge Meter %q<meter_id>: %q<name> (TN: %q<tn>, Type: %q<type>, Size: %q<size>).
+
+&Q.SELECT.METER_ID #scene=SELECT meter_history_id FROM meter_view WHERE scene_id=? AND scene_meter_id=? AND meter_valid_from<=NOW() AND (meter_valid_to IS NULL OR meter_valid_to>NOW())
+&Q.SELECT.METER_EXACT #scene=SELECT meter_history_id FROM meter_view WHERE scene_id=? AND meter_name LIKE '!' AND meter_valid_from<=NOW() AND (meter_valid_to IS NULL OR meter_valid_to>NOW()) LIMIT 1
+&Q.SELECT.METER_WILD #scene=SELECT meter_history_id FROM meter_view WHERE scene_id=? AND meter_name LIKE '!%%' AND meter_valid_from<=NOW() AND (meter_valid_to IS NULL OR meter_valid_to>NOW()) LIMIT 1
+
+&Q.SELECT.METER_INFO #scene=SELECT meter_id,scene_id,scene_meter_id,meter_history_id,meter_name,meter_value,meter_target_number,meter_size,meter_type,meter_valid_from,meter_valid_to,meter_active FROM meter_view WHERE meter_history_id=?
+
+&TARGETMETER #scene=@assert/inline strlen(%0)=@pemit %#=No meter ID or name entered!;@if isint(%0)={@assert/inline setr(!,mysql(SELECT.METER_ID,strfirstof(%q<scene>,%1),%0),mhist)=@pemit %#=Meter not found.},{@assert/inline setr(!,strfirstof(mysql(SELECT.METER_EXACT,strfirstof(%q<scene>,%1),sqlescape(%0)),mysql(SELECT.METER_WILD,strfirstof(%q<scene>,%1),sqlescape(%0))),mhist)=@pemit %#=Meter not found.};th setq(!,mysql2(SELECT.METER_INFO,%q<mhist>),mdata);
+
+&Q.UPDATE.METER.VALID_TO #scene=UPDATE meter_history SET meter_valid_to=NOW() WHERE meter_history_id=?
+
+&Q.INSERT.METER.VALUE #scene=INSERT INTO meter_history (meter_id,meter_name,meter_value,meter_target_number,meter_size,meter_type,meter_valid_from,meter_active) SELECT meter_id,meter_name,? AS meter_value,meter_target_number,meter_size,meter_type,meter_valid_to,meter_active FROM meter_view WHERE meter_history_id=?
+
+&SET.METER.VALUE #scene=th setq(!,elementsmux(%q<mdata>,6,^),from);@attach #inc/VALID.INT=%0;th setq(!,bound(%q<value>,0,elementsmux(%q<mdata>,8,^)),to);@attach #inc/DOSQL=UPDATE.METER.VALID_TO,%q<mhist>;@attach #inc/DOSQL=INSERT.METER.VALUE,%q<to>,%q<mhist>
+
+&Q.INSERT.METER.TN #scene=INSERT INTO meter_history (meter_id,meter_name,meter_value,meter_target_number,meter_size,meter_type,meter_valid_from,meter_active) SELECT meter_id,meter_name,meter_value,? AS meter_target_number,meter_size,meter_type,meter_valid_to,meter_active FROM meter_view WHERE meter_history_id=?
+
+&SET.METER.TN #scene=th setq(!,elementsmux(%q<mdata>,7,^),from);@attach #inc/VALID.POSINT=%0;th setq(!,%q<value>,to);@break/inline eq(%q<to>,%q<from>)=@pemit %#=That wouldn't change anything.;@attach #inc/DOSQL=UPDATE.METER.VALID_TO,%q<mhist>;@attach #inc/DOSQL=INSERT.METER.TN,%q<to>,%q<mhist>
+
+&Q.INSERT.METER.SIZE #scene=INSERT INTO meter_history (meter_id,meter_name,meter_value,meter_target_number,meter_size,meter_type,meter_valid_from,meter_active) SELECT meter_id,meter_name,meter_value,meter_target_number,? AS meter_size,meter_type,meter_valid_to,meter_active FROM meter_view WHERE meter_history_id=?
+
+&SET.METER.SIZE #scene=th setq(!,elementsmux(%q<mdata>,8,^),from);@attach #inc/VALID.POSINT=%0;th setq(!,%q<value>,to);@break/inline eq(%q<to>,%q<from>)=@pemit %#=That wouldn't change anything.;@break/inline gt(elementsmux(%q<mdata>,6,^),%q<to>)=@pemit %#=Setting size less than the meter's value is not allowed.;@attach #inc/DOSQL=UPDATE.METER.VALID_TO,%q<mhist>;@attach #inc/DOSQL=INSERT.METER.SIZE,%q<to>,%q<mhist>
+
+&Q.INSERT.METER.TYPE #scene=INSERT INTO meter_history (meter_id,meter_name,meter_value,meter_target_number,meter_size,meter_type,meter_valid_from,meter_active) SELECT meter_id,meter_name,meter_value,meter_target_number,meter_size,? AS meter_type,meter_valid_to,meter_active FROM meter_view WHERE meter_history_id=?
+
+&SET.METER.TYPE #scene=th setq(!,switch(elementsmux(%q<mdata>,9,^),0,Positive,1,Negative,2,Balance),from);@attach #inc/VALID.POSINT=%0;@attach #inc/PARTIAL=%0,Positive|Negative|Balance,|,to,Meter Type;@break/inline strmatch(%q<from>,%q<to>)=@pemit %#=That wouldn't change anything.;@attach #inc/DOSQL=UPDATE.METER.VALID_TO,%q<mhist>;@attach #inc/DOSQL=INSERT.METER.TYPE,switch(%q<to>,Positive,0,Negative,1,Balance,2),%q<mhist>
+
+&Q.INSERT.METER.NAME #scene=INSERT INTO meter_history (meter_id,meter_name,meter_value,meter_target_number,meter_size,meter_type,meter_valid_from,meter_active) SELECT meter_id,? AS meter_name,meter_value,meter_target_number,meter_size,meter_type,meter_valid_to,meter_active FROM meter_view WHERE meter_history_id=?
+
+&SET.METER.NAME #scene=th setq(!,switch(elementsmux(%q<mdata>,5,^),0,Positive,1,Negative,2,Balance),from);@assert/inline strlen(setr(!,trim(stripansi(%0)),to))=@pemit %#=No name entered!;@break badchars(%q<to>)=@pemit %#=Invalid name! Contains bad characters.;@break/inline isint(mysql(SELECT.METER_EXACT,%q<scene>,sqlescape(%q<to>)))=@pemit %#=That name is already in use!;@attach #inc/DOSQL=UPDATE.METER.VALID_TO,%q<mhist>;@attach #inc/DOSQL=INSERT.METER.NAME,%q<to>,%q<mhist>
+
+&Q.INSERT.METER.ACTIVE #scene=INSERT INTO meter_history (meter_id,meter_name,meter_value,meter_target_number,meter_size,meter_type,meter_valid_from,meter_active) SELECT meter_id,meter_name,meter_value,meter_target_number,meter_size,meter_type,meter_valid_to,? AS meter_active FROM meter_view WHERE meter_history_id=?
+
+&SET.METER.ACTIVE #scene=th setq(!,elementsmux(%q<mdata>,7,^),from);@attach #inc/VALID.POSINT=%0;th setq(!,bound(%q<value>,0,1),to);@break/inline eq(%q<to>,%q<from>)=@pemit %#=That wouldn't change anything.;@attach #inc/DOSQL=UPDATE.METER.VALID_TO,%q<mhist>;@attach #inc/DOSQL=INSERT.METER.ACTIVE,%q<to>,%q<mhist>
+
+&SW.METER.SET #scene=@attach %!/LOCALSCENE;@attach %!/CANCONTROL;@assert/inline mysql(SELECT.SCENE_ACTIVE,%q<scene>)=@pemit %#=Scene %q<scene> is not active. Cannot alter meters.;@attach %!/TARGETMETER=before(%0,/);@attach #inc/PARTIAL=after(%0,/),Name|TN|Type|Size|Value|Active,|,choice,Meter Parameter;@attach %!/SET.METER.%q<choice>=%1;@if t(%2)={@pemit %#=You quietly set the meter's %q<type> from %q<from> to %q<to>.},{@attach %!/MSG_SCENE=%q<scene>,0,lcon(%l,LISTEN,,,1),$You() altered Meter [elementsmux(%q<mdata>,1,^)]'s %q<choice> from %q<from> to %q<to>.};@attach %!/HANDLE_RECORD_SYSTEM_ACTOR=%q<scene>,%:,Meter,Altered Meter [elementsmux(%q<mdata>,1,^)]'s %q<choice> from %q<from> to %q<to>
+
+&SW.METER.SETSILENT #scene=@attach %!/SW.METER.SET=%0,%1,1
+
+&FINDABILITY #scene=@attach #inc/PARTIAL=%0,u(#abi_info/FN.LIST_FILENAMES,setr(!,%:,target)),|,filename,Ability;th setq(!,u(#abi_info/FN.FILENAME,%q<filename>),attr);@assert/inline hasattr(%q<target>,%q<attr>.NAME)=@pemit %#=Code error! No attribute for this name. Contact a codewiz.;th setq(!,default(%q<target>/%q<attr>.VALUE,0),abivalue)
+
+&RE.ROLL #scene=(?:(\d+)x\s+)?([^\/]+)(?:\/((?:-)?\d+))?
+
+&DOROLL #scene=@assert/inline regmatchi(%0,v(RE.ROLL),-1 x y z)=@pemit %#=Invalid roll syntax!;@attach %!/FINDABILITY=%qy;th setq(!,strfirstof(%qz,0),value);th setq(!,strfirstof(%qx,1),rolls);th setq(!,iter(lnum(%q<rolls>),dice(2,10,2),%B,|),allrolls);th setq(!,lmax(iter(%q<allrolls>,ladd(%i0),|,|),|),bestroll);th setq(!,add(%q<abivalue>,%q<value>),modifier);th setq(!,add(%q<modifier>,%q<bestroll>),total)
+
+&FORMATROLL #scene=[cname(%#)] rolled [ansi(hw,2d10 [chr(40)][if(gt(%q<rolls>,1),Best of%B)][edit(%q<allrolls>,|,[chr(44)]%B)][if(gt(%q<rolls>,1),%B=%q<bestroll>)][chr(41)])][ansi(hg,+%q<filename>[chr(40)]%q<abivalue>[chr(41)])][if(%q<value>,if(gte(%q<value>,0),ansi(hg,+%q<value>),ansi(hr,%q<value>)))]: [ansi(hw,%q<total>)]
+
+&GAINREMOVE #scene=@attach %!/LOCALSCENE;@assert/inline mysql(SELECT.SCENE_ACTIVE,%q<scene>)=@pemit %#=Scene %q<scene> is not active. Cannot alter meters.;@attach %!/TARGETMETER=%0;@if eq(%2,-1)={@break/inline lte(elementsmux(%q<mdata>,6,^),0)=@pemit %#=That meter is already at 0!},{@break/inline gte(elementsmux(%q<mdata>,6,^),elementsmux(%q<mdata>,8,^))=@pemit %#=That meter is already maxed!};@attach %!/DOROLL=%1;th setq(!,sub(%q<total>,elementsmux(%q<mdata>,7,^)),overage);th setq(!,elementsmux(%q<mdata>,6,^),oldvalue);@if gte(%q<overage>,0)={th setq(!,div(%q<overage>,5),ex);th setq(!,add(1,%q<ex>),mod);th setq(!,mul(%q<mod>,%2),change);th setq(!,bound(add(%q<oldvalue>,%q<change>),0,elementsmux(%q<mdata>,8,^)),newvalue)},{th iter(ex mod change,setq(!,0,%i0));th setq(!,%q<oldvalue>,newvalue)};th setq(!,[if(eq(%2,-1),ansi(hr,Remove Roll),ansi(hg,Gain Roll))] for Meter [elementsmux(%q<mdata>,3,^)] '[elementsmux(%q<mdata>,5,^)]' [chr(40)][switch(elementsmux(%q<mdata>,9,^),0,Positive,1,Negative,2,Balance)][chr(41)]%R[u(FORMATROLL)][chr(44)] against Target Number [ansi(hc,elementsmux(%q<mdata>,7,^))] - [if(eq(%q<mod>,0),ansi(hr,failure!),[ansi(hw,%q<overage>)] over TN for %q<ex> extra success[if(eq(%q<ex>,1),,es)]! Meter [if(eq(%2,-1),ansi(hr,has lost %q<mod>),ansi(hg,has gained %q<mod>))] point[if(eq(%q<mod>,1),,s)]! Now at %q<newvalue> from %q<oldvalue>.)],msg);@attach %!/MSG_SCENE=%q<scene>,0,lcon(%l,LISTEN,,,1),%q<msg>;@attach %!/SET.METER.VALUE=%q<newvalue>;@attach %!/HANDLE_RECORD_SYSTEM_ACTOR=%q<scene>,%:,Meter,%q<msg>
+
+&SW.METER.GAIN #scene=@attach %!/GAINREMOVE=%0,%1,1
+
+&SW.METER.REMOVE #scene=@attach %!/GAINREMOVE=%0,%1,-1
+
+&Q.INSERT.METER.SIZE #scene=INSERT INTO meter_history (meter_id,meter_name,meter_value,meter_target_number,meter_size,meter_type,meter_valid_from,meter_active) SELECT meter_id,meter_name,meter_value,meter_target_number,? AS meter_size,meter_type,meter_valid_to,meter_active FROM meter_view WHERE meter_history_id=?
+
+&SW.CHALLENGE.MAIN #scene=@attach %!/DOROLL=%0;th setq(!,u(FORMATROLL),msg);@if cand(isint(setr(!,get(%l/GAME.SCENE),scene)),mysql(SELECT.SCENE_ACTIVE,%q<scene>))={@attach %!/HANDLE_RECORD_SYSTEM_ACTOR=%q<scene>,%:,Challenge,CHALLENGE: %q<msg>;@attach %!/MSG_SCENE=%q<scene>,0,lcon(%l,mLISTEN,,,1),CHALLENGE: %q<msg>},{@remit %l=CHALLENGE: %q<msg>}
+
+&HLP.METER #scene=The +meter and +challenge commands make up our [ansi(hw,Challenge Resolution System)] for tracking plot progress and challenges of ability.%R%R[ansi(hc,Notes)]%R[ansi(hw,Roll Syntax:)] A roll syntax aka <roll> is defined as: [chr(91)]<#>x%B[chr(93)]<ability>[chr(91)]/<modifier>[chr(93)]%RFor instance, [ansi(hw,3x Archery+3)], or just [ansi(hw,Archery)]. The <#>x is number of rolls (assumed 1 if omitted), <ability> will retrieve the value of an +abi file, and optional <modifier> will be added to the role. (negative is allowed.)%R%R[ansi(hw,METER TYPES:)] A [ansi(hw,Positive)] meter must be filled to the max to be considered resolved. This is supposed to be a good thing. A [ansi(hw,Negative)] meter starts filled and removing points from it is supposed to be a good thing. Finally, a [ansi(hw,Balance)] meter represents two mutually exclusive goals at odds with each other, and is like a tug of war. One team removes points, another adds them.%R%R[ansi(hw,ROLLS:)] Each Meter has a Target Number. Rolls are 2d10 + Ability Value + Modifier. The best of the # of rolls will be chosen. A roll that meets or exceeds the Target Number wins 1 point. Divide remaining points over TN by 5 for extra points. +meter/gain and +meter/remove automatically tally it up.%R%R[ansi(hw,SCENESYS:)] All +meters are linked to a specific Scene. Most +meter commands will automatically target an active scene in the room. Only Scene runners may create, resolve, or /set a +meter's parameters. Any changes to +meter are tracked in the scene log automatically.%R%R[ansi(hc,+meter syntax)]%R[ansi(hw,+meter [chr(91)]<scene>[chr(91)]=<time>[chr(93)][chr(93)])]%R%TWithout arguments, displays meters of current detected Scene. With arguments, can show meters of a specified scene at now or a given time.%R%R[ansi(hw,+meter/create <name>=<TN>/<TYPE>/<SIZE>)]%R%TCreate a meter.%R%R[ansi(hw,+meter/set <meter>/<trait>=<value>)]%R%TAlter a meter. <trait> can be Name, Type, Size, Value, TN, or Active. use /setsilent to do it without a room announce.%R%R[ansi(hw,+meter/gain <meter>=<roll>)]%R%TAdd points to a meter with a successful roll.%R%R[ansi(hw,+meter/remove <meter>=<roll>)]%R%TRemove points from a meter with a successful roll. %R%R[ansi(hw,+challenge <roll>)]%R%TA challenge roll doesn't target a meter and has no TN. However, it WILL log to an active scene in the room if present.
+
++help/add Communications/+meter=#scene/HLP.METER

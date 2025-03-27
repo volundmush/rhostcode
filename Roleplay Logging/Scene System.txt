@@ -10,7 +10,7 @@
 &Q.SELECT.SCENE_VIEW #scene=SELECT ! FROM scene_view WHERE scene_id=?
 
 &LIST.SCENES.COLUMN #scene=printf($-5s $-40s $-21s $-11s,ID,Title,Owner,Status)
-&LIST.SCENES.ROW #scene=printf($-5s $-40s $-21s $-11s,%0,mysql(SELECT.SCENE,scene_title,%0),if(isobjid(elements(setr(!,mysql2(SELECT.SCENE_VIEW,owner_objid[chr(44)]owner_name[chr(44)]scene_status_name,%0),data),1,^)),cname(elements(%q<data>,1,^)),elements(%q<data>,2,^)),elements(%q<data>,3,^))
+&LIST.SCENES.ROW #scene=printf($-5s $-40s $-21s $-11s,%0,mysql(SELECT.SCENE,scene_title,%0),if(isobjid(elementsmux(setr(!,mysql2(SELECT.SCENE_VIEW,owner_objid[chr(44)]owner_name[chr(44)]scene_status_name,%0),data),1,^)),cname(elementsmux(%q<data>,1,^)),elementsmux(%q<data>,2,^)),elementsmux(%q<data>,3,^))
 
 &LIST.SCENES #scene=@pemit %#=header(%0);@pemit %#=ansi(confoverride(%#,COLUMN),u(LIST.SCENES.COLUMN));@if words(%1)={@dolist/inline %1={@pemit %#=u(LIST.SCENES.ROW,%d0)}};@pemit %#=footer();
 @@ %0 - header display. %1 - list of scene IDs.
@@ -22,7 +22,7 @@
 &Q.SELECT.ROLES #scene=SELECT ! FROM actrole_view WHERE actor_id=?
 
 &FN.SCENE_PLAYERS.COLUMN #scene=printf($-10s $-21s $-10s $-34s,Status,Name,PoseCount,Roles)
-&FN.SCENE_PLAYERS.ROW #scene=printf($-10s $-21s $-10s $-|"34s,elements(%0,4,^),if(isobjid(elements(%0,1,^)),cname(elements(%0,1,^)),elements(%0,2,^)%B\(Deleted\)),elements(%0,5,^),edit(mysql2(SELECT.ROLES,actrole_name,elements(%0,6,^)),|,chr(44)%B))
+&FN.SCENE_PLAYERS.ROW #scene=printf($-10s $-21s $-10s $-|"34s,elementsmux(%0,4,^),if(isobjid(elementsmux(%0,1,^)),cname(elementsmux(%0,1,^)),elementsmux(%0,2,^)%B\(Deleted\)),elementsmux(%0,5,^),edit(mysql2(SELECT.ROLES,actrole_name,elementsmux(%0,6,^)),|,chr(44)%B))
 
 &Q.SELECT.SCENE_PLOTS #scene=SELECT plot_id FROM scene_plot WHERE scene_id=?
 
@@ -31,11 +31,11 @@
 &SW.SCENE.MAIN #scene=@if isint(%0)={@attach %!/INC.SCENE.DISPLAY},{@attach #inc/GET_PLAYER=strfirstof(%0,%#),t1;@attach %!/LIST.SCENES=[if(strmatch(%q<t1>,%:),Your,cname(%q<t1>)'s)] Incomplete Scenes,mysql(SELECT.SCENES_OF,%q<t1>,<3)}
 
 &FN.SCHEDULE.COLUMN #scene=printf($-6s $-5s $-36s $-21s $-8s,Tags,ID,TItle,Owner,Time)
-&FN.SCHEDULE.ROW #scene=printf($-1s$:0:2s/$:0:2s $5-s $-36s $21-s $-8s,[setq(!,filterobjid(elements(%0,5,^)),objids)][if(strmatch(%:,elements(%0,2,^)),ansi(hg,*),if(match(setr(!,u(#acc/FN.CHARACTERS,account(%:)),alts),%:),ansi(g,*),if(match(%q<objids>,%:),ansi(hr,*),if(words(setinter(%q<alts>,%q<objids>)),ansi(r,*)))))],words(%q<objids>),switch(elements(%0,6,^),>0,elements(%0,6,^),--),elements(%0,1,^),mysql(SELECT.SCENE,scene_title,elements(%0,1,^)),if(isobjid(elements(%0,2,^)),cname(elements(%0,2,^)),elements(%0,3,^)%B\(Deleted\)),fancytime(elements(%0,4,^),4,%#,$H:$T$P))
+&FN.SCHEDULE.ROW #scene=printf($-1s$:0:2s/$:0:2s $5-s $-36s $21-s $-8s,[setq(!,filterobjid(elementsmux(%0,5,^)),objids)][if(strmatch(%:,elementsmux(%0,2,^)),ansi(hg,*),if(match(setr(!,u(#acc/FN.CHARACTERS,account(%:)),alts),%:),ansi(g,*),if(match(%q<objids>,%:),ansi(hr,*),if(words(setinter(%q<alts>,%q<objids>)),ansi(r,*)))))],words(%q<objids>),switch(elementsmux(%0,6,^),>0,elementsmux(%0,6,^),--),elementsmux(%0,1,^),mysql(SELECT.SCENE,scene_title,elementsmux(%0,1,^)),if(isobjid(elementsmux(%0,2,^)),cname(elementsmux(%0,2,^)),elementsmux(%0,3,^)%B\(Deleted\)),fancytime(elementsmux(%0,4,^),4,%#,$H:$T$P))
 
 &Q.SELECT.UPCOMING #scene=SELECT scene_id,owner_objid,owner_name,scene_date_scheduled_secs,tagged_objids,scene_capacity FROM scene_scheduled
 
-&SW.SCENE.UPCOMING #scene=@pemit %#=header(Upcoming Scenes - [gettz(%#)]);@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.SCHEDULE.COLUMN));@if words(setr(!,mysql2(SELECT.UPCOMING),data),|)={@dolist/inline/delimit | %q<data>={@skip strmatch(%q<lastdate>,setr(!,fancytime(elements(%d0,4,^),4,%#,$a $b $D $Y),lastdate))={@pemit %#=separator(%q<lastdate>)};@pemit %#=u(FN.SCHEDULE.ROW,%d0)}};@pemit %#=footer()
+&SW.SCENE.UPCOMING #scene=@pemit %#=header(Upcoming Scenes - [gettz(%#)]);@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.SCHEDULE.COLUMN));@if words(setr(!,mysql2(SELECT.UPCOMING),data),|)={@dolist/inline/delimit | %q<data>={@skip strmatch(%q<lastdate>,setr(!,fancytime(elementsmux(%d0,4,^),4,%#,$a $b $D $Y),lastdate))={@pemit %#=separator(%q<lastdate>)};@pemit %#=u(FN.SCHEDULE.ROW,%d0)}};@pemit %#=footer()
 
 &SW.SCENE.OLD #scene=@attach #inc/GET_PLAYER=strfirstof(%0,%#),t1;@attach %!/LIST.SCENES=[if(strmatch(%q<t1>,%:),Your,cname(%q<t1>)'s)] Finished Scenes,mysql(SELECT.SCENES_OF,%q<t1>,=3)
 
@@ -51,10 +51,8 @@
 &Q.PREPACT.INSERT #scene=INSERT actor (scene_id,entity_id,actor_date_created) VALUES (?,?,FROM_UNIXTIME(?))
 &FN.PREPACT #scene=privatize(1,if(isint(setr(!,mysql(PREPACT.SELECT,%0,objid(%1)),res)),%q<res>,if(!strlen(setr(!,mysql(PREPACT.INSERT,%0,u(FN.PREPENT,%1),secs()),res)),u(FN.PREPACT,%0,%1),#-1 SQL ERROR: %q<res>)))
 
-&Q.INSERT.POSE #scene=INSERT INTO pose (actrole_id,channel_id,pose_text,pose_date_created) VALUES (!,?,?,?)
+
 &Q.UPDATE.POSE.FIELD #scene=UPDATE pose SET !=? WHERE pose_id=?
-&INSERT_POSE #scene=@attach #inc/DOSQL=INSERT.POSE/pose_id,%0,%1,%2,strfirstof(%3,secs())
-@@ %0 - actrole (ID or NULL), %1 - channel id, %2 - text, %3 - optional timestamp
 
 &Q.UPDATE.SCENE #scene=UPDATE scene SET !=? WHERE scene_id=?
 &Q.UPDATE.SCENE.UNIXTIME #scene=UPDATE scene SET !=FROM_UNIXTIME(?) WHERE scene_id=?
@@ -67,7 +65,7 @@
 &Q.INSERT.ACTOR #scene=INSERT actor (scene_id,entity_id,actor_type,actor_date_created) VALUES (?,?,?,FROM_UNIXTIME(?))
 
 &MSG_SCENE #scene=@pemit/list [setunion(sql(SELECT entity_objid FROM actor_view WHERE scene_id=%0 AND actor_type>=%1),%2)]=[ansi(c,SCENE %0:)] [gm_format(%3,##,%:)]
-@@ %0 - scene id, %1 - minimum actor_type to display to, %2 - extra objids to send to. %3 - message.
+@@ %0 - scene id, %1 - minimum actor_type to display to, %2 - extra objids to send to. %3 - message. %4 - send to this room too.
 
 &Q.INSERT.SCENE #scene=INSERT INTO scene (scene_title,scene_date_created,scene_date_scheduled) VALUES (?,FROM_UNIXTIME(?),FROM_UNIXTIME(?))
 
@@ -113,7 +111,9 @@
 &Q.SELECT.POSE #scene=SELECT ! FROM pose_view WHERE scene_id=? and pose_id=?
 &Q.UPDATE.POSE #scene=UPDATE pose SET !=? WHERE pose_id=?
 
-&FINDPOSE #scene=@assert/inline cand(isint(setr(!,get(%l/GAME.SCENE),scene)),mysql(SELECT.SCENE_ACTIVE,%q<scene>))=@pemit %#=No locally active scene!;@assert/inline strlen(%0)=@pemit %#=No pose ID entered!;@assert/inline isint(setr(!,mysql(SELECT.POSE,pose_id,%q<scene>,%0),pose))=@pemit %#=Pose ID '%0' not found in Scene %q<scene>.;@assert/inline eq(%q<ent>,mysql(SELECT.POSE,entity_id,%q<scene>,%q<pose>))=@pemit %#=Permission denied. You are not the poster.;@break/inline eq(mysql(SELECT.SCENE,scene_status,%q<scene>),3)=@pemit %#=That scene is finished!;@break/inline gte(sub(secs(),mysql(SELECT.POSE,pose_date_created_secs,%q<scene>,%q<pose>)),mul(60,60,2))=@pemit %#=That pose is older than 2 hours. It can no longer be modified.
+&LOCALSCENE #scene=@assert/inline cand(isint(setr(!,get(%l/GAME.SCENE),scene)),mysql(SELECT.SCENE_ACTIVE,%q<scene>))=@pemit %#=No locally active scene!
+
+&FINDPOSE #scene=@attach %!/LOCALSCENE;@assert/inline strlen(%0)=@pemit %#=No pose ID entered!;@assert/inline isint(setr(!,mysql(SELECT.POSE,pose_id,%q<scene>,%0),pose))=@pemit %#=Pose ID '%0' not found in Scene %q<scene>.;@assert/inline eq(%q<ent>,mysql(SELECT.POSE,entity_id,%q<scene>,%q<pose>))=@pemit %#=Permission denied. You are not the poster.;@break/inline eq(mysql(SELECT.SCENE,scene_status,%q<scene>),3)=@pemit %#=That scene is finished!;@break/inline gte(sub(secs(),mysql(SELECT.POSE,pose_date_created_secs,%q<scene>,%q<pose>)),mul(60,60,2))=@pemit %#=That pose is older than 2 hours. It can no longer be modified.
 
 &SW.SCENE.EDIT #scene=@attach %!/FINDPOSE=%0;@assert/inline strlen(setr(!,first(%0,^^^),before))=@pemit %#=Nothing entered to edit!;th setq(!,rest(%0,^^^),after);th setq(!,mysql(SELECT.POSE,pose_text,%q<scene>,%q<pose>),data);th setq(!,medit(%q<data>,%q<before>,%q<after>),newpose);@break/inline eq(0,comp(%q<data>,%q<newpose>))=@pemit %#=Nothing seems to have changed!;@attach #inc/DOSQL=UPDATE.POSE,pose_text,%q<newpose>,%q<pose>;@attach %!/MSG_SCENE=%q<scene>,0,%:,$you() edited Pose %q<pose>: '%q<before>' to '%q<after>'
 
@@ -122,7 +122,7 @@
 
 &Q.SELECT.RECALL #scene=SELECT pose_id,channel_category,channel_category_name,display_name,channel_name FROM pose_view WHERE scene_id=? AND pose_is_deleted=0 ORDER by pose_id DESC LIMIT ?
 
-&SW.SCENE.RECALL #scene=@attach %!/FINDSCENE=%0,scene;@if strlen(%1)={@attach #inc/VALID.POSINT=%1,Pose Count},{th setq(!,10,value)};@assert/inline words(setr(!,mysql2(SELECT.RECALL,%q<scene>,%q<value>),poses))=@pemit %#=No poses to recall!;@pemit %#=header(Last %q<value> logged actions for Scene %q<scene>);@dolist/inline/delimit | [revwords(%q<poses>,|)]={@pemit %#=separator([chr(91)][ansi(hg,elements(%d0,1,^))][chr(93)]%B[ansi(hw,By)]%B[elements(%d0,4,^)][chr(44)]%B[ansi(hw,via:)]%B[elements(%d0,3,^)]);@pemit %#=mysql(SELECT.POSE,pose_text,%q<scene>,elements(%d0,1,^))};@pemit %#=footer()
+&SW.SCENE.RECALL #scene=@attach %!/FINDSCENE=%0,scene;@if strlen(%1)={@attach #inc/VALID.POSINT=%1,Pose Count},{th setq(!,10,value)};@assert/inline words(setr(!,mysql2(SELECT.RECALL,%q<scene>,%q<value>),poses))=@pemit %#=No poses to recall!;@pemit %#=header(Last %q<value> logged actions for Scene %q<scene>);@dolist/inline/delimit | [revwords(%q<poses>,|)]={@pemit %#=separator([chr(91)][ansi(hg,elementsmux(%d0,1,^))][chr(93)]%B[ansi(hw,By)]%B[elementsmux(%d0,4,^)][chr(44)]%B[ansi(hw,via:)]%B[elementsmux(%d0,3,^)]);@pemit %#=mysql(SELECT.POSE,pose_text,%q<scene>,elementsmux(%d0,1,^))};@pemit %#=footer()
 
 @@ PLOT Section
 &SWITCHES.PLOT.0 #scene=ADDHELPER|REMHELPER|ADDSCENE|REMSCENE
@@ -135,12 +135,12 @@
 &FINDPLOT #scene=@assert/inline strlen(%0)=@pemit %#=No Plot ID entered!;@assert/inline isint(setr(!,mysql(SELECT.PLOT,plot_id,%0),%1))=@pemit %#=That isn't a valid Plot ID!;th setq(!,mysql(SELECT.PLOT,plot_title,%0),pname);
 
 &FN.PLOTSCENE.COLUMNS #scene=printf($-4s $-20s $-10s $-15s $-15s,ID,Title,Status,Started,Finished)
-&FN.PLOTSCENE.ROW #scene=printf($-4s $-20s $-10s $-15s $-15s,%0,mysql(SELECT.SCENE_VIEW,scene_title,%0),elements(setr(!,mysql2(SELECT.SCENE_VIEW,scene_status_name[chr(44)]scene_date_started_secs[chr(44)]scene_date_activity_secs,%0),data),1,^),fancytime(elements(%q<data>,2,^)),fancytime(elements(%q<data>,3,^)))
+&FN.PLOTSCENE.ROW #scene=printf($-4s $-20s $-10s $-15s $-15s,%0,mysql(SELECT.SCENE_VIEW,scene_title,%0),elementsmux(setr(!,mysql2(SELECT.SCENE_VIEW,scene_status_name[chr(44)]scene_date_started_secs[chr(44)]scene_date_activity_secs,%0),data),1,^),fancytime(elementsmux(%q<data>,2,^)),fancytime(elementsmux(%q<data>,3,^)))
 
 &Q.SELECT.RUNNERS #scene=SELECT entity_objid,entity_name,runner_type_name FROM plot_runner_view WHERE plot_id=? ORDER BY runner_type ASC
 
 &FN.PLOTRUNNER.COLUMNS #scene=printf($-30s $-20s,Name,Status)
-&FN.PLOTRUNNER.ROW #scene=printf($-30s $-20s,if(isobjid(elements(%0,1,^)),cname(elements(%0,1,^)),elements(%0,2,^)%B\(Deleted\)),elements(%0,3,^))
+&FN.PLOTRUNNER.ROW #scene=printf($-30s $-20s,if(isobjid(elementsmux(%0,1,^)),cname(elementsmux(%0,1,^)),elementsmux(%0,2,^)%B\(Deleted\)),elementsmux(%0,3,^))
 
 &INC.PLOT.DISPLAY #scene=@attach %!/FINDPLOT=%0,plot;@pemit %#=header(Plot %q<plot>: '%q<pname>');@dolist/inline Start End={@if isint(setr(!,mysql(SELECT.PLOT,plot_date_[lcstr(%d0)]_secs,%q<plot>),timestamp))={@pemit %#=[ansi(hw,%d0 Date:)]%b[fancytime(%q<timestamp>)]}};@if strlen(setr(!,mysql2(SELECT.RUNNERS,%q<plot>),runners))={@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.PLOTRUNNER.COLUMNS));@dolist/inline/delimit | %q<runners>={@pemit %#=u(FN.PLOTRUNNER.ROW,%d0)}};@dolist/inline Pitch Outcome={@if strlen(setr(!,mysql(SELECT.PLOT,plot_[lcstr(%d0)],%q<plot>),text))={@pemit %#=separator(%d0);@pemit %#=%q<text>}};@if words(setr(!,mysql(SELECT.PLOT_SCENES,%q<plot>),scenes))={@pemit %#=separator(Related Scenes);@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.PLOTSCENE.COLUMNS));@dolist/inline %q<scenes>={@pemit %#=u(FN.PLOTSCENE.ROW,%d0)}};@pemit %#=footer()
 
@@ -230,13 +230,28 @@
 
 &Q.INCREMENT.ACTION_COUNT #scene=UPDATE actor SET action_count=action_count+1 WHERE actor_id=?
 
-&HANDLE_RECORD #scene=@skip isint(setr(!,mysql(SELECT.CHANNEL,channel_id,%0,0,Actions),chan_id))={@attach #inc/DOSQL=INSERT.CHANNEL/chan_id,%0,Actions,NULL,0};th setq(!,u(FN.PREPACT,%0,%1),actor);@skip isint(setr(!,mysql(SELECT.ACTROLE,%q<actor>,setr(!,strfirstof(stripansi(setr(!,get(%1/GAME.SCENE.ROLE),setrole)),name(%1)),actname)),role_id))={@attach #inc/DOSQL=INSERT.ACTROLE/role_id,%q<actor>,%q<actname>};@attach #inc/DOSQL=INSERT.POSE/pose_id,%q<role_id>,%q<chan_id>,secs(),%2;@attach #inc/DOSQL=INCREMENT.ACTION_COUNT,%q<actor>;@attach #inc/DOSQL=UPDATE.SCENE.UNIXTIME,scene_date_activity,secs(),%q<scene>;
+&GET_ACTROLE #scene=th setq(!,u(FN.PREPACT,%0,%1),actor);@skip isint(setr(!,mysql(SELECT.ACTROLE,%q<actor>,setr(!,strfirstof(stripansi(setr(!,get(%1/GAME.SCENE.ROLE),setrole)),name(%1)),actname)),role_id))={@attach #inc/DOSQL=INSERT.ACTROLE/role_id,%q<actor>,%q<actname>}
+@@ %0 - scene id, %1 - actor objid.
+&GET_CHANNEL #scene=@skip isint(setr(!,mysql(SELECT.CHANNEL,channel_id,%0,%1,%2),chan_id))={@attach #inc/DOSQL=INSERT.CHANNEL/chan_id,%0,%2,NULL,%1}
+@@ %0 - scene id
+
+@@ For normal roleplay actions. say, pose, @emit, etc.
+&HANDLE_RECORD_ACTION #scene=@attach %!/GET_CHANNEL=%0,0,Actions;@attach %!/GET_ACTROLE=%0,%1;@attach #inc/DOSQL=INSERT.POSE/pose_id,%q<role_id>,%q<chan_id>,secs(),%2;@attach #inc/DOSQL=INCREMENT.ACTION_COUNT,%q<actor>;@attach #inc/DOSQL=UPDATE.SCENE.UNIXTIME,scene_date_activity,secs(),%q<scene>
+@@ %0 - scene ID, %1 - actor objid, %2 - pose content.
+
+@@ System messages which have a player source. Dice rolls, +meter, etc.
+&HANDLE_RECORD_SYSTEM_ACTOR #scene=@attach %!/GET_CHANNEL=%0,2,%2;@attach %!/GET_ACTROLE=%0,%1;@attach #inc/DOSQL=INSERT.POSE/pose_id,%q<role_id>,%q<chan_id>,secs(),%3;@attach #inc/DOSQL=UPDATE.SCENE.UNIXTIME,scene_date_activity,secs(),%q<scene>
+@@ %0 - scene id, %1 - actor objid, %2 - system name, %3 - pose content.
+
+@@ System messages which came from... well, the system. They have no actor.
+&HANDLE_RECORD_SYSTEM #scene=@attach %!/GET_SYSTEM_CHANNEL=%0,2,%1;@attach #inc/DOSQL=INSERT.POSE/pose_id,NULL,%q<chan_id>,secs(),%2;@attach #inc/DOSQL=UPDATE.SCENE.UNIXTIME,scene_date_activity,secs(),%q<scene>
+@@ %0 - scene id, %1 - system name, %2 - pose content.
 
 &SCENE_HEADER #scene=th setq(!,cname(%1)[if(strlen(%q<setrole>),%B\(as %q<setrole>\))],dname);th setq(!,[chr(91)][ansi(hg,Scene %0)][chr(93)] %q<dname>'s Pose [chr(91)][ansi(hg,%q<pose_id>)][chr(93)]%B>,disp);th setq(!,printf($^78s,%q<disp>),minimal);@dolist/inline setr(!,lcon(%l,CONNECT),recip)={@if accoption(%d0,SCENEBORDER)={@pemit %d0=subheader(%q<disp>,%d0)},{@pemit %d0=%q<minimal>}}
 
 &SCENE_FOOTER #scene=@dolist/inline %q<recip>={@if accoption(%d0,SCENEBORDER)={@pemit %d0=footer(,%d0)}}
 
-&OVERRIDE #scene=@assert/inline elock(%l/SpeechLock,%#)=@pemit %#=You may not express yourself here.;th setq(!,cand(isint(setr(!,get(%l/GAME.SCENE),scene)),mysql(SELECT.SCENE_ACTIVE,%q<scene>)),sceneactive);th setq(!,u(FN.OVERRIDE,%0,%1,%:,if(%q<sceneactive>,get(%#/GAME.SCENE.ROLE))),pose);@if %q<sceneactive>={@attach %!/HANDLE_RECORD=%q<scene>,%:,%q<pose>;@attach %!/SCENE_HEADER=%q<scene>,%:};@remit %l=%q<pose>;@if t(%q<sceneactive>)={@attach %!/SCENE_FOOTER=%q<scene>,%:}
+&OVERRIDE #scene=@assert/inline elock(%l/SpeechLock,%#)=@pemit %#=You may not express yourself here.;th setq(!,cand(isint(setr(!,get(%l/GAME.SCENE),scene)),mysql(SELECT.SCENE_ACTIVE,%q<scene>)),sceneactive);th setq(!,u(FN.OVERRIDE,%0,%1,%:,if(%q<sceneactive>,get(%#/GAME.SCENE.ROLE))),pose);@if %q<sceneactive>={@attach %!/HANDLE_RECORD_ACTION=%q<scene>,%:,%q<pose>;@attach %!/SCENE_HEADER=%q<scene>,%:};@remit %l=%q<pose>;@if t(%q<sceneactive>)={@attach %!/SCENE_FOOTER=%q<scene>,%:}
 
 &FN.OVERRIDE #scene=parsestr(switch(%0,pose,:%1,semipose,;%1,say,"%1,@emit,|%1),%0,",",,&[if(strlen(%3),%3,cname(%2))])
 @@ %0 type, %1 - message, %2 actor objid

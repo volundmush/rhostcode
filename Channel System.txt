@@ -13,7 +13,7 @@
 &FN.CHANNELS #chan_lib=sortname(lcon(%!,,,,1))
 &FN.VISIBLE_CHANNELS #chan_lib=filter(CHECK,u(FN.CHANNELS),%b,%b,TalkLock,%0)
 
-&FN.PLAYER_STATUS #chan_lib=if(match(get(%0/CHANINFO.[v(CHAN.GAG)]),objid(%1)),ansi(hx,Gag),if(match(get(%0/JOINED),objid(%1)),ansi(hg,On),ansi(hx,Off)))
+&FN.PLAYER_STATUS #chan_lib=if(match(get(%0/CHANINFO.[v(CHAN.GAG)]),objid(%1)),ansi(hx,Gag),if(match(u(GET_VALID_JOINED,%0),objid(%1)),ansi(hg,On),ansi(hx,Off)))
 @@ %0 - channel dbref, %1 - player objid
 
 &FN.VALID_NAME #chan_lib=ofparse(3,if(strlen(%0),1,#-1 CHANNEL NAMES CANNOT BE EMPTY),if(lte(strlen(%0),30),1,#-1 CHANNEL NAMES MUST BE <=30 CHARACTERS),if(valid(name,%0),1,#-1 CHANNEL NAMES MUST BE VALID THING NAMES))
@@ -31,17 +31,17 @@
 &INC.LIST #chan_lib=@pemit %#=header(u(FN.SYS_NAME) Channels);@pemit %#=u(FN.COLUMNS_%1);@pemit %#=separator();th setq(!,lwhoid(),online);@dolist/inline %0={@attach %!/INC.LIST_%1=%d0};@pemit %#=footer()
 
 &FN.COLUMNS_MAIN #chan_lib=ansi(confoverride(%#,COLUMN),printf($4-s $3s $-15s $|"-45s $:0:3s/$:0:3s,DBRF,Sta,Name,Description,Cur,Mem))
-&INC.LIST_MAIN #chan_lib=@pemit %#=printf($4-s $3s $-15s $|"-45s $:0:3s/$:0:3s,num(%0),u(FN.PLAYER_STATUS,%0,%#),cname(%0),default(%0/DESCRIBE,No description.),words(setinter(filterobjid(setr(!,get(%0/JOINED),mem)),%q<online>)),words(%q<mem>))
+&INC.LIST_MAIN #chan_lib=@pemit %#=printf($4-s $3s $-15s $|"-45s $:0:3s/$:0:3s,num(%0),u(FN.PLAYER_STATUS,%0,%#),cname(%0),default(%0/DESCRIBE,No description.),words(setinter(filterobjid(setr(!,u(GET_VALID_JOINED,%0),mem)),%q<online>)),words(%q<mem>))
 
 &FN.NAMES #chan_lib=elist(iter(filterobjid(%0),cname(%i0),%b,|),,|)
 
-&SW.WHO #chan_lib=@attach %!/INC.FIND;@pemit %#=[u(FN.NAMES,get(%q<chan>/JOINED)))]
+&SW.WHO #chan_lib=@attach %!/INC.FIND;@pemit %#=[u(FN.NAMES,u(GET_VALID_JOINED,%q<chan>)))]
 
 &SW.CONFIG #chan_lib=@attach %!/CONFIG=%0,%1,%!
 
 &SW.OPTIONS #chan_lib=@attach %!/INC.FIND=trim(before(%0,/));@assert/inline u(CHECK,%q<chan>,,%:)=@pemit %#=Permission denied.;@attach #inc/CONFIG=trim(after(%0,/)),%1,%q<chan>
 
-&SW.EXAMINE #chan_lib=@attach %!/INC.FIND;@attach %!/INC.ADMIN;@pemit %#=header(Examine: [cname(%q<chan>)] (%q<chan>));@pemit %#=[ansi(hw,JOINED:)]%B[u(FN.NAMES,get(%q<chan>/JOINED))];@pemit %#=[ansi(hw,GAGGING:)]%B[u(FN.NAMES,get(%q<chan>/GAGGING))];@if words(setr(!,get(%q<chan>/RESTRICT),restrict),|)={@pemit %#=separator(Restricted);@dolist/inline/delimit | %q<restrict>={@pemit %#=[cname(before(%d0,~))] - until [fancytime(after(%d0,~))]}};@pemit %#=separator(Locks);@dolist/inline/delimit | [get(%!/LOCKS)]={@pemit %#=[ansi(hw,%d0:)] [lock(%q<chan>/user|%d0)]};@pemit %#=footer()
+&SW.EXAMINE #chan_lib=@attach %!/INC.FIND;@attach %!/INC.ADMIN;@pemit %#=header(Examine: [cname(%q<chan>)] (%q<chan>));@pemit %#=[ansi(hw,JOINED:)]%B[u(FN.NAMES,u(GET_VALID_JOINED,%q<chan>))];@pemit %#=[ansi(hw,GAGGING:)]%B[u(FN.NAMES,get(%q<chan>/GAGGING))];@if words(setr(!,get(%q<chan>/RESTRICT),restrict),|)={@pemit %#=separator(Restricted);@dolist/inline/delimit | %q<restrict>={@pemit %#=[cname(before(%d0,~))] - until [fancytime(after(%d0,~))]}};@pemit %#=separator(Locks);@dolist/inline/delimit | [get(%!/LOCKS)]={@pemit %#=[ansi(hw,%d0:)] [lock(%q<chan>/user|%d0)]};@pemit %#=footer()
 
 &SW.DELETE #chan_lib=@attach %!/INC.FIND;@attach %!/INC.ADMIN;@assert/inline match(name(%q<chan>)|[num(%q<chan>)]|[objid(%q<chan>)],%1,|)=@pemit %#=Verify failed. Right side argument must be the channel's full name, dbref, or objid.;th setq(!,cname(%q<chan>),channame);@attach #inc/MSG_ALERT=Channel '%q<channame>' deleted.;th u(FN.CEMIT,%q<channame>,:has deleted the channel.);@set %q<chan>=!SAFE !INDESTRUCTIBLE;@destroy/override %q<chan>
 
@@ -62,7 +62,7 @@
 &SW.ON #chan_lib=@attach %!/SW.JOIN
 &SW.JOIN #chan_lib=@attach %!/INC.FIND;@break/inline match(get(%q<chan>/JOINED),%:)=@pemit %#=You are already a member!;@attach %!/JOIN_CHANNEL=%q<chan>,%:;@pemit %#=You have joined [cname(%q<chan>)].
 
-&JOIN_CHANNEL #chan_lib=@set %0=JOINED:[setunion(filterobjid(get(%0/JOINED)),%1)];@set %1=CHANNELS.[v(CHAN.TYPE)]:[setunion(filterobjid(get(%1/CHANNELS.[v(CHAN.TYPE)])),objid(%0))];@attach %!/UNGAG_CHANNEL=%0,%1;@attach %!/JOIN_CHANNEL_AFTER
+&JOIN_CHANNEL #chan_lib=@set %0=JOINED:[setunion(u(GET_VALID_JOINED,%0),%1)];@set %1=CHANNELS.[v(CHAN.TYPE)]:[setunion(filterobjid(get(%1/CHANNELS.[v(CHAN.TYPE)])),objid(%0))];@attach %!/UNGAG_CHANNEL=%0,%1;@attach %!/JOIN_CHANNEL_AFTER
 &JOIN_CHANNEL_AFTER #chan_lib=th u(FN.CEMIT,%0,:has joined the channel.,%1)
 @@ %0 - channel, %1 - new member
 
@@ -70,7 +70,7 @@
 
 &SW.LEAVE #chan_lib=@attach %!/INC.FIND;@assert/inline match(get(%q<chan>/JOINED),%:)=@pemit %#=You are not a member!;@attach %!/LEAVE_CHANNEL=%q<chan>,%:;@pemit %#=You have left the channel.
 
-&LEAVE_CHANNEL #chan_lib=@set %0=JOINED:[setdiff(filterobjid(get(%0/JOINED)),%1)];@set %1=CHANNELS.[v(CHAN.TYPE)]:[setdiff(filterobjid(get(%1/CHANNELS.[v(CHAN.TYPE)])),objid(%0))];@attach %!/UNGAG_CHANNEL=%0,%1;@attach %!/LEAVE_CHANNEL_AFTER
+&LEAVE_CHANNEL #chan_lib=@set %0=JOINED:[setdiff(u(GET_VALID_JOINED,%0),%1)];@set %1=CHANNELS.[v(CHAN.TYPE)]:[setdiff(filterobjid(get(%1/CHANNELS.[v(CHAN.TYPE)])),objid(%0))];@attach %!/UNGAG_CHANNEL=%0,%1;@attach %!/LEAVE_CHANNEL_AFTER
 &LEAVE_CHANNEL_AFTER #chan_lib=th u(FN.CEMIT,%0,:has left the channel.,%1)
 
 &DO_ALTERTITLE #chan_lib=@attach %!/INC.FIND;@assert/inline getconf(%q<chan>,%2)=@pemit %#=This channel has them disabled.;th setq(!,CHANINFO.[edit(objid(%q<chan>),:,_)].%2,attr);@set %#=%q<attr>:%1;@pemit %#=Set.
@@ -116,6 +116,9 @@
 &CHECK #chan_lib=localize(if(u(CHANNEL_ADMIN,%2),1,cand(cor(elock(%0/user|%1,num(%2)),u(CHECK.%1,%0,%2)),u(CHECK_HELPER_EXTRA,%0,%1,%2))))
 @@ %0 - channel, %1 - permission, %2 - object
 
+&FIL.CHECK #chan_lib=u(check,%1,%2,%0)
+&GET_VALID_JOINED #chan_lib=filter(FIL.CHECK,filterobjid(get(%0/JOINED)),%b,%b,%0,TalkLock)
+
 &BASE_FORMAT #chan_lib=<[cname(%1)][if(strlen(%6),:%B[ansi(hg,%6)])]> [if(%7,%2,[if(strlen(%4),%4%B)][parsestr(%2,%0,",",,&[if(strlen(%5),%5 [chr(40)][cname(%3)][chr(41)],cname(%3))])])]
 @@ %0 - recipient, %1 - channel dbref, %2 - message, %3 - sender, %4 - title if enabled and set, %5 - altego if enabled and set, %6 - scene ids,  %7 - system message
 
@@ -129,7 +132,7 @@
 &FN.DISTRIBUTE #chan_lib=localize([if(!match(get(%0/[v(CUSTOM_IGNORE)],objid(%2))),pemit(%0,u(FORMAT_MESSAGE,%0,%1,%2,%3,%4,%5,%6,%7)))])
 @@ %0 - target, %1 - channel objid, %2 - message, %3 - sender
 
-&FN.SEND_MESSAGES #chan_lib=iter(setdiff(get(%0/JOINED),get(%0/CHANINFO.[v(CHAN.GAG)])),u(FN.DISTRIBUTE,%i0,%0,%1,%2,%3,%4,%5,%6))
+&FN.SEND_MESSAGES #chan_lib=iter(setdiff(u(GET_VALID_JOINED,%0),get(%0/CHANINFO.[v(CHAN.GAG)])),u(FN.DISTRIBUTE,%i0,%0,%1,%2,%3,%4,%5,%6))
 @@ %0 - channel objid, %1 - message, %2 - sender, %3 - alterego, %4 - title, %5 - scene ids, %6 - system message marker.
 
 &Q.SCENE.ACTIVE #chan_lib=SELECT channel_id,scene_id FROM channel_scene WHERE channel_objid=? AND channel_active=1 AND scene_status=1

@@ -36,7 +36,9 @@
 
 &FN.LIST_FILENAMES #info_lib=sort(iter(u(FN.ATTRS,%0),get(%0/%i0.NAME),%b,|),i,|,|)
 
-&FN.LIST_ATTRS_ORDER #info_lib=sortby(#lambda/comp(default(%0/\%0.ORDER,99999999),default(%0/\%1.ORDER,99999999)),u(FN.ATTRS,%0))
+&FIL.ISINT #info_lib=isint(get(%q<target>/%0.ORDER))
+
+&FN.LIST_ATTRS_ORDER #info_lib=privatize(1,trim(cat(sortby(#lambda/comp(get(%0/\\%0.ORDER),get(%0/\\%1.ORDER)),setr(!,filter(FIL.ISINT,setr(!,u(FN.ATTRS,setr(!,%0,target)),unsplit)),ints)),sortby(#lambda/comp(get(%0/\\%0.NAME),get(%0/\\%1.NAME),I),setdiff(%q<unsplit>,%q<ints>)))))
 
 &INFO.ATTR #info_lib=INFO
 &INFO.NAME #info_lib=Info
@@ -54,9 +56,9 @@
 &INC.INFO.SETFILE #info_lib=@attach %!/INC.INFO.CANMODIFY;@assert/inline t(setr(!,u(FN.VALID_FILENAME,setr(!,%q<filename>,fname)),results))=@pemit %#=%q<results>;@assert/inline valid(attrname,setr(!,u(FN.FILENAME,%q<fname>),attr))=@pemit %#=Code Error: Invalid Attribute name. Try simplifying the name or contact a coder for advice.;th setq(!,get(%q<target>/%q<attr>.BODY),contents)
 @@ use INC.INFO.SETFILE when creating/replacing files using info or summary setting/replacing.
 
-&SW.INFO.LOCK #info_lib=@assert/inline strlen(%q<filename>)=@pemit %#=[v(INFO.NAME)] name empty.;@dolist/inline/nobreak/delimit | %q<filename>={@attach %!/INC.INFO.FINDFILE=%d0;@assert/inline t(get_kv(%q<meta>,Locked))=@pemit %#=[v(INFO.NAME)] File '%q<fname>' is already Locked!;@set %q<target>=%q<attr>.META:[set_kv(set_kv(%q<meta>,LockedBy,%:),Locked,secs())];@attach %!/REPORT=%#,%q<target>,%q<fname>,Locked
+&SW.INFO.LOCK #info_lib=@assert/inline strlen(%q<filename>)=@pemit %#=[v(INFO.NAME)] name empty.;@dolist/inline/nobreak/delimit | %q<filename>={@attach %!/INC.INFO.FINDFILE=%d0;@assert/inline t(get_kv(%q<meta>,Locked))=@pemit %#=[v(INFO.NAME)] File '%q<fname>' is already Locked!;@set %q<target>=%q<attr>.META:[set_kv(set_kv(%q<meta>,LockedBy,%:),Locked,secs())];@attach %!/REPORT=%#,%q<target>,%q<fname>,Locked}
 
-&SW.INFO.UNLOCK #info_lib=@assert/inline strlen(%q<filename>)=@pemit %#=[v(INFO.NAME)] name empty.;@dolist/inline/nobreak/delimit | %q<filename>={@attach %!/INC.INFO.FINDFILE=%d0;@assert/inline t(get_kv(%q<meta>,Locked))=@pemit %#=[v(INFO.NAME)] File %q<fname> is not Locked!;@set %q<target>=%q<attr>.META:[del_kv(del_kv(%q<meta>,LockedBy),Locked)];@attach %!/REPORT=%#,%q<target>,%q<fname>,Unlocked
+&SW.INFO.UNLOCK #info_lib=@assert/inline strlen(%q<filename>)=@pemit %#=[v(INFO.NAME)] name empty.;@dolist/inline/nobreak/delimit | %q<filename>={@attach %!/INC.INFO.FINDFILE=%d0;@assert/inline t(get_kv(%q<meta>,Locked))=@pemit %#=[v(INFO.NAME)] File %q<fname> is not Locked!;@set %q<target>=%q<attr>.META:[del_kv(del_kv(%q<meta>,LockedBy),Locked)];@attach %!/REPORT=%#,%q<target>,%q<fname>,Unlocked}
 
 &SW.INFO.DELETE #info_lib=@assert/inline strlen(%q<filename>)=@pemit %#=[v(INFO.NAME)] name empty.;@dolist/inline/delimit | %q<filename>={@attach %!/INC.INFO.FINDFILE=%d0;@assert/inline cor(strmatch(%:,%q<target>),u(INFO.ADMIN,%#))=@pemit %#=You may not delete another's Info files.;@attach %!/INC.INFO.CANMODIFY;@break/inline cand(get_kv(%q<contents>,Locked),not(u(INFO.ADMIN,%#)))=@pemit %#=Locked Files must be Unlocked by admin first.;@wipe %q<target>/%q<attr>.*;@attach %!/REPORT=%#,%q<target>,%q<fname>,Deleted!}
 
