@@ -98,7 +98,7 @@
 
 &Q.UPDATE.ACTOR.FIELD #scene=UPDATE actor SET !=? WHERE actor_id=?
 
-&SW.SCENE.CAPACITY #scene=@attach %!/FINDSCENE=%0,scene;@assert/inline cor(gtebittype(%#,5),gte(mysql(SELECT.ACTOR.TYPE,%q<scene>,%q<ent>),2))=@pemit %#=Permission denied.;@attach #inc/VALID.INT=%1,Scene Capacity;@attach #inc/DOSQL=UPDATE.SCENE,scene_capacity,%q<value>,%q<scene>;@attach %!/MSG_SCENE=%0,0,$you() altered capacity to: %q<value>
+&SW.SCENE.CAPACITY #scene=@attach %!/FINDSCENE=%0,scene;@assert/inline cor(gtebittype(%#,5),gte(mysql(SELECT.ACTOR.TYPE,%q<scene>,%q<ent>),2))=@pemit %#=Permission denied.;@attach #inc/VALID.INT=%1,Scene Capacity;@attach #inc/DOSQL=UPDATE.SCENE,scene_capacity,%q<value>,%q<scene>;@attach %!/MSG_SCENE=%0,0,%:,$you() altered capacity to: %q<value>
 
 &SW.SCENE.ACTOR_VIEW_TYPE #scene=SELECT ! FROM actor_view WHERE scene_id=? AND actor_type=?
 

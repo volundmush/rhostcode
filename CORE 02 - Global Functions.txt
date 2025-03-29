@@ -112,6 +112,10 @@
 &GPFN.ACCOPTION #gfun=privatize(1,if(isdbref(setr(!,account(%0),acc)),default(%q<acc>/CONFIG.%1.VALUE,get(#acc_parent/CONFIG.%1.DEFAULT)),get(#acc_parent/CONFIG.%1.DEFAULT)))
 @@ %0 - Dbref of player or account. %1 - Option.
 
+&GPFN.MYACCOPTION #gfun=accoption(%@,%0)
+
+&GPFN.SPEECH #gfun=parsestr(%1%0,%0,",",,&%k)
+
 &GPFN.LASTIDLE #gfun=switch(objeval(%#,conn(%0)),-1,ansi(hx,elementsmux(get(%0/last),2 3)),hideidle(%0))
 
 &GPFN.HIDECONN #gfun=switch(objeval(%#,conn(%0)),-1,ansi(hx,Off),ansi(if(ishidden(%0),hx,hg),smalltime(conn(%0),3)))

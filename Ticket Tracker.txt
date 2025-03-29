@@ -67,7 +67,7 @@
 &SWITCHES.TICKET.0 #tick=CREATE|NEW|REPLY|STAFFCOMMENT|CLAIM|UNCLAIM|ASSIGN|UNASSIGN|ADDHELPER|REMHELPER|COMPLETE|DENY|CANCEL|REOPEN|DUE|SCAN|NEXT|PENDING
 &SWITCHES.TICKET.5 #tick=ARCHIVE
 
-&TICKET_ALERT #tick=@if words(setr(!,filter(%1,lwhoid(),%b,%b,%q<ticket>),targets))={@pemit/list %q<targets>=[ansi(c,TICKETS:)] [ansi(hw,New Activity By)] %k [ansi(hw,For)] Ticket [cname(%q<ticket>)]: '[get(%q<ticket>/TITLE)]' - %0}
+&TICKET_ALERT #tick=@if words(setr(!,filter(%1,lwhoid(),%b,%b,%q<ticket>),targets))={@pemit/list %q<targets>=[ansi(c,TICKETS:)] [ansi(hw,New Activity By)] %k [ansi(hw,For)] [cname(get(%q<ticket>/OWNER))]'s [cname(get(%q<ticket>/BUCKET))] Ticket [cname(%q<ticket>)]: '[get(%q<ticket>/TITLE)]' - %0}
 
 &HEAR_CREATE #tick=u(CAN_REPLY,%0,%1)
 

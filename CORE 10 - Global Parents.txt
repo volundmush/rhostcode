@@ -51,6 +51,15 @@
 @@ Players
 &TIMEZONE #globplayer=UTC
 
+&CONFIG.PAGEPLUS.DESC #acc_parent=Use enhanced pageformat.
+&CONFIG.PAGEPLUS.DEFAULT #acc_parent=1
+&CONFIG.PAGEPLUS.TYPE #acc_parent=BOOL
+
+&PAGEFORMAT.NEWSTYLE #globplayer=[ansi(hg,PAGE)]%B[ansi(hr,chr(40))][iter(sortname(%3),cname(%i0),%b,\,%b)][ansi(hr,chr(41))][ansi(hw,:)]%B[speech(%0,%1)]
+&pageformat #globplayer=[if(myaccoption(PAGEPLUS),u(PAGEFORMAT.NEWSTYLE,%0,%1,%2,%3,%4),%4)]
+&outpageformat #globplayer=[if(myaccoption(PAGEPLUS),u(PAGEFORMAT.NEWSTYLE,%0,%1,%2,%3,%4),%4)]
+
+
 @@ Rooms
 @aenter #globroom=@attach %!/GAME.AENTER
 @aleave #globroom
@@ -86,7 +95,7 @@
 
 &FN.FILTERCON #globroom=[trim(iter(v(TOTEM_FILTERS),setq(!,filter(%!/FIL.TOTEM,%0,%b,%b,after(%i0,~)),before(%i0,~)),|,%B))][setq(!,setdiff(%0,iter(v(TOTEM_FILTERS),r(before(%i0,~)),|,%B)),Objects)]
 
-@conformat #globroom=[if(words(%0),[null(u(FN.FILTERCON,%0))][setq(!,ansi(confoverride(%#,BORDER),|),bord)][setq(!,confoverride(%#,COLUMN),col)][trim(iter(filter(%!/FIL.HASAFTER,iter([v(TOTEM_FILTERS)]|Objects,[before(%i0,~)]~[r(before(%i0,~))],|,|),|,|),%R[u(FN.FORMATSECTION,before(%i0,~),after(%i0,~),%q<col>,%q<bord>)],|,),b,%R)])]
+@conformat #globroom=[if(words(setr(!,sortname(setunion(%0,if(strmatch(%!,%l),%#))),contents)),[null(u(FN.FILTERCON,%q<contents>))][setq(!,ansi(confoverride(%#,BORDER),|),bord)][setq(!,confoverride(%#,COLUMN),col)][trim(iter(filter(%!/FIL.HASAFTER,iter([v(TOTEM_FILTERS)]|Objects,[before(%i0,~)]~[r(before(%i0,~))],|,|),|,|),%R[u(FN.FORMATSECTION,before(%i0,~),after(%i0,~),%q<col>,%q<bord>)],|,),b,%R)])]
 
 &FN.FORMATEXITS #globroom=separator(%0,%#,,1)%R[printf($1.&:%3:s $-5s $-12s $-55s $1.&:%3:s,%R,ansi(%2,Alias),ansi(%2,Name),ansi(%2,Destination),%R)]%R[trim(iter(%1,printf($1.&:%3:s $-5s $-12s $-55s $1.&:%3:s,%R,getalias(%i0),cname(%i0),cname(loc(%i0)),%R),%B,%R),b,%R)]
 

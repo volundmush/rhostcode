@@ -11,7 +11,7 @@
 &INFO.CMD #theme=+TINFO
 
 &SWITCHES.THEME.0 #theme=CREATE|RENAME|DESCRIBE|GET|TRANSFER|GRANT|REVOKE
-&SWITCHES.THEME.5 #theme=APPROVE|UNAPPROVE|ADD|REMOVE
+&SWITCHES.THEME.5 #theme=APPROVE|UNAPPROVE|ADD|REMOVE|DELETE
 
 &FN.THEMES #theme=sortname(lcon(%!,OBJECT,,,1))
 
@@ -25,16 +25,17 @@
 &SW.THEME.CREATE #theme=@skip gtebittype(%#,2)={@break/inline hasflag(%#,GUEST)=@pemit %#=Guests cannot create themes!;@break/inline isapproved(%#)=@pemit %#=You are approved and have no business creating a theme!;@break/inline isobjid(get(%#/GAME.THEME))=@pemit %#=You are already bound to a theme! No need for another.};@assert/inline setr(!,u(FN.VALID_THEME_NAME,stripansi(%0)),res)=@pemit %#=%q<res>;@assert/inline isdbref(setr(!,create(stripansi(%0),,t),theme))=@pemit %#=%q<theme>;th setq(!,objid(%q<theme>),theme);@if has_markup(%0)={@name/ansi %q<theme>=%0},{@name %q<theme>=%0};@set %q<theme>=INDESTRUCTIBLE;@pemit %#=Theme created!;@attach #inc/MSG_ALERT=Created Theme: %0;@if !isapproved(%#)={@set %q<theme>=OWNER:%:;@attach %!/DO_ADD=%q<theme>,%:}
 
 &DO_ADD #theme=@set %0=MEMBERS:[sortname(setunion(filterobjid(get(%0/MEMBERS)),objid(%1)))];@set %1=GAME.THEME:[objid(%0)]
-&DO_REMOVE #theme=@set %0=MEMBERS:[sortname(setunion(filterobjid(get(%0/MEMBERS)),objid(%1)))];@set %1=GAME.THEME:
+&DO_REMOVE #theme=@set %0=MEMBERS:[sortname(setdiff(filterobjid(get(%0/MEMBERS)),objid(%1)))];@set %1=GAME.THEME:
 @@ %0 - Theme Objid, %1 - member objid
 
 &DO_DELETE #theme=@dolist/inline get(%0/MEMBERS)={@set %d0=GAME.THEME:};@set %0=!INDESTRUCTIBLE !SAFE;@destroy/override %0
 
 &FINDTHEME #theme=@assert/inline strlen(%0)=@pemit %#=Nothing entered to find!;@assert/inline isobjid(setr(!,u(FN.FINDTHEME,%0),%1))=@pemit %#=Theme '%0' not found.
 
-&SW.THEME.DELETE #theme=@attach %!/FINDTHEME=%0,theme;@assert/inline cor(gtebittype(%#,5),cand(u(FN.ISADMIN,%q<theme>,%:),!u(FIL.APPROVED,%q<theme>)))=@pemit %#=Permission denied.;@assert/inline match(%q<theme>|[cname(%q<theme>)],%2)=@pemit %#=Verification failed.;@pemit %#=Theme '[cname(%q<theme>)]' deleted.;@if u(FIL.APPROVED,%q<theme>)={@attach #inc/MSG_ALERT=Theme '[cname(%q<theme>)]' deleted.};@attach %!/DO_DELETE=%q<theme>
+&SW.THEME.DELETE #theme=@attach %!/FINDTHEME=%0,theme;@assert/inline cor(gtebittype(%#,5),cand(u(FN.ISADMIN,%q<theme>,%:),!u(FIL.APPROVED,%q<theme>)))=@pemit %#=Permission denied.;@assert/inline match(%q<theme>|[cname(%q<theme>)],%2,|)=@pemit %#=Verification failed.;@pemit %#=Theme '[cname(%q<theme>)]' deleted.;@if u(FIL.APPROVED,%q<theme>)={@attach #inc/MSG_ALERT=Theme '[cname(%q<theme>)]' deleted.};@attach %!/DO_DELETE=%q<theme>
 
 &SW.THEME.ADD #theme=@attach %!/FINDTHEME=%0,theme;@attach #inc/GET_PLAYER=%2,t1;@break/inline match(setr(!,filterobjid(get(%q<theme>/MEMBERS)),data),%q<t1>)=@pemit %#=[cname(%q<t1>)] is already a member of the theme!;@attach %!/DO_ADD=%q<theme>,%q<t1>;@pemit %#=Added [cname(%q<t1>)] to Theme '[cname(%q<theme>)]';@attach #inc/MSG_ALERT=Added [cname(%q<t1>)] to Theme '[cname(%q<theme>)]';@pemit %q<t1>=You've been added to Theme '[cname(%q<theme>)]'
+
 &SW.THEME.REMOVE #theme=@attach %!/FINDTHEME=%0,theme;@attach #inc/GET_PLAYER=%2,t1;@assert/inline match(setr(!,filterobjid(get(%q<theme>/MEMBERS)),data),%q<t1>)=@pemit %#=[cname(%q<t1>)] is not a member of the theme!;@attach %!/DO_REMOVE=%q<theme>,%q<t1>;@pemit %#=Removed [cname(%q<t1>)] from Theme '[cname(%q<theme>)]';@attach #inc/MSG_ALERT=Removed [cname(%q<t1>)] from Theme '[cname(%q<theme>)]';@pemit %q<t1>=You've been removed from Theme '[cname(%q<theme>)]'
 
 &SW.THEME.RENAME #theme=@attach %!/FINDTHEME=%0,theme;@assert/inline cor(gtebittype(%#,5),cand(u(FN.ISADMIN,%q<theme>,%:),!u(FIL.APPROVED,%q<theme>)))=@pemit %#=Permission denied.;@assert/inline setr(!,u(FN.VALID_THEME_NAME,stripansi(%2)),res)=@pemit %#=%q<res>;@break/inline words(setdiff(u(FN.FINDEXACT,stripansi(%2)),%q<theme>))=@pemit %#=Name conflict detected.;th setq(!,cname(%q<theme>),oldname);@if has_markup(%2)={@name/ansi %q<theme>=%2},{@name %q<theme>=%2};@pemit %#=Theme Renamed from '%q<oldname>' to '%2'.;@if u(FIL.APPROVED,%q<theme>)={@attach #inc/MSG_ALERT=Theme Renamed from '%q<oldname>' to '%2'.}
@@ -75,6 +76,11 @@
 
 &INFO.ADMIN #theme=if(u(FIL.APPROVED,%q<target>),gtebittype(%0,2),t(match(get(%q<target>/OWNER)%B[get(%q<target>/ADMINS)],objid(%0))))
 
+&INC.INFO.CANMODIFY #theme=@if !gtebittype(%#,5)={@break/inline default(%q<target>/APPROVED,0)=@pemit %#=Cannot edit [v(INFO.NAME)] Files while approved!}
+
 @@ Help stuff
 +help/add Community/+theme=#theme/HLP.THEME
 &HLP.THEME #theme=[ansi(hc,Aliases:)]%B+world%R%RThe Theme system is used for tracking which World/Theme characters are from or share. It is used by multi-theme/crossover games which need to organize characters by their source material.%R%R[ansi(hc,Permissions)]%R%TWizards have unrestricted ability to create and modify themes. For ordinary players, it works like this: The creator of a theme is its OWNER, who may /grant or /revoke ADMINS to it or /transfer Ownership. ADMINS/The owner are able to modify the Description (while the theme is unapproved) and administrate its info files. Only Wizards may actually /add and /remove characters from themes.%R%R[ansi(hc,Administration Commands)]%R%R[ansi(hw,+theme/create <name>)]%R%TCreates a new theme. For new characters in chargen, this also /adds them to the theme and sets them as owner.%R%R[ansi(hw,+theme/describe <theme>=<name>)]%R%TSet the main description of a Theme.%R%R[ansi(hw,+theme/rename <theme>=<new name>)]%R%TRenames a theme.%R%R[ansi(hw,+theme/delete <theme>=<verify>)]%R%TDeletes a theme.%R%R[ansi(hw,+theme/grant <theme>=<player>)]%R%TGrants admin privileges.%R%R[ansi(hw,+theme/revoke <theme>=<player>)]%R%TRevokes admin privileges.%R%R[ansi(hw,+theme/transfer <theme>=<player>)]%R%TTransfer ownership of a theme.%R%R[ansi(hw,+theme/add <theme>=<player>)]%R%TAdd a character to a theme.%R%R[ansi(hw,+theme/remove <theme>=<player>)]%R%TRemove a character from a theme.%R%R[ansi(hc,Theme Info Files)]%RThemes support notes which use the handling as [ansi(hw,+info)] files. they are accessed using [ansi(hw,+tinfo)]. For instance, [ansi(hw,+tinfo <theme>/<file>)] would display a given file. These files are publically visible, but may be locked by admins against editing.
+
+&SHLP.THEME #theme=Staff are able to use the following commands:%R[ansi(hw,+theme/approve <theme>)]%R[ansi(hw,+theme/unapprove <theme>)]%R%TChange a +theme's approval status.
++shelp/add Community/+theme=#theme/SHLP.THEME
