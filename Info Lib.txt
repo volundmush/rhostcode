@@ -16,8 +16,8 @@
 &INC.INFO.DEFAULT_TARGET #info_lib=@attach %!/INC.INFO.GET_TARGET=%#
 
 @@ Used to determine the object and info file name.
-&INC.INFO.TARGET #info_lib=@switch/first/inline [t(strlen(%0))][t(strlen(%1))]=10,{@if u(%!/FN.IS_TARGET,%0)={@attach %!/INC.INFO.GET_TARGET=%0;th setq(!,,filename)},{@attach %!/INC.INFO.DEFAULT_TARGET;th setq(!,%0,filename)}},00,{@attach %!/INC.INFO.DEFAULT_TARGET},11,{@attach %!/INC.INFO.GET_TARGET=%0;th setq(!,%1,filename)};th setq(!,iter(%q<filename>,trim(%i0),|,|),filename)
-
+&INC.INFO.TARGET #info_lib=@switch/first/inline [t(strlen(%0))][t(strlen(%1))][t(%2)]=11*,{@attach %!/INC.INFO.GET_TARGET=%0;th setq(!,%1,filename)},101,{@attach %!/INC.INFO.GET_TARGET=%0;th setq(!,,filename)},100,{@if u(%!/FN.IS_TARGET,%0)={@attach %!/INC.INFO.GET_TARGET=%0;th setq(!,,filename)},{@attach %!/INC.INFO.DEFAULT_TARGET;th setq(!,%0,filename)}},000,{@attach %!/INC.INFO.DEFAULT_TARGET;th setq(!,,filename)};th setq(!,iter(%q<filename>,trim(%i0),|,|),filename)
+@@ %0 - target or filename, %1 - filename if %0 is target, %2 - whether / was present.
 &MAX_NAME_LENGTH #info_lib=30
 
 &BADCHARS #info_lib=| ~
@@ -46,7 +46,7 @@
 
 &INFO.ADMIN #info_lib=gtebittype(%0,4)
 
-&DO_INFO #info_lib=@attach %!/INFO.INIT;@attach #inc/GET_SWITCH=%2,INFO;@attach %!/INC.INFO.TARGET=trim(%3),trim(%4);@attach %!/SW.INFO.[strfirstof(%q<switch>,MAIN)]=trim(%3),trim(%4),%5
+&DO_INFO #info_lib=@attach %!/INFO.INIT;@attach #inc/GET_SWITCH=%2,INFO;@attach %!/INC.INFO.TARGET=trim(%3),trim(%5),t(%4);@attach %!/SW.INFO.[strfirstof(%q<switch>,MAIN)]=trim(%3),trim(%5),%6,t(strlen(%4))
 
 &INC.INFO.FINDFILE #info_lib=@assert/inline strlen(%0)=@pemit %#=File name empty.;@if isint(%0)={@switch/inline/first words(setr(!,grep(%q<target>,u(FN.PREFIX).*.ORDER,%0),choices))=0,{@break/inline 1=@pemit %#=Number '%0' does not match a file. Try using a name instead.},1,{th setq(!,elementsmux(%q<choices>,1 2 3,.,.),attr)},{@break/inline 1=@pemit %#=Order Number '%0' is used by more than one file. Use its name to target it instead.}},{@assert/inline words(setr(!,u(FN.LIST_FILENAMES,%q<target>),files),|)=@pemit %#=No files to choose from.;@attach #inc/PARTIAL=%0,%q<files>,|,filename,info file;th setq(!,u(FN.FILENAME,%q<filename>),attr)};@assert/inline hasattr(%q<target>,%q<attr>.NAME)=@pemit %#=Code error! No attribute for this name. Contact a codewiz.;th setq(!,get(%q<target>/%q<attr>.BODY),contents);th setq(!,get(%q<target>/%q<attr>.META),meta);th setq(!,get(%q<target>/%q<attr>.NAME),fname)
 @@ Use INC.INFO.FINDFILE above to partial match existing files when searching for them.
@@ -72,7 +72,7 @@
 
 &INC.INFO.VIEW #info_lib=@if %q<private>={@assert/inline cor(strmatch(%:,%q<target>),u(INFO.ADMIN,%#))=@pemit %#=%q<sysname> files are private.};@if strlen(%q<filename>)={@attach %!/INC.INFO.VIEW_CONTENTS},{@attach %!/INC.INFO.VIEW_FILES}
 
-&INC.INFO.VIEW_FILES #info_lib=@pemit %#=header(name(%q<target>)'s [v(INFO.NAME)] Files);@pemit %#=columns(iter(u(FN.LIST_ATTRS_ORDER,%q<target>),left(\([default(%q<target>/%i0.ORDER,?)]\)%B[get(%q<target>/%i0.NAME)],37)[if(get_kv(setr(!,get(%q<target>/%i0.META),meta),Locked),\([ansi(hw,+)]\))],%B,|),38,2,l,1,1,,%b,,1,|,%B,1);@pemit %#=footer(Legend: + - Locked)
+&INC.INFO.VIEW_FILES #info_lib=@pemit %#=header(name(%q<target>)'s [v(INFO.NAME)] Files);@pemit %#=columns(iter(u(FN.LIST_ATTRS_ORDER,%q<target>),if(%4,\([default(%q<target>/%i0.ORDER,?)]\)%B)[get(%q<target>/%i0.NAME)][if(get_kv(setr(!,get(%q<target>/%i0.META),meta),Locked),\([ansi(hw,+)]\))],%B,|),39,2,l,0,1,,%b,,1,|,%B,1);@pemit %#=footer(Legend: + - Locked)
 
 &INC.INFO.VIEW_CONTENTS #info_lib=@dolist/inline/nobreak/delimit | %q<filename>={@attach %!/INC.INFO.FINDFILE=%d0;@pemit %#=header(cname(%q<target>)'s [lcstr(v(INFO.NAME))]: %q<fname>[if(strlen(get(%q<target>/%q<attr>.ORDER)),%B\([get(%q<target>/%q<attr>.ORDER)]\))]);@if [strlen(setr(!,get(%q<target>/%q<attr>.SUMMARY),sum))]={@pemit %#=%q<sum>;@pemit %#=separator()};@pemit %#=%q<contents>;@if u(INFO.ADMIN,%#)={@pemit %#=separator(Admin Info);@pemit %#=[ansi(h,Last set by:)] [name(get_kv(%q<meta>,Author))] [ansi(h,On:)] [fancytime(get_kv(%q<meta>,DateModified))][if(setr(!,get_kv(%q<meta>,Locked),lockedon),%R[ansi(h,Locked by:)] [name(get_kv(%q<meta>,LockedBy))] [ansi(h,On:)] [fancytime(%q<lockedon>)])]};@pemit %#=subheader(if(%q<lockedon>,Admin Locked File))}
 
@@ -84,7 +84,7 @@
 
 &SW.INFO.SUMMARY #info_lib=@attach %!/INC.INFO.CANMODIFY;@attach %!/INC.INFO.FINDFILE=%q<filename>;@attach %!/INC.INFO.FINISH_SET=%0,%1,%2,%3,1,Summary,Summary
 
-&SW.INFO.ORDER #info_lib=@attach %!/INC.INFO.FINDFILE=%q<filename>;@assert/inline isint(%2)=@pemit %#=Must enter a number!;th setq(!,add(%2,0),value);@break/inline words(grep(%q<target>,u(FN.PREFIX).*.ORDER,%q<value>))=@pemit %#=That order number is already in use!;@set %q<target>=%q<attr>.ORDER:%q<value>;@attach %!/REPORT=%#,%q<target>,%q<filename>,Order set to: %q<value>
+&SW.INFO.ORDER #info_lib=@if t(strlen(%q<filename>))={@attach %!/INC.INFO.FINDFILE=%q<filename>;@assert/inline isint(%2)=@pemit %#=Must enter a number!;th setq(!,add(%2,0),value);@break/inline words(grep(%q<target>,u(FN.PREFIX).*.ORDER,%q<value>))=@pemit %#=That order number is already in use!;@set %q<target>=%q<attr>.ORDER:%q<value>;@attach %!/REPORT=%#,%q<target>,%q<filename>,Order set to: %q<value>},{@attach %!/INC.INFO.VIEW_FILES=%0,%1,%2,%3,1}
 
 &INC.INFO.FINISH_SET #info_lib=@assert/inline strlen(%2)=@pemit %#=%5 field empty. To delete a file use %q<comm>/delete.;@if %3={th setq(!,set_kv(set_kv(%q<meta>,Locked,secs()),LockedBy,%:),meta)};@set %q<target>=%q<attr>.META:[set_kv(set_kv(%q<meta>,Author,%:),DateModified,secs())];@set %q<target>=%q<attr>.%6:%2;@set %q<target>=%q<attr>.NAME:%q<fname>;@attach %!/REPORT=%#,%q<target>,%q<fname>,%6 Set!
 

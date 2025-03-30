@@ -2,7 +2,7 @@
 
 @skip isdbref(tag(setr(1,theme)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No global room set!;@assert/inline isdbref(setr(0,create(Theme System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=[globalroom()];@parent %q0=#info_lib}
 
-&CMD.THEME #theme=$^(?s)(?\:\+)(theme|world|origin|tinfo)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?))?(?\:=(.*))?$:@if strmatch(%1,tinfo)={@attach %!/DO_INFO},{@attach #inc/GET_SWITCH=%2,THEME;@attach %!/SW.THEME.[strfirstof(%q<switch>,MAIN)]=trim(%3),trim(%4),%5}
+&CMD.THEME #theme=$^(?s)(?\:\+)(theme|world|origin|tinfo)(?\:/(\\S+)?)?(?\: +(.+?))?(/(.+?)?)?(?\:=(.*))?$:@if strmatch(%1,tinfo)={@attach %!/DO_INFO},{@attach #inc/GET_SWITCH=%2,THEME;@attach %!/SW.THEME.[strfirstof(%q<switch>,MAIN)]=trim(%3),trim(%5),%6}
 @set #theme/CMD.THEME=regexp
 
 &INFO.ATTR #theme=THEME
@@ -70,7 +70,9 @@
 &SW.THEME.MAIN #theme=@if strlen(%0)={@attach %!/INC.THEME.DISPLAY},{@attach %!/INC.THEME.LIST}
 
 @@ +tinfo section
-&INC.INFO.TARGET #theme=@attach %!/FINDTHEME=%0,target;th setq(!,%1,filename)
+&FN.IS_TARGET #theme=isobjid(u(FN.FINDEXACT,%0))
+&INC.INFO.GET_TARGET #theme=@attach %!/FINDTHEME=%0,target;
+&INC.INFO.DEFAULT_TARGET #theme=@assert/inline isobjid(setr(!,get(%#/GAME.THEME),target))=@pemit %#=You have no default theme!
 
 &INC.INFO.CANSET #theme=@assert/inline cor(gtebittype(%#,5),u(FN.ISADMIN,%q<target>,%:))=@pemit %#=Permission denied.
 

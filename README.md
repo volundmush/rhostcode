@@ -56,14 +56,14 @@ MIT License. In short, go nuts, but give credit where credit is due. See the inc
 
 * **SCENE SYSTEM / ROLEPLAY LOGGING:** The Scene Management System is a very advanced scene scheduling and automatic logging system that uses SQL. Also included is a Pose Tracker (+pot) for local storage and convenience in roleplay.
 
-## PLANNED FEATURES
-These aren't in yet, but will be soon.
-
 * **FINGER:** An incredibly powerful +finger and +oocfinger that can be configured to be whatever a game owner wants it to be.
+
+* **WHO AND WHERE:** A Who and Where command is provided that integrates with many other systems. Don't like how Who looks? Change it with DynamicData strings!
 
 * **FRIEND / WATCHFOR:** A Friends/watch list lets players keep track of their friends and alert them when they connect or disconnect.
 
-* **WHO AND WHERE:** A Who and Where command is provided that integrates with many other systems. Don't like how Who looks? Change it with DynamicData strings!
+## PLANNED FEATURES
+These aren't in yet, but will be soon.
 
 * **LOGIN TRACKER:** If installed, the Login Tracker records IP addresses and times of every login attempt, helping players and admin keep an eye out for suspicious activity.
 

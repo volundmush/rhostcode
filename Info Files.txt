@@ -2,12 +2,12 @@
 
 @skip isdbref(tag(setr(1,info)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No global room set!;@assert/inline isdbref(setr(0,create(Info Files,,t)))=@pemit %#=ERROR: Could not create code object: %q0;@set %q0=INDESTRUCTIBLE;@tag/add %q1=%q0;@tel %q0=globalroom();@parent %q0=#info_lib}
 
-&CMD.INFO #info=$^(?s)(?\:\+)(info|inf)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?)?)?(?\:=(.*))?$:@attach %!/DO_INFO
+&CMD.INFO #info=$^(?s)(?\:\+)(info|inf)(?\:/(\\S+)?)?(?\: +(.+?))?(/(.+?)?)?(?\:=(.*))?$:@attach %!/DO_INFO
 @set #info/CMD.INFO=regexp
 
 @skip isdbref(tag(setr(1,priv_info)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No global room set!;@assert/inline isdbref(setr(0,create(Private Info Files,,t)))=@pemit %#=ERROR: Could not create code object: %q0;@set %q0=INDESTRUCTIBLE;@tag/add %q1=%q0;@tel %q0=globalroom();@parent %q0=#info_lib}
 
-&CMD.+PINFO #priv_info=$^(?s)(?\:\+)?(pinfo|pinf)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:/(.+?)?)?(?\:=(.*))?$:@attach %!/DO_INFO
+&CMD.+PINFO #priv_info=$^(?s)(?\:\+)?(pinfo|pinf)(?\:/(\\S+)?)?(?\: +(.+?))?(/(.+?)?)?(?\:=(.*))?$:@attach %!/DO_INFO
 @set #priv_info/CMD.+PINFO=regexp
 
 &INFO.ATTR #priv_info=PINF

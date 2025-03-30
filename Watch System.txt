@@ -9,7 +9,7 @@
 &FN.COLUMNS #watch=printf($-23s $16s,Name,LastOn/Idle)
 &FN.ROW #watch=printf($-23s $16s,cname(%0),lastidle(%0))
 
-&SW.MAIN #watch=@pemit %#=header(Watching Players);@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.COLUMNS));@if cand(isdbref(setr(!,account(%#),acc)),words(setr(!,sortname(filterobjid(get(%q<acc>/WATCH))),accwatch))={@pemit %#=separator(Account Watching);@dolist/inline %q<accwatch>=@pemit %#=u(FN.ROW,%d0)};@if words(setr(!,sortname(filterobjid(get(%#/GAME.WATCH))),watch))={@pemit %#=separator(%n is Watching);@dolist/inline %q<watch>=@pemit %#=u(FN.ROW,%d0)};@pemit %#=footer()
+&SW.MAIN #watch=@pemit %#=header(Watching Players);@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.COLUMNS));@if cand(isdbref(setr(!,account(%#),acc)),words(setr(!,sortname(filterobjid(get(%q<acc>/WATCH))),accwatch)))={@pemit %#=separator(Account Watching);@dolist/inline %q<accwatch>=@pemit %#=u(FN.ROW,%d0)};@if words(setr(!,sortname(filterobjid(get(%#/GAME.WATCH))),watch))={@pemit %#=separator(%n is Watching);@dolist/inline %q<watch>=@pemit %#=u(FN.ROW,%d0)};@pemit %#=footer()
 
 &SW.WHO #watch=
 
