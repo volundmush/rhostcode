@@ -5,7 +5,7 @@
 
 &FAKECOMMANDS #fobj=LOGIN|REGISTER|CHARGEN|PLAY|CONN|CONNECT
 
-&RUN_REGISTER #fobj=[if(isdbref(setr(!,#[account_owner(%4)],acc)),You are already logged in.,if(setr(!,u(#acc/FN.VALID_ACCOUNT_NAME,setr(!,trim(before(%1,=)),accname)),res),if(valid(password,setr(!,after(%1,=),pass)),if(isdbref(setr(!,u(#acc/FN.CREATE_ACCOUNT,%q<accname>,%q<pass>,%2),res)),Congratulations! Your account has been created. You may now login with:%R[ansi(hw,login %q<accname>=<password>)]%R%(without the <>%),Error: %q<res>),Error: Bad password. Try another.),Error: %q<res>))]
+&RUN_REGISTER #fobj=[if(isdbref(setr(!,#[account_owner(%4)],acc)),You are already logged in.,if(t(setr(!,u(#acc/FN.VALID_ACCOUNT_NAME,setr(!,trim(before(%1,=)),accname)),res)),if(valid(password,setr(!,after(%1,=),pass)),if(isdbref(setr(!,u(#acc/FN.CREATE_ACCOUNT,%q<accname>,%q<pass>,%2),res)),Congratulations! Your account has been created. You may now login with:%R[ansi(hw,login %q<accname>=<password>)]%R%(without the <>%),Error: %q<res>),Error: Bad password. Try another.),Error: %q<res>))]
 
 &RUN_LOGIN #fobj=[if(isdbref(setr(!,#[account_owner(%4)],acc)),You are already logged in.,if(strlen(setr(!,before(%1,=),accname)),if(isobjid(setr(!,u(#acc/FN.FIND_ACCOUNT,%q<accname>),acc)),if(account_owner(%q<acc>,_PASSWORD,%4,after(%1,=)),Welcome%, [cname(%q<acc>)]%R[u(CONNECT,%2,%3,%4)],ERROR: Invalid credentials.),ERROR: Invalid credentials.),ERROR: Username field empty.))]
 

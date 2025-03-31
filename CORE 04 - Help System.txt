@@ -31,9 +31,9 @@
 
 &INC.ALERT #help=@pemit %#=%0;@attach #inc/MSG_ALERT=%0
 
-&SW.ADD #help=@assert/inline strlen(setr(!,capnames(trim(before(%0,/))),category))=@pemit %#=Category field is empty.;@assert/inline setr(!,u(FN.VALID_CATEGORY,%q<category>),result)=@pemit %#=%q<result>;@assert/inline strlen(setr(!,trim(after(%0,/)),filename))=@pemit %#=Filename field is empty.;@assert/inline setr(!,u(FN.VALID_FILENAME,%q<filename>))=@pemit %#=%q<result>;@assert/inline strlen(%1)=@pemit %#=Entry field empty.;@attach/localize %!/ADD_FILE=%q<root>,%q<category>,%q<filename>,%1;@attach %!/INC.ALERT=The %q<root> %q<category> Helpfile '%q<filename>' has been created.
+&SW.ADD #help=@assert/inline strlen(setr(!,capnames(trim(before(%0,/))),category))=@pemit %#=Category field is empty.;@assert/inline t(setr(!,u(FN.VALID_CATEGORY,%q<category>),result))=@pemit %#=%q<result>;@assert/inline strlen(setr(!,trim(after(%0,/)),filename))=@pemit %#=Filename field is empty.;@assert/inline setr(!,u(FN.VALID_FILENAME,%q<filename>))=@pemit %#=%q<result>;@assert/inline strlen(%1)=@pemit %#=Entry field empty.;@attach/localize %!/ADD_FILE=%q<root>,%q<category>,%q<filename>,%1;@attach %!/INC.ALERT=The %q<root> %q<category> Helpfile '%q<filename>' has been created.
 
-&SW.CATEGORY #help=@attach %!/INC.FIND_FILE=%0,file;th setq(!,%q<category>,oldcat);@assert/inline strlen(setr(!,capnames(%1),category))=@pemit %#=Category field is empty.;@assert/inline setr(!,u(FN.VALID_CATEGORY,%q<category>),result)=@pemit %#=%q<result>;@attach %!/SET_CATEGORY=%q<root>,%q<filename>,%q<category>;@attach %!/INC.ALERT=The %q<root> %q<oldcat> Helpfile '%q<filename>' has been recategorized to: %q<category>.
+&SW.CATEGORY #help=@attach %!/INC.FIND_FILE=%0,file;th setq(!,%q<category>,oldcat);@assert/inline strlen(setr(!,capnames(%1),category))=@pemit %#=Category field is empty.;@assert/inline t(setr(!,u(FN.VALID_CATEGORY,%q<category>),result))=@pemit %#=%q<result>;@attach %!/SET_CATEGORY=%q<root>,%q<filename>,%q<category>;@attach %!/INC.ALERT=The %q<root> %q<oldcat> Helpfile '%q<filename>' has been recategorized to: %q<category>.
 
 &SW.SUMMARY #help=@attach %!/INC.FIND_FILE=%0,file;@assert/inline strlen(%1)=@pemit %#=Summary field is empty.;@attach %!/SET_SUMMARY=%q<root>,%q<file>,%1;@attach %!/INC.ALERT=The %q<root> %q<category> Helpfile '%q<file>' summary was changed to: %1.
 
@@ -41,7 +41,7 @@
 
 &SW.RENAMECATEGORY #help=@attach %!/INC.FIND_CATEGORY=%0,category;
 
-&SW.RENAME #help=@attach %!/INC.FIND_FILE=%0,file;@assert/inline strlen(setr(!,%1,filename))=@pemit %#=Filename field is empty.;@assert/inline setr(!,u(FN.VALID_FILENAME,%q<filename>))=@pemit %#=%q<result>;@attach %!/RENAME_FILE=%q<root>,%q<file>,%q<filename>;@attach %!/INC.ALERT=The %q<root> %q<category> Helpfile '%q<file>' was renamed to: %q<filename>
+&SW.RENAME #help=@attach %!/INC.FIND_FILE=%0,file;@assert/inline strlen(setr(!,%1,filename))=@pemit %#=Filename field is empty.;@assert/inline t(setr(!,u(FN.VALID_FILENAME,%q<filename>)))=@pemit %#=%q<result>;@attach %!/RENAME_FILE=%q<root>,%q<file>,%q<filename>;@attach %!/INC.ALERT=The %q<root> %q<category> Helpfile '%q<file>' was renamed to: %q<filename>
 
 &SW.DELETECATEGORY #help=@attach %!/INC.FIND_CATEGORY=%0,category;@assert/inline strmatch(%q<category>,%1)=@pemit %#=[ansi(hr,WARNING:)] This will delete category '%q<category>' and all sub-files. Are you sure? Enter as [ansi(hr,%q<cmd>/deletecategory %q<category>=%q<category>)] to verify.;@attach %!/DELETE_CATEGORY=%q<root>,%q<category>;@attach %!/INC.ALERT=The %q<root> Helpfile Category '%q<category>' was [ansi(hr,completely deleted.)]
 

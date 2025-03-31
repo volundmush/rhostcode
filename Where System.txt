@@ -5,7 +5,7 @@
 @set #where/CMD.WHERE=regexp
 
 &FN.WHERE.COLUMNS #where=printf($-&18s $-23s $-&[sub(78,23,1,18,1)]s,Region,Room,Players)
-&FN.WHERE.ROW #where=printf($-&18s $-23s $-&[sub(78,23,1,18,1)]s,iter(upzones(%0),cname(%i0),%b,%B->%B),cname(%0),%1)
+&FN.WHERE.ROW #where=printf($-&18s $-23s $[sub(78,23,1,18,1)]|-"s,iter(upzones(%0),cname(%i0),%b,%B->%B),cname(%0),%1)
 
 &FIL.SEES #where=cor(strmatch(%1,%0),sees(%1,%0))
 

@@ -104,7 +104,7 @@
 
 &FN.ACC_ROW #acc=printf($-7s $3s $2s $-4:0:s $-s $s,num(%d0),bittype(%0),default(%0/ALTS,0),umail(%0),cname(%0))
 
-&SW.CREATE #acc=@assert/inline setr(!,u(FN.VALID_ACCOUNT_NAME,%0),res)=@pemit %#=ERROR: %q<res>;@assert/inline valid(password,%1)=@pemit %#=ERROR: Cannot use provided password: '%1'.;@assert/inline isobjid(setr(!,u(FN.CREATE_ACCOUNT,%0,%1),acc))=@pemit %#=ERROR: %q<acc>;@if has_markup(%0)={@name/ansi %q<acc>=%0};@pemit %#=Account '[cname(%q<acc>)]' created with password: %1;@attach #inc/MSG_ALERT=Account '[cname(%q<acc>)]' created.
+&SW.CREATE #acc=@assert/inline t(setr(!,u(FN.VALID_ACCOUNT_NAME,%0),res))=@pemit %#=ERROR: %q<res>;@assert/inline valid(password,%1)=@pemit %#=ERROR: Cannot use provided password: '%1'.;@assert/inline isobjid(setr(!,u(FN.CREATE_ACCOUNT,%0,%1),acc))=@pemit %#=ERROR: %q<acc>;@if has_markup(%0)={@name/ansi %q<acc>=%0};@pemit %#=Account '[cname(%q<acc>)]' created with password: %1;@attach #inc/MSG_ALERT=Account '[cname(%q<acc>)]' created.
 
 &FN.MAX_BITTYPE #acc=lmax(iter(filterobjid(get(%0/CHARACTERS)),bittype(%i0)))
 
@@ -112,7 +112,7 @@
 
 &SW.RENAME #acc=@assert/inline cor(getconf(%!,PLAYERRENAME),gtebittype(%#,4))=@pemit %#=Permission denied.;@if gtebittype(%#,4)={@attach %!/INC.ACCPLAYER=%0,acc;@attach %!/DO_RENAME=%q<acc>,%1},{@attach %!/INC.ACCOUNT=%#,acc;@attach %!/DO_RENAME=%q<acc>,%0}
 
-&DO_RENAME #acc=@attach %!/INC.CANMODIFY=%0;@assert/inline setr(!,u(FN.VALID_ACCOUNT_NAME,%1,%0),res)=@pemit %#=ERROR: %q<res>;th setq(!,cname(%0),oldname);@if has_markup(%1)={@name/ansi %0=%1},{@name %0=%1};@pemit %#=Your account has been renamed from '%q<oldname>' to: [cname(%0)].;@attach #inc/MSG_ALERT=Account '%q<oldname>' renamed to: [cname(%0)]
+&DO_RENAME #acc=@attach %!/INC.CANMODIFY=%0;@assert/inline t(setr(!,u(FN.VALID_ACCOUNT_NAME,%1,%0),res))=@pemit %#=ERROR: %q<res>;th setq(!,cname(%0),oldname);@if has_markup(%1)={@name/ansi %0=%1},{@name %0=%1};@pemit %#=Your account has been renamed from '%q<oldname>' to: [cname(%0)].;@attach #inc/MSG_ALERT=Account '%q<oldname>' renamed to: [cname(%0)]
 @@ %0 - target account, %1 - new name
 
 &SW.PASSWORD #acc=@attach %!/INC.ACCOUNT=%#,acc;@assert/inline attrpass(%q<acc>/_PASSWORD,%0,CHK)=@pemit %#=Provided old password does not match.;@attach %!/DO_PASSWORD=%q<acc>,%1;@pemit %#=Password changed.;@attach #inc/MSG_ALERT=Changed own account password.

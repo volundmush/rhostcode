@@ -25,7 +25,7 @@
 &FN.BADCHARS #info_lib=lmax(iter(v(BADCHARS)),strmatch(%0,*%i0*))
 @@ %0 - The name to be checked.
 
-&FN.VALID_FILENAME #info_lib=ofparse(3,if(strlen(%0),1,#-1 FILENAMES MAY NOT BE EMPTY),if(!isint(%0),1,#-1 FILENAMES MAY NOT BE INTEGERS),if(lte(strlen(%0),v(MAX_NAME_LENGTH)),1,#-1 FILENAMES MUST BE <=[v(MAX_NAME_LENGTH)] CHARACTERS),if(contains_characters(%0,v(BADCHARS)),1,#-1 FILENAMES MAY NOT CONTAIN [v(BADCHARS)]),if(u(FN.IS_TARGET,%0),#-1 FILENAMES MAY NOT BE PLAYER/TARGET NAMES,1)))
+&FN.VALID_FILENAME #info_lib=ofparse(3,if(strlen(%0),1,#-1 FILENAMES MAY NOT BE EMPTY),if(!isint(%0),1,#-1 FILENAMES MAY NOT BE INTEGERS),if(lte(strlen(%0),v(MAX_NAME_LENGTH)),1,#-1 FILENAMES MUST BE <=[v(MAX_NAME_LENGTH)] CHARACTERS),if(contains_characters(%0,v(BADCHARS)),1,#-1 FILENAMES MAY NOT CONTAIN [v(BADCHARS)]),if(u(FN.IS_TARGET,%0),#-1 FILENAMES MAY NOT BE PLAYER/TARGET NAMES,1))
 @@ %0 - The name being checked.
 
 &FN.PREFIX #info_lib=INFO.[v(INFO.ATTR)]
@@ -88,7 +88,7 @@
 
 &INC.INFO.FINISH_SET #info_lib=@assert/inline strlen(%2)=@pemit %#=%5 field empty. To delete a file use %q<comm>/delete.;@if %3={th setq(!,set_kv(set_kv(%q<meta>,Locked,secs()),LockedBy,%:),meta)};@set %q<target>=%q<attr>.META:[set_kv(set_kv(%q<meta>,Author,%:),DateModified,secs())];@set %q<target>=%q<attr>.%6:%2;@set %q<target>=%q<attr>.NAME:%q<fname>;@attach %!/REPORT=%#,%q<target>,%q<fname>,%6 Set!
 
-&SW.INFO.RENAME #info_lib=@attach %!/INC.INFO.CANMODIFY;@attach %!/INC.INFO.FINDFILE=%q<filename>;@assert/inline setr(!,u(FN.VALID_FILENAME,setr(!,stripansi(trim(%2)),fname)),res)=@pemit %#=%q<res>;@set %q<target>=%q<attr>.NAME:%q<fname>;@dolist/inline lattr(%q<target>/%q<attr>.*)={@mvattr %q<target>=%d0,[u(FN.FILENAME,%q<fname>)].[elementsmux(%d0,4,.,.)]};@attach %!/REPORT=%#,%q<target>,%q<fname>,Renamed to: %q<fname>
+&SW.INFO.RENAME #info_lib=@attach %!/INC.INFO.CANMODIFY;@attach %!/INC.INFO.FINDFILE=%q<filename>;@assert/inline t(setr(!,u(FN.VALID_FILENAME,setr(!,stripansi(trim(%2)),new_name)),res))=@pemit %#=%q<res>;@set %q<target>=%q<attr>.NAME:%q<new_name>;@dolist/inline lattr(%q<target>/%q<attr>.*)={@mvattr %q<target>=%d0,[u(FN.FILENAME,%q<new_name>)].[elementsmux(%d0,4,.,.)]};@attach %!/REPORT=%#,%q<target>,%q<fname>,Renamed to: %q<new_name>
 
 &DO_REPORT #info_lib=@if strmatch(num(%0),num(%1))={@pemit %0=%2},{@pemit %1=[ansi(hw,By)] [cname(%0)]: %2;@pemit %0=[ansi(hw,For)] [cname(%1)]: %2}
 
