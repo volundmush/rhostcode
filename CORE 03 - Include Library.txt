@@ -26,7 +26,7 @@
 
 &VALID.DBREF #inc=@assert/inline isdbref(%0)=@pemit %#={ERROR: DBREF not found.};th setq(!,objid(%0),value);th setq(!,name(%q<value>),valueformat)
 
-&VALID.TIMEZONE #inc=@attach #inc/VALID.BASE=%0;@assert/inline valid(timezone,%q<value>)=@pemit %#={That is not a valid timezone. Check +help timezones};th setq(!,%q<value>,valueformat)
+&VALID.TIMEZONE #inc=@attach #inc/VALID.BASE=%0;@assert/inline valid(timezone,%q<value>)=@pemit %#={That is not a valid timezone. Check [ansi(hw,help timezone)]};th setq(!,%q<value>,valueformat)
 
 &VALID.DURATION #inc=@attach #inc/VALID.BASE=%0;@assert/inline setr(!,stringsecs(%0),value)=@pemit %#={'%0' did not resolve into a time. Example input: 30d 5h 3m for 30 days 5 hours and 3 minutes.};th setq(!,u(etime,%q<value>),valueformat)
 
@@ -54,11 +54,13 @@
 &DISPLAY_HELP #inc=th setq(!,iter(setr(!,get(%!/HELP_FILES),hdata),before(%i0,~),|,|),hfiles);@if strlen(%0)={@attach #inc/PARTIAL=%0,%q<hfiles>,|,file,helpfile;@pemit %#=header(Help for: %1 - %q<file>);@pemit %#=u(%!/[get_kv(%q<hdata>,%q<file>)]);@pemit %#=footer()},{@pemit %#=header(Help for %1);@if hasattr(%!/HELP_INDEX)={@pemit %#=u(%!/HELP_INDEX);@pemit %#=separator()};@pemit %#=columns(%q<hfiles>,26,3,l,1,1,,%b,,1,|,,);@pemit %#=footer()}
 @@ %0 - file to display? %1 - Help System Name
 
-&CONFIG #inc=@if strlen(%0)={@attach #inc/CONF_SET},{@attach #inc/CONF_LIST}
+&CONFIGURATOR #inc=@if strlen(%0)={@attach #inc/CONF_SET},{@attach #inc/CONF_LIST}
 
-&CONF_LIST #inc=@pemit %#=header(cname(%2) Options);@dolist/inline/delimit | [u(#conf/FN.LIST_CONFIGS,%2)]={@pemit %#=separator(%d0);@pemit %#=get(%2/CONFIG.%d0.DESC);@pemit %#=[ansi(hw,TYPE:)] [get(%2/CONFIG.%d0.TYPE)];@pemit %#=[ansi(hw,DEFAULT:)] [get(%2/CONFIG.%d0.DEFAULT)];@pemit %#=[ansi(hw,CURRENT:)] [getconf(%2,%d0)]};@pemit %#=footer()
+&CONFIG #inc=@attach #inc/CONFIGURATOR=%0,%1,%2,CONFIG
 
-&CONF_SET #inc=@attach %2/CONFIG.PERM;@attach #inc/PARTIAL=%0,u(#conf/FN.LIST_CONFIGS,%2),|,op,option;@attach %2/CONFIG.%q<op>.PERM=%0,%1,%2;@attach #inc/VALID.[get(%2/CONFIG.%q<op>.TYPE)]=%1;th setq(!,getconf(%2,%q<op>),oldvalue);@attach %2/CONFIG.%q<op>.VALID=%q<value>,%q<oldvalue>,%2;@set %2=CONFIG.%q<op>.VALUE:%q<value>;@attach %2/CONFIG.%q<op>.TRIGGER=%q<oldvalue>,%q<value>,%2;@pemit %#=[cname(%2)] %q<op> is now: %q<valueformat>;@attach #inc/MSG_ALERT=[cname(%2)] %q<op> is now: %q<valueformat>
+&CONF_LIST #inc=@pemit %#=header(cname(%2) [capnames(%3)] Options);@dolist/inline/delimit | [u(#conf/FN.LIST_CONFIGS,%2,%3)]={@pemit %#=separator(%d0);@pemit %#=get(%2/%3.%d0.DESC);@pemit %#=[ansi(hw,TYPE:)] [get(%2/%3.%d0.TYPE)];@pemit %#=[ansi(hw,DEFAULT:)] [get(%2/%3.%d0.DEFAULT)];@pemit %#=[ansi(hw,CURRENT:)] [getconf(%2,%d0)]};@pemit %#=footer()
+
+&CONF_SET #inc=@attach %2/%3.PERM;@attach #inc/PARTIAL=%0,u(#conf/FN.LIST_CONFIGS,%2,%3),|,op,option;@attach %2/%3.%q<op>.PERM=%0,%1,%2;@attach #inc/VALID.[get(%2/%3.%q<op>.TYPE)]=%1;th setq(!,getconf(%2,%q<op>),oldvalue);@attach %2/%3.%q<op>.VALID=%q<value>,%q<oldvalue>,%2;@set %2=%3.%q<op>.VALUE:%q<value>;@attach %2/%3.%q<op>.TRIGGER=%q<oldvalue>,%q<value>,%2;@pemit %#=[cname(%2)] %q<op> is now: %q<valueformat>;@attach #inc/MSG_ALERT=[cname(%2)] %q<op> is now: %q<valueformat>
 
 &DOSQL #inc=@break/inline strmatch(setr(!,mysql(before(%0,/),%1,%2,%3,%4,%5,%6,%7,%8,%9),errcheck),#-*)[if(strlen(after(%0,/)),setq(!,sql(SELECT last_insert_id\(\)),after(%0,/)))]={@pemit %#=[ansi(hr,SQL ERROR)] - [before(%0,/)]: %q<errcheck>;@attach #inc/MSG_ALERT=SQL ERROR - %!/[before(%0,/)]: %q<errcheck> - QUERY: %q<sqlformat>}
 

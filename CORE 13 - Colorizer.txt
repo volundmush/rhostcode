@@ -1,0 +1,41 @@
+@skip isdbref(tag(setr(1,colorizer)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(Colorizer System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom()}
+
+&CMD.COLOR #colorizer=$^(?s)(?\:@|\+)?(color)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@assert/inline isdbref(setr(!,get(%#/_ACCOUNT),acc))=@pemit %#=You have no account set!;@attach #inc/GET_SWITCH=%2;@attach %!/SW.[strfirstof(%q<switch>,MAIN)]=%3,%4
+@set #colorizer/CMD.COLOR=regexp
+
+&SWITCHES.0 #colorizer=SET|NAME|DEMO
+
+&SW.DEMO #colorizer=@pemit %#=header(Color Demo);@pemit %#=iter(lnum(0,255),rjust(%i0,3,0)%b[ansi(%i0,colors(%i0,n))],%B,%R);@pemit %#=footer()
+
+&SW.SET #colorizer=@attach #inc/CONFIGURATOR=%0,%1,%q<acc>,COLOR
+
+&SW.MAIN #colorizer=@attach #inc/VALID.COLOR=%0;@assert/inline strlen(%1)=@pemit %#=Nothing entered to color!;@pemit %#=COLORIZED: [ansi(%q<value>,%1)]
+
+&COLOR.ME.DESC #acc_parent=What color to display mentions of your name as?
+&COLOR.ME.DEFAULT #acc_parent=hr
+&COLOR.ME.TYPE #acc_parent=COLOR
+
+&COLOR.SPEAKER.DESC #acc_parent=What color to display the speaker's name as?
+&COLOR.SPEAKER.DEFAULT #acc_parent=hg
+&COLOR.SPEAKER.TYPE #acc_parent=COLOR
+
+&COLOR.OTHER.DESC #acc_parent=What color to display any other character's name as?
+&COLOR.OTHER.DEFAULT #acc_parent=hy
+&COLOR.OTHER.TYPE #acc_parent=COLOR
+
+&COLOR.QUOTES.DESC #acc_parent=What color to display quotes as?
+&COLOR.QUOTES.DEFAULT #acc_parent=hc
+&COLOR.OTHER.TYPE #acc_parent=COLOR
+
+&FN.LIST_NAMES #colorizer=sortname(filterdbref(iter(lattr(%0/COLOR.*),elementsmux(%i0,2,.))))
+@@ %0 - the account.
+
+&INC.DISPLAY_NAMES #colorizer=@pemit %#=header(cname(%q<acc>)'s Colored Names);@dolist/inline [u(FN.LIST_NAMES,%q<acc>)]={@pemit %#=[cname(%d0)] - [setr(!,get(%q<acc>/COLOR.%d0),color)] - [ansi(%q<color>,name(%d0))]};@pemit %#=footer()
+
+&SW.NAME #colorizer=@if strlen(%0)={@attach #inc/GET_PLAYER=%0,target;@attach #inc/VALID.COLOR=%1;@set %q<acc>=COLOR.[num(%q<target>)]:%q<value>;@pemit %#=You will now see [cname(%q<target>)]'s name in %q<valueformat>.},{@attach %!/INC.DISPLAY_NAMES}
+
+&FN.COLOR_NAME #colorizer=privatize(1,if(isdbref(setr(!,get(%0/_ACCOUNT),acc)),if(strlen(setr(!,strfirstof(get(%q<acc>/COLOR.[num(%2)]),if(strmatch(num(%1),num(%0)),getconf(%q<acc>,ME,COLOR)),if(strmatch(num(%1),num(%2)),getconf(%q<acc>,SPEAKER,COLOR)),getconf(%q<acc>,OTHER,COLOR)),color)),ansi(%q<color>,%3),%3),%3))
+@@ %0 - dbref of viewer, %1 - dbref of target, %2 - dbref of speaker, %3 - text to color.
+
+&HLP.COLOR #colorizer=The Colorizer System handles automatic coloring of player character names and quotes in the various communication systems. It is recommended to read [ansi(hw,help ansi usage)] to have a full understanding of available color codes and be on a client that supports xterm256..%R%R[ansi(hc,Commands)]%R[ansi(hw,+color <color>=<text>)]%R%TEchoes <text> with <color> applied. Useful for testing.%R%R[ansi(hw,+color/demo)]%R%TDisplays the entire listing of available xterm256 colors in their numbers and symbolic names. WARNING: VERY SPAMMY!%R%R[ansi(hw,+color/set \[<option>=<value>\])]%R%TView or set the account-wide color options.%R%R[ansi(hw,+color/name \[<player>=<color>)\])]%R%TView all, or set a color to a specific player. Setting to n will delete the entry.
++help/add Communications/+color=#colorizer/HLP.COLOR

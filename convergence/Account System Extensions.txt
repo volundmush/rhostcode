@@ -1,0 +1,6 @@
+&FN.ACC_COLUMNS #acc=printf($-7s $-3s $-2s $-4s $-23|"s $-15s,Dbref,Bit,Al,Mail,Name,Approval Date)
+
+&FN.ACC_ROW #acc=printf($-7s $3s $2s $-4:0:s $-23|"s $-15s,num(%d0),bittype(%0),default(%0/ALTS,0),umail(%0),cname(%0),if(get(%0/GAME.APPROVED),fancytime(get(%0/GAME.APPROVED)),Unapproved))
+
+
+&FN.MAIN_FOOTER #acc=if(setr(!,lmax(iter(%1,get(%i0/GAME.APPROVED))),lastapp),Last Approval: [fancytime(%q<lastapp>)])

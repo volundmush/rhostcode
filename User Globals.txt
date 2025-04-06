@@ -1,8 +1,5 @@
 @skip isdbref(tag(setr(1,uglobals)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(User Globals,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom()}
 
-&CMD.COLORDEMO #uglobals=$^(?s)(?\:\+)(colordemo)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@pemit %#=header(Color Demo);@pemit %#=iter(lnum(0,255),rjust(%i0,3,0)%b[ansi(%i0,colors(%i0,n))],%B,%R);@pemit %#=footer()
-@set #uglobals/CMD.COLORDEMO=regexp
-
 +help/add System/+colordemo=#uglobals/HLP.colordemo
 &HLP.colordemo #uglobals=[ansi(hw,+colordemo)]%R%TDisplays all of the xterm color options and names. Don't forget to [ansi(hw,@set me=ANSICOLOR ANSI XTERMCOLOR)] to see them properly on a compatible client.
 

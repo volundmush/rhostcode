@@ -4,7 +4,7 @@
 @@ the chan_lib is the parent of all channel-like systems.
 @skip isdbref(tag(setr(1,chan_lib)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(Channel System Library,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE NO_COMMAND;@tag/add %q1=%q0;@tel %q0=#stor}
 
-&SWITCHES #chan_lib=setunion(LIST|WHO|ON|OFF|GAG|UNGAG|JOIN|LEAVE|RESTRICT|UNRESTRICT|TITLE|OPTIONS|ALTEREGO,CREATE|RENAME|DELETE|EXAMINE|LOCK|UNLOCK|CONFIG|MEMADD|MEMREM|MODADD|MODREM|ADMADD|ADMREM|DESCRIBE[if(isdbref(tag(scene)),|LOG|STOPLOG)],|,|)
+&SWITCHES #chan_lib=setunion(LIST|WHO|ON|OFF|GAG|UNGAG|JOIN|LEAVE|RESTRICT|UNRESTRICT|TITLE|OPTIONS|ALTEREGO,CREATE|RENAME|DELETE|CATEGORY|EXAMINE|LOCK|UNLOCK|CONFIG|MEMADD|MEMREM|MODADD|MODREM|ADMADD|ADMREM|DESCRIBE[if(isdbref(tag(scene)),|LOG|STOPLOG)],|,|)
 
 &CHAN.TYPE #chan_lib=CHANNELS
 &CHAN.GAG #chan_lib=GAGGED
@@ -16,7 +16,7 @@
 &FN.PLAYER_STATUS #chan_lib=if(match(get(%0/CHANINFO.[v(CHAN.GAG)]),objid(%1)),ansi(hx,Gag),if(match(u(GET_VALID_JOINED,%0),objid(%1)),ansi(hg,On),ansi(hx,Off)))
 @@ %0 - channel dbref, %1 - player objid
 
-&FN.VALID_NAME #chan_lib=ofparse(3,if(strlen(%0),1,#-1 CHANNEL NAMES CANNOT BE EMPTY),if(lte(strlen(%0),30),1,#-1 CHANNEL NAMES MUST BE <=30 CHARACTERS),if(valid(name,%0),1,#-1 CHANNEL NAMES MUST BE VALID THING NAMES))
+&FN.VALID_NAME #chan_lib=ofparse(3,if(strlen(stripansi(%0)),1,#-1 CHANNEL NAMES CANNOT BE EMPTY),if(lte(strlen(stripansi(%0)),30),1,#-1 CHANNEL NAMES MUST BE <=30 CHARACTERS),if(valid(name,stripansi(%0)),1,#-1 CHANNEL NAMES MUST BE VALID THING NAMES))
 
 &FN.FIND_CHANNEL #chan_lib=privatize(1,ofparse(3,if(strlen(%0),1,#-1 CHANNEL NAME EMPTY),if(words(setr(0,u(FN.VISIBLE_CHANNELS,%0))),1,#-1 NO VISIBLE CHANNELS IN SYSTEM),if(cand(isobjid(%1),match(%q0,%1)),1[setq(1,%1)],if(lt(words(setr(1,switch(%2,1,namefind(%q0,%1),2,namegraball(%q0,%1),namegrab(%q0,%1)))),2),1,#-1 MATCHED MULTIPLE CHANNELS: [iter(%q0,name(%i0),%b,|)])),strfirstof(%q1,if(strfirstof(%3,1),#-1 CHANNEL '%1' NOT FOUND))))
 @@ %0 - for who, %1 channel name, %2 - 0 (default) for namegrab, 1 for namefind, 2 for namegraball, %3 - (default true) error on empty
@@ -28,7 +28,9 @@
 &INC.ADMIN #chan_lib=@assert/inline u(CHANNEL_ADMIN,%#,%q<chan>)=@pemit %#=Permission Denied.
 &INC.FIND #chan_lib=@assert/inline isobjid(setr(!,u(FN.FIND_CHANNEL,%#,stripansi(%0)),chan))=@pemit %#=%q<chan>
 
-&INC.LIST #chan_lib=@pemit %#=header(u(FN.SYS_NAME) Channels);@pemit %#=u(FN.COLUMNS_%1);@pemit %#=separator();th setq(!,lwhoid(),online);@dolist/inline %0={@attach %!/INC.LIST_%1=%d0};@pemit %#=footer()
+&FIL.CATEGORY #chan_lib=strmatch(default(%0/CATEGORY,Uncategorized),%1)
+
+&INC.LIST #chan_lib=@pemit %#=header(u(FN.SYS_NAME) Channels);@pemit %#=u(FN.COLUMNS_%1);th setq(!,lwhoid(),online);th setq(!,setunion(iter(%0,default(%i0/CATEGORY,Uncategorized),%B,|),,|,|,i),categories);@dolist/inline/delimit | %q<categories>={@pemit %#=separator(%d0);@dolist/inline [filter(FIL.CATEGORY,%0,%b,%b,%d0)]={@attach %!/INC.LIST_%1=%d0}};@pemit %#=footer()
 
 &FN.COLUMNS_MAIN #chan_lib=ansi(confoverride(%#,COLUMN),printf($4-s $3s $-15s $|"-45s $:0:3s/$:0:3s,DBRF,Sta,Name,Description,Cur,Mem))
 &INC.LIST_MAIN #chan_lib=@pemit %#=printf($4-s $3s $-15s $|"-45s $:0:3s/$:0:3s,num(%0),u(FN.PLAYER_STATUS,%0,%#),cname(%0),default(%0/DESCRIBE,No description.),words(setinter(filterobjid(setr(!,u(GET_VALID_JOINED,%0),mem)),%q<online>)),words(%q<mem>))
@@ -39,9 +41,9 @@
 
 &SW.CONFIG #chan_lib=@attach %!/CONFIG=%0,%1,%!
 
-&SW.OPTIONS #chan_lib=@attach %!/INC.FIND=trim(before(%0,/));@assert/inline u(CHECK,%q<chan>,,%:)=@pemit %#=Permission denied.;@attach #inc/CONFIG=trim(after(%0,/)),%1,%q<chan>
+&SW.OPTIONS #chan_lib=@attach %!/INC.FIND=trim(before(%0,/));@assert/inline u(CHECK,%q<chan>,FakeLock,%:)=@pemit %#=Permission denied.;@attach #inc/CONFIG=trim(after(%0,/)),%1,%q<chan>
 
-&SW.EXAMINE #chan_lib=@attach %!/INC.FIND;@attach %!/INC.ADMIN;@pemit %#=header(Examine: [cname(%q<chan>)] (%q<chan>));@pemit %#=[ansi(hw,JOINED:)]%B[u(FN.NAMES,u(GET_VALID_JOINED,%q<chan>))];@pemit %#=[ansi(hw,GAGGING:)]%B[u(FN.NAMES,get(%q<chan>/GAGGING))];@if words(setr(!,get(%q<chan>/RESTRICT),restrict),|)={@pemit %#=separator(Restricted);@dolist/inline/delimit | %q<restrict>={@pemit %#=[cname(before(%d0,~))] - until [fancytime(after(%d0,~))]}};@pemit %#=separator(Locks);@dolist/inline/delimit | [get(%!/LOCKS)]={@pemit %#=[ansi(hw,%d0:)] [lock(%q<chan>/user|%d0)]};@pemit %#=footer()
+&SW.EXAMINE #chan_lib=@attach %!/INC.FIND;@@ @attach %!/INC.ADMIN;@pemit %#=header(Examine: [cname(%q<chan>)] (%q<chan>));@dolist/inline JOINED GAGGING OWNER ADMINS MODERATORS MEMBERS={@pemit %#=[ansi(hw,%d0:)]%B[switch(%d0,JOINED,u(FN.NAMES,u(GET_VALID_JOINED,%q<chan>)),u(FN.NAMES,get(%q<chan>/%d0)))]};@if words(setr(!,get(%q<chan>/RESTRICT),restrict),|)={@pemit %#=separator(Restricted);@dolist/inline/delimit | %q<restrict>={@pemit %#=[cname(before(%d0,~))] - until [fancytime(after(%d0,~))]}};@pemit %#=separator(Locks);@dolist/inline/delimit | [get(%!/LOCKS)]={@pemit %#=[ansi(hw,%d0:)] [lock(%q<chan>/user|%d0)]};@pemit %#=footer()
 
 &SW.DELETE #chan_lib=@attach %!/INC.FIND;@attach %!/INC.ADMIN;@assert/inline match(name(%q<chan>)|[num(%q<chan>)]|[objid(%q<chan>)],%1,|)=@pemit %#=Verify failed. Right side argument must be the channel's full name, dbref, or objid.;th setq(!,cname(%q<chan>),channame);@attach #inc/MSG_ALERT=Channel '%q<channame>' deleted.;th u(FN.CEMIT,%q<channame>,:has deleted the channel.);@set %q<chan>=!SAFE !INDESTRUCTIBLE;@destroy/override %q<chan>
 
@@ -49,9 +51,11 @@
 
 &INC.CREATE_CHECK #chan_lib=@assert/inline gtebittype(%#,5)=@pemit %#=Permission denied!
 
-&SW.CREATE #chan_lib=@attach %!/INC.CREATE_CHECK;@assert/inline t(setr(!,u(FN.VALID_NAME,setr(!,trim(%0),channame)),result))=@pemit %#=%q<result>;@break/inline cand(isobjid(setr(!,u(FN.FIND_CHANNEL,%#,%q<channame>),found)),!strmatch(%q<chan>,%q<found>))=@pemit %#=Channel name conflict detected.;@assert/inline isdbref(setr(!,create(%q<channame>,,t),chan))=@pemit %#=Could not create Channel: %q<chan>;@if has_markup(%q<channame>)={@name/ansi %q<chan>=%q<channame>};@parent %q<chan>=[u(CHAN_PARENT)];@set %q<chan>=INDESTRUCTIBLE SAFE;@pemit %#=Created a new channel: %q<channame>;@attach #inc/MSG_ALERT=New channel created: %q<channame>
+&SW.CREATE #chan_lib=@attach %!/INC.CREATE_CHECK;@assert/inline t(setr(!,u(FN.VALID_NAME,setr(!,trim(%0),channame)),result))=@pemit %#=%q<result>;@break/inline cand(isobjid(setr(!,u(FN.FIND_CHANNEL,%#,stripansi(%q<channame>)),found)),!strmatch(%q<chan>,%q<found>))=@pemit %#=Channel name conflict detected.;@assert/inline isdbref(setr(!,create(%q<channame>,,t),chan))=@pemit %#=Could not create Channel: %q<chan>;@if has_markup(%q<channame>)={@name/ansi %q<chan>=%q<channame>};@parent %q<chan>=[u(CHAN_PARENT)];@set %q<chan>=INDESTRUCTIBLE SAFE;@pemit %#=Created a new channel: %q<channame>;@attach #inc/MSG_ALERT=New channel created: %q<channame>
 
 &SW.RENAME #chan_lib=@attach %!/INC.FIND;@attach %!/INC.ADMIN;@assert/inline t(setr(!,u(FN.VALID_NAME,setr(!,trim(%1),channame)),result))=@pemit %#=%q<result>;@break/inline cand(isobjid(setr(!,u(FN.FIND_CHANNEL,%#,stripansi(%q<channame>),found))),!strmatch(%q<chan>,%q<found>))=@pemit %#=Channel name conflict detected.;th setq(!,cname(%q<chan>),oldname);@if has_markup(%q<channame>)={@name/ansi %q<chan>=%q<channame>},{@name %q<chan>=%q<channame>};@pemit %#=Channel '%q<oldname>' renamed to '%q<channame>';@attach #inc/MSG_ALERT=Channel '%q<oldname>' renamed to '%q<channame>';th u(FN.CEMIT,%q<chan>,:renamed '%q<oldname>' to '%q<channame>',%#)
+
+&SW.CATEGORY #chan_lib=@attach %!/INC.CREATE_CHECK;@attach %!/INC.FIND;@assert/inline strlen(setr(!,capnames(trim(stripansi(%1))),cat))=@pemit %#=No category entered!;@set %q<chan>=CATEGORY:%q<cat>;@pemit %#=Category for Channel '[cname(%q<chan>)]' set to: %1
 
 &INC.STARTLOCK #chan_lib=@attach %!/INC.FIND=before(stripansi(%0),/);@attach %!/INC.ADMIN;@attach #inc/PARTIAL=after(stripansi(%0),/),get(%!/LOCKS),|,lock,locktype;
 
@@ -83,28 +87,28 @@
 
 &SW.UNRESTRICT #chan_lib=@attach %!/INC.FIND;@attach #inc/GET_PLAYER=%1,t1;@assert/inline setr(!,get_kv(setr(!,get(%q<chan>/RESTRICT),data),%q<t1>),gag)=@pemit %#=[cname(%q<t1>)] is not restricted.;@if gte(sub(%q<gag>,secs()),0)={@pemit %#=[cname(%q<t1>)] has been un-restricted.;@set %q<chan>=RESTRICT:[del_kv(%q<data>,%q<t1>)];@pemit %#=You lift [setr(!,[cname(%q<t1>)]'s restriction on Channel '[cname(%q<chan>)]'.,msg)];@pemit %q<t1>=Moderators lift your restriction on Channel '[cname(%q<chan>)]'.;@attach #inc/MSG_ALERT=Lifted %q<msg>},{@pemit %#=[cname(%q<t1>)]'s restriction has already expired. It has been cleaned up.;@attach %!/CLEAN_RESTRICTIONS=%q<chan>};
 
-&SW.GAG #chan_lib=@attach %!/INC.FIND;@assert/inline match(get(%q<chan>/JOINED),%:)=@pemit %#=You are not listening to that channel.;@break/inline match(setr(!,get(%q<chan>/CHANINFO.[v(CHAN.GAG)]),gaggers),%:)=#pemit %#=That channel is already gagged.;@set %q<chan>=CHANINFO.[v(CHAN.GAG)]:[setunion(%q<gaggers>,%:)];@set %:=CHANINFO.[v(CHAN.GAG)]:[setunion(get(%:/CHANINFO.[v(CHAN.GAG)]),%q<chan>)];@pemit %#=Gagged [cname(%q<chan>)].
+&SW.GAG #chan_lib=@if strmatch(%0,all)={th setq(!,listdiff(u(FN.VISIBLE_CHANNELS,%:),get(%#/CHANINFO.[v(CHAN.GAG)])),targets)},{@attach %!/INC.FIND;th setq(!,%q<chan>,targets)};@dolist/inline/nobreak %q<targets>={@assert/inline match(get(%d0/JOINED),%:)=@pemit %#=You are not listening to that channel.;@break/inline match(get(%#/CHANINFO.[v(CHAN.GAG)]),objid(%d0))=#pemit %#=That channel is already gagged.;@attach %!/GAG_CHANNEL=objid(%d0),%:;@pemit %#=Gagged [cname(%d0)].}
 
-&GAG_CHANNEL #chan_lib=@set %0=CHANINFO.[v(CHAN.GAG)]:[setunion(filterobjid(get(%0/CHANINFO.[v(CHAN.GAG)])),objid(%1))];@set %1=CHANINFO.[v(CHAN.GAG)]:[setunion(filterobjid(get(%1/CHANINFO.[v(CHAN.GAG)])),objid(%0))]
+&GAG_CHANNEL #chan_lib=@set %0=GAGGED:[setunion(filterobjid(get(%0/GAGGED)),objid(%1))];@set %1=CHANINFO.[v(CHAN.GAG)]:[setunion(filterobjid(get(%1/CHANINFO.[v(CHAN.GAG)])),%0)]
 
-&SW.UNGAG #chan_lib=@attach %!/INC.FIND;@assert/inline match(get(%q<chan>/JOINED),%:)=@pemit %#=You are not listening to that channel.;@assert/inline match(setr(!,get(%q<chan>/CHANINFO.[v(CHAN.GAG)]),gaggers),%:)=#pemit %#=That channel is not gagged.;@set %q<chan>=CHANINFO.[v(CHAN.GAG)]:[setdiff(%q<gaggers>,%:)];@set %:=CHANINFO.[v(CHAN.GAG)]:[setdiff(get(%:/CHANINFO.[v(CHAN.GAG)]),%q<chan>)];@pemit %#=Un-Gagged [cname(%q<chan>)].
+&SW.UNGAG #chan_lib=@if strmatch(%0,all)={th setq(!,get(%#/CHANINFO.[v(CHAN.GAG)]),targets)},{@attach %!/INC.FIND;th setq(!,%q<chan>,targets)};@dolist/inline/nobreak %q<targets>={@assert/inline match(get(%d0/JOINED),%:)=@pemit %#=You are not listening to that channel.;@assert/inline match(setr(!,get(%#/CHANINFO.[v(CHAN.GAG)]),gaggers),objid(%d0))=#pemit %#=That channel is not gagged.;@attach %!/UNGAG_CHANNEL=objid(%d0),%:;@pemit %#=Un-Gagged [cname(%d0)].}
 
-&UNGAG_CHANNEL #chan_lib=@set %0=CHANINFO.[v(CHAN.GAG)]:[setdiff(filterobjid(get(%0/CHANINFO.[v(CHAN.GAG)])),objid(%1))];@set %1=CHANINFO.[v(CHAN.GAG)]:[setdiff(filterobjid(get(%1/CHANINFO.[v(CHAN.GAG)])),objid(%0))]
+&UNGAG_CHANNEL #chan_lib=@set %0=GAGGED:[setdiff(filterobjid(get(%0/GAGGED)),%1)];@set %1=CHANINFO.[v(CHAN.GAG)]:[setdiff(filterobjid(get(%1/CHANINFO.[v(CHAN.GAG)])),%0)]
 
-&DO_BASE #chan_lib=@attach %!/INC.FIND;@assert/inline %2=@pemit %#=Permission denied.;@attach #inc/GET_PLAYER=%1,t1;th setq(!,filterobjid(get(%q<chan>/%2)),data);
-&DO_ADD #chan_lib=@attach %!/DO_BASE;@break/inline match(%q<data>,%q<t1>)=@pemit %#=[cname(%q<t1>)] is already among the %2.;@set %q<chan>=%2:[setunion(%q<data>,%q<t1>)];@pemit %q<t1>=You are now among the %2 for Radio Channel: [cname(%q<chan>)];@pemit %#=[cname(%q<t1>)] added to the %2.
-&DO_REM #chan_lib=@attach %!/DO_BASE;@assert/inline match(%q<data>,%q<t1>)=@pemit %#=[cname(%q<t1>)] is not among the %2.;@set %q<chan>=%2:[setdiff(%q<data>,%q<t1>)];@pemit %q<t1>=You are no longer among the %2 for Radio Channel: [cname(%q<chan>)];@pemit %#=[cname(%q<t1>)] removed from the %2.
+&DO_BASE #chan_lib=@attach %!/INC.FIND;@assert/inline u(CHECK,%q<chan>,%2,%:)=@pemit %#=Permission denied.;@attach #inc/GET_PLAYER=%1,t1;th setq(!,filterobjid(get(%q<chan>/%3)),data);
+&DO_ADD #chan_lib=@attach %!/DO_BASE;@break/inline match(%q<data>,%q<t1>)=@pemit %#=[cname(%q<t1>)] is already among the %2.;@set %q<chan>=%3:[setunion(%q<data>,%q<t1>)];@pemit %q<t1>=You are now among the %3 for Radio Channel: [cname(%q<chan>)];@pemit %#=[cname(%q<t1>)] added to the %3.
+&DO_REM #chan_lib=@attach %!/DO_BASE;@assert/inline match(%q<data>,%q<t1>)=@pemit %#=[cname(%q<t1>)] is not among the %2.;@set %q<chan>=%3:[setdiff(%q<data>,%q<t1>)];@pemit %q<t1>=You are no longer among the %3 for Radio Channel: [cname(%q<chan>)];@pemit %#=[cname(%q<t1>)] removed from the %3.
 
-&SW.MEMADD #chan_lib=@attach %!/DO_ADD=%0,%1,u(CHECK,%q<chan>,ModerateLock,%#),MEMBERS
-&SW.MEMREM #chan_lib=@attach %!/DO_REM=%0,%1,u(CHECK,%q<chan>,ModerateLock,%#),MEMBERS
+&SW.MEMADD #chan_lib=@attach %!/DO_ADD=%0,%1,ModerateLock,MEMBERS
+&SW.MEMREM #chan_lib=@attach %!/DO_REM=%0,%1,ModerateLock,MEMBERS
 
-&SW.MODADD #chan_lib=@attach %!/DO_ADD=%0,%1,u(CHECK,%q<chan>,AdminLock,%#),MODERATORS
-&SW.MODREM #chan_lib=@attach %!/DO_REM=%0,%1,u(CHECK,%q<chan>,AdminLock,%#),MODERATORS
+&SW.MODADD #chan_lib=@attach %!/DO_ADD=%0,%1,AdminLock,MODERATORS
+&SW.MODREM #chan_lib=@attach %!/DO_REM=%0,%1,AdminLock,MODERATORS
 
-&SW.ADMADD #chan_lib=@attach %!/DO_ADD=%0,%1,u(CHECK,%q<chan>,FakeLock,%#),ADMINS
-&SW.ADMREM #chan_lib=@attach %!/DO_REM=%0,%1,u(CHECK,%q<chan>,FakeLock,%#),ADMINS
+&SW.ADMADD #chan_lib=@attach %!/DO_ADD=%0,%1,FakeLock,ADMINS
+&SW.ADMREM #chan_lib=@attach %!/DO_REM=%0,%1,FakeLock,ADMINS
 
-&CHANNEL_ADMIN #chan_lib=gtebittype(%0,5)
+&CHANNEL_ADMIN #chan_lib=gtebittype(%1,5)
 
 &LOCKS #chan_lib=TalkLock|ModerateLock|AdminLock
 
@@ -113,7 +117,7 @@
 &CHECK.ADMINLOCK #chan_lib=match(get(%0/ADMINS),objid(%1))
 &CHECK.MODERATELOCK #chan_lib=cor(u(CHECK.ADMINLOCK,%0,%1),match(get(%0/MODERATORS),objid(%1)))
 &CHECK.JOINLOCK #chan_lib=cor(u(CHECK.MODERATELOCK,%0,%1),match(get(%0/MEMBERS),objid(%1)))
-&CHECK #chan_lib=localize(if(u(CHANNEL_ADMIN,%2),1,cand(cor(elock(%0/user|%1,num(%2)),u(CHECK.%1,%0,%2)),u(CHECK_HELPER_EXTRA,%0,%1,%2))))
+&CHECK #chan_lib=localize(if(u(CHANNEL_ADMIN,%0,%2),1,cand(cor(elock(%0/user|%1,num(%2)),u(CHECK.%1,%0,%2)),u(CHECK_HELPER_EXTRA,%0,%1,%2))))
 @@ %0 - channel, %1 - permission, %2 - object
 
 &FIL.CHECK #chan_lib=u(check,%1,%2,%0)
@@ -193,10 +197,6 @@
 
 @skip isdbref(tag(setr(1,chan_parent)))={@assert/inline isdbref(tag(chan))=@pemit %#=ERROR: No Channel object set!;@assert/inline isdbref(setr(0,create(Channel System Parent,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE NO_COMMAND;@tag/add %q1=%q0;@tel %q0=[tag(stor)]}
 
-&LK.MODERATE #chan_parent=t(match(v(MODERATORS),%:))
-&LK.ADMIN #chan_parent=t(match(v(ADMINS),%:))
-&LK.MEMBER #chan_parent=t(match(v(MEMBERS),%:))
-
 @lock/user #chan_parent|TalkLock=LK.TRUE/1
 @lock/user #chan_parent|ModerateLock=LK.GTEBITTYPE/4
 @lock/user #chan_parent|AdminLock=LK.GTEBITTYPE/4
@@ -229,6 +229,5 @@
 
 &ERR.CHANNEL #eobj=privatize(1,if(strlen(setr(!,after(%0,+),aplus)),if(strlen(setr(!,objeval(%#,%q<aplus>),feval)),u(#chan/FN.ERR_CHANNEL,%#,stripansi(first(%q<aplus>)),rest(%q<aplus>)),0),0))
 
-
-&HLP.CHANNELS #chan=[ansi(hw,Command Aliases:)] +chan, @chan, @channel%R%RThe Channels System provides global chat channels with unique names and a straightforward permissions and moderation system. The @chan alias is provided for familiarity with PennMUSH.%R%R[ansi(hc,Commands)]%R%R[ansi(hw,+chan)]%R%TDisplay all channels you can see.%R%R[ansi(hw,+chan/join <channel>)]%R%TJoin a channel.%R%R[ansi(hw,+chan/leave <channel>)]%R%TLeave a channel.%R%R[ansi(hw,+chan/gag <channel>)]%R%TSquelch output from a channel. You won't hear it until you /ungag. Clears at logout.%R%R[ansi(hw,+chan/ungag <channel>)]%R%TReleases a gag. Hear messages again.%R%R[if(isdbref(tag(scene)),[ansi(hc,Roleplay Logging)]%RThe following commands integrate with the Roleplay Logging system. See [ansi(hw,+help @scene)]. The indication that a Channel is being logged is a sequence of numbers after its name.%R%R[ansi(hw,+chan/log <channel>=<SceneId>)]%R%TBegin logging to a given Scene.%R%R[ansi(hw,+chan/stoplog <channel>=<SceneID>)]%R%TStop further messages from being logged to that Scene.%R%R)][ansi(hc,Sending Messages)]%R%RYou can send messages by typing [ansi(hw,+<channel> <message>)], where <channel> is able to partial match by prefix. For example, to speak on a channel named Public, you could use [ansi(hw,+p hello!)] or [ansi(hw,+pub yo!)]%R%R[ansi(hc,Moderator Commands)]%R%R[ansi(hw,+chan/restrict <channel>=<player>/<duration>)]%R%TApply a duration-based send block. Duration example: 30d 5h 40m for 30 days, 5 hours, and 40 minutes.%R%R[ansi(hw,+chan/unrestrict <channel>=<player>)]%R%TRelease a ban early.%R%R[ansi(hc,Administrator Commands)]%R%R[ansi(hw,+chan/create <channel>)]%R%TCreates a new channel. use the ansi%(%) function to create one with a colored name!%R%R[ansi(hw,+chan/rename <old name>=<new name>)]%R%TRename a channel. Can rename to itself to fix case or color.%R%R[ansi(hw,+chan/delete <channel>=<verify>)]%R%TDelete a channel. Must enter the full name in <verify> to confirm.%R%R[ansi(hw,+chan/lock <channel>/<lock>=<lockkey>)]%R%TSet a MUSHcode lock string to one of the channel locks. See more below.%R%R[ansi(hw,+chan/unlock <channel>/<lock>)]%R%TRelease a lock back to defaults.%R%R[ansi(hw,+chan/options <channel>\[/<op>=<value>\])]%R%TView or change a Channel's options.%R%R[ansi(hc,Permissions and Membership)]%RChannels each have three lists for privileges: members, moderators, and admins. These lists can be modified using the switches:%R[ansi(hw,/memadd /memrem /modadd /modrem /admadd /admrem)]%RExample:%R[ansi(hw,+chan/memadd <channel>=<player>)]%R%RA Wizard/Owner can appoint Admins. Admins may appoint Moderators and use /options. Moderators may add and remove members and use the /restrict feature. Members can join and speak on the channel. Higher permissions imply all lower privileges: IE, moderators can always talk whether or not they're on the member list.%R%RThe [ansi(hw,AdminLock)], [ansi(hw,ModeratorLock)], and [ansi(hw,TalkLock)] offer an alternate approach for granting permission, which CO-EXISTS with the above lists. IE: Moderator privileges are gained by EITHER passing the lock OR being in the Moderators list.%R%R[ansi(hc,Lock Keys)]%RChannels have access to special eval locks.%R[ansi(hw,LK.ADMIN/1)]%R%TEvals true if checker is on the admins list.%R[ansi(hw,LK.MODERATE/1)]%R%TEvals true if checker is on the moderators list.%R[ansi(hw,LK.MEMBER/1)]%R%TEvals true if checker is on the member list.%R%R[ansi(hc,Default Channel Locks)]%R[iter(TalkLock ModerateLock AdminLock,[ansi(hw,%i0)]: [lock(#chan_parent/user|%i0)],%B,%R)]
+&HLP.CHANNELS #chan=[ansi(hw,Command Aliases:)] +chan, @chan, @channel%R%RThe Channels System provides global chat channels with unique names and a straightforward permissions and moderation system. The @chan alias is provided for familiarity with PennMUSH.%R%R[ansi(hc,Commands)]%R%R[ansi(hw,+chan)]%R%TDisplay all channels you can see.%R%R[ansi(hw,+chan/join <channel>)]%R%TJoin a channel.%R%R[ansi(hw,+chan/leave <channel>)]%R%TLeave a channel.%R%R[ansi(hw,+chan/gag <channel>)]%R%TSquelch output from a channel. You won't hear it until you /ungag. Clears at logout. use /gag all to gag all channels.%R%R[ansi(hw,+chan/ungag <channel>)]%R%TReleases a gag. Hear messages again. use /ungag all to ungag all gagged channels.%R%R[ansi(hw,+chan/title <channel>=<title>)]%R%TSet a title prefix that'll display before your name on a channel. Leave <title> blank to clear.%R%R[ansi(hw,+chan/alterego <channel>=<name>)]%R%TAppear as Alterego (Realname) says, "Blah". Useful for spoofing and similar feats. Set <name> blank to clear.%R%R[if(isdbref(tag(scene)),[ansi(hc,Roleplay Logging)]%RThe following commands integrate with the Roleplay Logging system. See [ansi(hw,+help @scene)]. The indication that a Channel is being logged is a sequence of numbers after its name.%R%R[ansi(hw,+chan/log <channel>=<SceneId>)]%R%TBegin logging to a given Scene.%R%R[ansi(hw,+chan/stoplog <channel>=<SceneID>)]%R%TStop further messages from being logged to that Scene.%R%R)][ansi(hc,Sending Messages)]%R%RYou can send messages by typing [ansi(hw,+<channel> <message>)], where <channel> is able to partial match by prefix. For example, to speak on a channel named Public, you could use [ansi(hw,+p hello!)] or [ansi(hw,+pub yo!)]%R%R[ansi(hc,Moderator Commands)]%R%R[ansi(hw,+chan/restrict <channel>=<player>/<duration>)]%R%TApply a duration-based send block. Duration example: 30d 5h 40m for 30 days, 5 hours, and 40 minutes.%R%R[ansi(hw,+chan/unrestrict <channel>=<player>)]%R%TRelease a ban early.%R%R[ansi(hc,Administrator Commands)]%R%R[ansi(hw,+chan/create <channel>)]%R%TCreates a new channel. use the ansi%(%) function to create one with a colored name!%R%R[ansi(hw,+chan/rename <old name>=<new name>)]%R%TRename a channel. Can rename to itself to fix case or color.%R%R[ansi(hw,+chan/category <channel>=<category>)]%R%TAssign a channel to a display category. Only useful for visual organization.%R%R[ansi(hw,+chan/delete <channel>=<verify>)]%R%TDelete a channel. Must enter the full name in <verify> to confirm.%R%R[ansi(hw,+chan/lock <channel>/<lock>=<lockkey>)]%R%TSet a MUSHcode lock string to one of the channel locks. See more below.%R%R[ansi(hw,+chan/unlock <channel>/<lock>)]%R%TRelease a lock back to defaults.%R%R[ansi(hw,+chan/options <channel>\[/<op>=<value>\])]%R%TView or change a Channel's options.%R%R[ansi(hw,+chan/desc <channel>=<description>)]%R%TSet a channel's description.%R%R[ansi(hc,Permissions and Membership)]%RChannels each have three lists for privileges: members, moderators, and admins. These lists can be modified using the switches:%R[ansi(hw,/memadd /memrem /modadd /modrem /admadd /admrem)]%RExample:%R[ansi(hw,+chan/memadd <channel>=<player>)]%R%RA Wizard/Owner can appoint Admins. Admins may appoint Moderators and use /options. Moderators may add and remove members and use the /restrict feature. Members can join and speak on the channel. Higher permissions imply all lower privileges: IE, moderators can always talk whether or not they're on the member list.%R%RThe [ansi(hw,AdminLock)], [ansi(hw,ModeratorLock)], and [ansi(hw,TalkLock)] offer an alternate approach for granting permission, which CO-EXISTS with the above lists. IE: Moderator privileges are gained by EITHER passing the lock OR being in the Moderators list.%R%R[ansi(hc,Lock Keys)]%RChannels have access to special eval locks.%R[ansi(hw,LK.ADMIN/1)]%R%TEvals true if checker is on the admins list.%R[ansi(hw,LK.MODERATE/1)]%R%TEvals true if checker is on the moderators list.%R[ansi(hw,LK.MEMBER/1)]%R%TEvals true if checker is on the member list.%R%R[ansi(hc,Default Channel Locks)]%R[iter(TalkLock ModerateLock AdminLock,[ansi(hw,%i0)]: [lock(#chan_parent/user|%i0)],%B,%R)]
 +help/add Communications/+channel=#chan/HLP.CHANNELS

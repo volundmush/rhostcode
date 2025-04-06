@@ -11,7 +11,7 @@
 &INFO.CMD #theme=+TINFO
 
 &SWITCHES.THEME.0 #theme=CREATE|RENAME|DESCRIBE|GET|TRANSFER|GRANT|REVOKE
-&SWITCHES.THEME.5 #theme=APPROVE|UNAPPROVE|ADD|REMOVE|DELETE
+&SWITCHES.THEME.5 #theme=APPROVE|UNAPPROVE|ADD|REMOVE|DELETE|CATEGORY
 
 &FN.THEMES #theme=sortname(lcon(%!,OBJECT,,,1))
 
@@ -20,7 +20,7 @@
 
 &FN.ISADMIN #theme=match(setunion(get(%0/OWNER),get(%0/ADMINS)),objid(%1))
 
-&FN.VALID_THEME_NAME #theme=ofparse(3,if(strlen(%0),1,#-1 NO NAME ENTERED),if(contains_character(%0,/),#-1 THEME NAMES CANNOT HAVE A / IN THEM SORRY Fate/Stay Night AND .hack//GU),if(valid(name,%0),1,#-1 THAT'S NOT A GOOD NAME FOR A THING OBJECT. TRY FEWER SPECIAL CHARACTERS),1)
+&FN.VALID_THEME_NAME #theme=ofparse(3,if(strlen(%0),1,#-1 NO NAME ENTERED),if(!contains_character(%0,/),1,#-1 THEME NAMES CANNOT HAVE A / IN THEM SORRY Fate/Stay Night AND .hack//GU),if(valid(name,%0),1,#-1 THAT'S NOT A GOOD NAME FOR A THING OBJECT. TRY FEWER SPECIAL CHARACTERS),1)
 
 &SW.THEME.CREATE #theme=@skip gtebittype(%#,2)={@break/inline hasflag(%#,GUEST)=@pemit %#=Guests cannot create themes!;@break/inline isapproved(%#)=@pemit %#=You are approved and have no business creating a theme!;@break/inline isobjid(get(%#/GAME.THEME))=@pemit %#=You are already bound to a theme! No need for another.};@assert/inline t(setr(!,u(FN.VALID_THEME_NAME,stripansi(%0)),res))=@pemit %#=%q<res>;@assert/inline isdbref(setr(!,create(stripansi(%0),,t),theme))=@pemit %#=%q<theme>;th setq(!,objid(%q<theme>),theme);@if has_markup(%0)={@name/ansi %q<theme>=%0},{@name %q<theme>=%0};@set %q<theme>=INDESTRUCTIBLE;@pemit %#=Theme created!;@attach #inc/MSG_ALERT=Created Theme: %0;@if !isapproved(%#)={@set %q<theme>=OWNER:%:;@attach %!/DO_ADD=%q<theme>,%:}
 
@@ -52,20 +52,26 @@
 
 &FIL.APPROVED #theme=default(%0/APPROVED,0)
 
-&FN.THEME.LIST #theme=columns(iter(%0,cname(%i0),%b,|),26,3,l,1,1,,%b,,1,|,%B,1)
-
-&DO.THEME.LIST #theme=@if words(%0)={@pemit %#=separator(%1);@pemit %#=u(FN.THEME.LIST,%0)}
-
-&INC.THEME.LIST #theme=@assert/inline words(setr(!,u(FN.THEMES),all))=@pemit %#=No themes to list!;@pemit %#=header(Theme List);th setq(!,filter(FIL.APPROVED,%q<all>),approved);th setq(!,listdiff(%q<all>,%q<approved>),unapproved);@attach %!/DO.THEME.LIST=%q<approved>,Approved;@attach %!/DO.THEME.LIST=%q<unapproved>,Un-Approved;@pemit %#=footer(words(%q<all>) Total Themes)
-
 &SW.THEME.APPROVE #theme=@attach %!/FINDTHEME=%0,theme;@break/inline u(FIL.APPROVED,%q<theme>)=@pemit %#=It is already approved!;@set %q<theme>=APPROVED:1;@pemit %#=Theme '[cname(%q<theme>)]' approved! Don't forget to lock relevant +tinfo files.;@attach #inc/MSG_ALERT=Theme '[cname(%q<theme>)]' approved!
 
 &SW.THEME.UNAPPROVE #theme=@attach %!/FINDTHEME=%0,theme;@assert/inline u(FIL.APPROVED,%q<theme>)=@pemit %#=It is not approved!;@set %q<theme>=APPROVED:;@pemit %#=Theme '[cname(%q<theme>)]' un-approved!;@attach #inc/MSG_ALERT=Theme '[cname(%q<theme>)]' un-approved!
 
+&CATEGORIES #theme=Original|What If|Canon|Uncategorized
+
+&SW.THEME.CATEGORY #theme=@attach %!/FINDTHEME=%0,theme;@assert/inline strlen(%2)=@pemit %#=No category entered!;@attach #inc/PARTIAL=%2,v(CATEGORIES),|,category,category;@set %q<theme>=CATEGORY:%q<category>;@attach #inc/MSG_ALERT=Theme '[cname(%q<theme>)]' is now categorized: %q<category>
+
+&FN.THEME.LIST #theme=columns(iter(%0,if(u(FIL.APPROVED,%i0),,ansi(hr,chr(40)X[chr(41)]%B))[cname(%i0)],%b,|),39,2,l,0,1,,%b,,1,|,%B,1)
+
+&DO.THEME.LIST #theme=@if words(%0)={@pemit %#=separator(%1);@pemit %#=u(FN.THEME.LIST,%0)}
+
+&FIL.CATEGORY #theme=strmatch(default(%0/CATEGORY,Uncategorized),%1)
+
+&INC.THEME.LIST #theme=@assert/inline words(setr(!,u(FN.THEMES),all))=@pemit %#=No themes to list!;@pemit %#=header(Theme List);@dolist/inline/delimit | [v(CATEGORIES)]={th setq(!,filter(FIL.CATEGORY,%q<all>,%b,%b,%d0),filtered);@attach %!/DO.THEME.LIST=%q<filtered>,%d0};@pemit %#=footer(words(%q<all>) Total Themes. [ansi(hr,X)] are not approved.)
+
 &FN.ROSTER.COLUMNS #theme=printf($-23s $11s,Name,LastOn/Idle)
 &FN.ROSTER.ROW #theme=printf($-23s $11s,cname(%0),lastidle(%0))
 
-&INC.THEME.DISPLAY #theme=@attach %!/FINDTHEME=%0,theme;@pemit %#=header(Theme: [cname(%q<theme>)]);@if strlen(setr(!,get(%q<theme>/DESCRIBE),desc))={@pemit %#=%q<desc>};@if words(setr(!,u(FN.LIST_FILENAMES,%q<theme>),files),|)={@pemit %#=separator(+tinfo Files);@pemit %#=columns(%q<files>,26,3,l,1,1,,%b,,1,|,%B,1)};@if words(setr(!,filterobjid(get(%q<theme>/MEMBERS)),mem))={@pemit %#=separator(Cast of Characters);@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.ROSTER.COLUMNS));@dolist/inline %q<mem>={@pemit %#=u(FN.ROSTER.ROW,%d0,%q<theme>)}};@if or(isobjid(setr(!,get(%q<theme>/OWNER),owner)),words(setr(!,filterobjid(get(%q<theme>/ADMINS)),admin)))={@pemit %#=separator(Metadata);@if isobjid(%q<owner>)={@pemit %#=[ansi(hw,Owner/Founder:)]%B[cname(%q<owner>)]};@if words(%q<admins>)={@pemit %#[ansi(hw,Admins:)]%B[iter(%q<admins>,cname(%i0),%b,\,%b)]}};@pemit %#=footer()
+&INC.THEME.DISPLAY #theme=@attach %!/FINDTHEME=%0,theme;@pemit %#=header(Theme: [cname(%q<theme>)]);@if strlen(setr(!,ucleanget(%q<theme>/DESCRIBE),desc))={@pemit %#=%q<desc>};@if words(setr(!,u(FN.LIST_FILENAMES,%q<theme>),files),|)={@pemit %#=separator(+tinfo Files);@pemit %#=columns(%q<files>,26,3,l,1,1,,%b,,1,|,%B,1)};@if words(setr(!,filterobjid(get(%q<theme>/MEMBERS)),mem))={@pemit %#=separator(Cast of Characters);@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.ROSTER.COLUMNS));@dolist/inline %q<mem>={@pemit %#=u(FN.ROSTER.ROW,%d0,%q<theme>)}};@if or(isobjid(setr(!,get(%q<theme>/OWNER),owner)),words(setr(!,filterobjid(get(%q<theme>/ADMINS)),admin)))={@pemit %#=separator(Metadata);@if isobjid(%q<owner>)={@pemit %#=[ansi(hw,Owner/Founder:)]%B[cname(%q<owner>)]};@if words(%q<admins>)={@pemit %#[ansi(hw,Admins:)]%B[iter(%q<admins>,cname(%i0),%b,\,%b)]}};@pemit %#=footer()
 
 &SW.THEME.MAIN #theme=@if strlen(%0)={@attach %!/INC.THEME.DISPLAY},{@attach %!/INC.THEME.LIST}
 
@@ -78,7 +84,7 @@
 
 &INFO.ADMIN #theme=if(u(FIL.APPROVED,%q<target>),gtebittype(%0,2),t(match(get(%q<target>/OWNER)%B[get(%q<target>/ADMINS)],objid(%0))))
 
-&INC.INFO.CANMODIFY #theme=@if !gtebittype(%#,5)={@break/inline default(%q<target>/APPROVED,0)=@pemit %#=Cannot edit [v(INFO.NAME)] Files while approved!}
+&INC.INFO.CANMODIFY #theme=@@ @if !gtebittype(%#,5)={@break/inline default(%q<target>/APPROVED,0)=@pemit %#=Cannot edit [v(INFO.NAME)] Files while approved!}
 
 @@ Help stuff
 +help/add Community/+theme=#theme/HLP.THEME

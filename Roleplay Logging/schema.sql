@@ -42,13 +42,13 @@ CREATE OR REPLACE VIEW plot_runner_view AS
            LEFT JOIN entity AS e ON pr.entity_id = e.entity_id;
 
 CREATE OR REPLACE VIEW plot_runner_view_runners AS
-       SELECT plot_id,GROUP_CONCAT(entity_objid ORDER BY entity_name) AS runner_objids, GROUP_CONCAT(entity_name ORDER BY entity_name SEPARATOR '|') AS runner_names
+       SELECT plot_id,GROUP_CONCAT(entity_objid ORDER BY entity_name SEPARATOR ' ') AS runner_objids, GROUP_CONCAT(entity_name ORDER BY entity_name SEPARATOR '|') AS runner_names
        FROM plot_runner_view
            WHERE runner_type = 2
        GROUP BY plot_id;
 
 CREATE OR REPLACE VIEW plot_runner_view_helpers AS
-       SELECT plot_id,GROUP_CONCAT(entity_objid ORDER BY entity_name) AS helper_objids, GROUP_CONCAT(entity_name ORDER BY entity_name SEPARATOR '|') AS helper_names
+       SELECT plot_id,GROUP_CONCAT(entity_objid ORDER BY entity_name SEPARATOR ' ') AS helper_objids, GROUP_CONCAT(entity_name ORDER BY entity_name SEPARATOR '|') AS helper_names
        FROM plot_runner_view
            WHERE runner_type = 1
        GROUP BY plot_id;
@@ -109,9 +109,10 @@ CREATE OR REPLACE VIEW actor_view AS
     LEFT JOIN entity AS e ON a.entity_id = e.entity_id;
 
 CREATE OR REPLACE VIEW actor_tagged AS
-       SELECT scene_id,GROUP_CONCAT(entity_objid ORDER BY entity_name) AS tagged_objids, GROUP_CONCAT(entity_name ORDER BY entity_name SEPARATOR '|') AS tagged_names
+       SELECT scene_id,GROUP_CONCAT(entity_objid ORDER BY entity_name SEPARATOR ' ') AS tagged_objids, GROUP_CONCAT(entity_name ORDER BY entity_name SEPARATOR '|') AS tagged_names
          FROM actor_view
-              WHERE actor_type = 1;
+              WHERE actor_type = 1
+       GROUP BY scene_id;
 
 CREATE OR REPLACE VIEW scene_view AS
 SELECT s.scene_id,s.scene_title,s.scene_pitch,
@@ -211,4 +212,5 @@ CREATE OR REPLACE VIEW pose_view AS
               a.*
            FROM pose AS p
        LEFT JOIN channel_view AS c ON p.channel_id = c.channel_id
-       LEFT JOIN actrole_view as a ON p.actrole_id = a.actrole_id;
+       LEFT JOIN actrole_view as a ON p.actrole_id = a.actrole_id
+       ORDER BY p.pose_date_created ASC;

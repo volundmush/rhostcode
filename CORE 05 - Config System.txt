@@ -6,7 +6,7 @@
 &CMD.GLOBALCONFIG #conf=$^(?s)(?\:\+)(globalconfig)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@assert/inline gtebittype(%#,5)=@pemit %#=error();@attach #inc/GET_SWITCHES=%2;@attach %!/SW.[strfirstof(%q<switch>,MAIN)]=trim(%3),trim(%4)
 @set #conf/CMD.GLOBALCONFIG=regexp
 
-&FN.LIST_CONFIGS #conf=setunion(iter(lattrp(%0/CONFIG.*.*),elementsmux(%i0,2,.),%b,|),,|,|,i)
+&FN.LIST_CONFIGS #conf=setunion(iter(lattrp(%0/%1.*.*),elementsmux(%i0,2,.),%b,|),,|,|,i)
 
 &CONFIG.PERM #conf=@assert/inline gtebittype(%#,6)=@pemit %#=Permission denied.
 

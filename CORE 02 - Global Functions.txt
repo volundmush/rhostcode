@@ -23,6 +23,9 @@
 &GFN.GETALIAS #gfun=switch(type(%0),EXIT,if(strfirstof(%1,1),elementsmux(fullname(%0),2,;),after(fullalias(%0),chr(59))),get(%0/ALIAS))
 @@ %0 - dbref, %1 - full alias if exit.
 
+&GFN.ALNAME #gfun=name(%0)[if(strlen(getalias(%0)),%b[chr(40)][getalias(%0)][chr(41)])]
+&GFN.ALCNAME #gfun=cname(%0)[if(strlen(getalias(%0)),%b[chr(40)][getalias(%0)][chr(41)])]
+
 &GFN.RANDWORD #gfun=first(shuffle(%0,strfirstof(%1,%b),strfirstof(%1,%b)),strfirstof(%1,%b))
 
 &GFN.NAMEMATCH #gfun=t(match([name(%0)]|[num(%0)]|[objid(%0)][if(%2,|[getalias(%0)])][if(%3,|[u(%0/%3)])],%1,|))
@@ -32,6 +35,9 @@
 
 &GFN.OBJIDS #gfun=squish(iter(%0,if(isdbref(%i0),objid(%i0))))
 @@ %0 dbref list.
+
+&GFN.UCLEAN #gfun=medit(%0,%<u2018>,',%<u2019>,',%<u201A>,',%<u201C>,",%<u201D>,",%<u201E>,",%<u2026>,...,%<u2013>,-,%<u2014>,--,%<u2010>,-,%<u00A0>,%b,%<u2020>,*,%<u2032>,',%<u2033>,")
+&GFN.UCLEANGET #gfun=uclean(get(%0))
 
 &GFN.NUMTH #gfun=%0[switch(%0,11,th,12,th,13,th,switch(right(%0,1),1,st,2,nd,3,rd,th))]
 
@@ -73,6 +79,7 @@
 &GFN.BITWHO #gfun=filter(#lambda/[lit(gte(bittype(%0),%1))],lwhoid(),%b,%b,%0)
 
 &GFN.FILTEROBJID #gfun=filter(#lambda/[lit(isobjid(%0))],%0)
+&GFN.FILTERDBREF #gfun=filter(#lambda/[lit(isdbref(%0))],%0)
 
 &GFN.FANCYTIME #gfun=if(cor(!strlen(%0),isint(%0)),runintz(if(strlen(%2),if(isdbref(%2),gettz(%2),%2),gettz(%#)),timefmt(switch(%1,2,$a $b $02D $02I:$02M$p $Z,3,$b $02D $02I:$02M$p $Y $Z,day,$b $02D $Y,date,$m/$d/$Y,strfirstof(%3,$b $02D $02H:$02T$P $j)),strfirstof(%0,secs()))),<invalid date>)
 
@@ -102,15 +109,15 @@
 
 &GFN.UMAIL #gfun=elementsmux(mailquick(%0,,1),2)
 
-&GPFN.GETCONF #gfun=default(%0/CONFIG.%1.VALUE,get(%0/CONFIG.%1.DEFAULT))
+&GPFN.GETCONF #gfun=default(%0/[strfirstof(%2,CONFIG)].%1.VALUE,get(%0/[strfirstof(%2,CONFIG)].%1.DEFAULT))
 
 &GPFN.GLOBALCONF #gfun=getconf(#conf,%0)
 
 &GFN.ACCOUNT #gfun=privatize(1,if(hastotem(%0,ACCOUNT),objid(%0),if(isdbref(setr(!,get(%0/_ACCOUNT),acc)),account(%q<acc>))))
 @@ %0 - dbref of player or account.
 
-&GPFN.ACCOPTION #gfun=privatize(1,if(isdbref(setr(!,account(%0),acc)),default(%q<acc>/CONFIG.%1.VALUE,get(#acc_parent/CONFIG.%1.DEFAULT)),get(#acc_parent/CONFIG.%1.DEFAULT)))
-@@ %0 - Dbref of player or account. %1 - Option.
+&GPFN.ACCOPTION #gfun=privatize(1,if(isdbref(setr(!,account(%0),acc)),default(%q<acc>/[strfirstof(%2,CONFIG)].%1.VALUE,get(#acc_parent/[strfirstof(%2,CONFIG)].%1.DEFAULT)),get(#acc_parent/[strfirstof(%2,CONFIG)].%1.DEFAULT)))
+@@ %0 - Dbref of player or account. %1 - Option. %2 - config override.
 
 &GPFN.MYACCOPTION #gfun=accoption(%@,%0)
 

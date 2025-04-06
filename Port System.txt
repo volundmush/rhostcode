@@ -5,7 +5,7 @@
 
 &SWITCHES.0 #port=LIST
 
-&SW.MAIN #port=@assert/inline strlen(%0)=@pemit %#=+port where? +port/list to search.;@assert/inline cand(isdbref(%0),hastype(%0,ROOM),isdbref(upzone(%0)))=@pemit %#=That's not a good target.;@assert/inline elock(%0/TportLock,%#)=@pemit %#=Permission denied. You don't pass the TportLock.;@remit %l=%k vanishes in a flash using +port.;@tel %#=%0;@remit %l=%k appears in a flash using +port.
+&SW.MAIN #port=@if !strlen(%0)={@attach %!/SW.LIST},{@if isdbref(setr(!,pmatch(%0),player))={th setq(!,objeval(%#,loc(%q<player>),2),target)},{th setq(!,%0,target)};@assert/inline cand(isdbref(%q<target>),hastype(%q<target>,ROOM),isdbref(upzone(%q<target>)))=@pemit %#=That's not a good target.;@assert/inline elock(%q<target>/TportLock,%#)=@pemit %#=Permission denied. You don't pass the TportLock.;@remit %l=%k vanishes in a flash using +port.;@tel %#=%q<target>;@remit %l=%k appears in a flash using +port.}
 
 &FN.LIST_ROOMS #port=iter(%0,filter(FIL.ROOM,lzone(%i0)),%B,%B)
 
@@ -15,9 +15,9 @@
 
 &LIST_REGION #port=@if words(setr(!,sortname(filter(FIL.[if(strlen(%1),SEARCH,ACCESSIBLE)],u(#reg/FN.ROOMS,%0),%b,%b,%#,%1)),rooms))={@pemit %#=separator([iter(revwords(upzones(%0)) %0,cname(%i0),%b,%b-%b)]);@pemit %#=columns(iter(%q<rooms>,ljust(%i0,7) [cname(%i0)],%b,|),37,2,l,,1,,,,1,|,,1)};@if words(setr(!,u(#reg/FN.BRANCHES,%0),sub))={@dolist/inline %q<sub>=@attach %!/LIST_REGION=%d0,%1}
 
-&SW.LIST #port=@if strlen(%0)=@pemit %#=header(if(strlen(%0),Rooms Matching: *%0*,Room List));@if words(setr(!,u(#reg/FN.ROOTS),roots))={@dolist/inline %q<roots>={@attach %!/LIST_REGION=%d0,%0}};@pemit %#=footer()
+&SW.LIST #port=@if strlen(%0)=@pemit %#=header(if(strlen(%0),Rooms Matching: *%0*,Room List));@if words(setr(!,u(#reg/FN.ROOTS),roots))={@dolist/inline %q<roots>={@attach %!/LIST_REGION=%d0,%0}};@pemit %#=footer(To filter: +port/list <name>)
 
-&HLP.PORT #port=A handy tool for quickly teleporting around the game grid to publically accessible locations.%R%R[ansi(hc,Commands)]%R%R[ansi(hw,+port/list \[<name>\])]%R%TDisplays (and optionally filters by name) candidate rooms.%R%R[ansi(hw,+port <target>)]%R%TTeleport to a specific room. <target> must be the room's dbref.
+&HLP.PORT #port=A handy tool for quickly teleporting around the game grid to publically accessible locations.%R%R[ansi(hc,Commands)]%R%R[ansi(hw,+port/list \[<name>\])]%R%TDisplays (and optionally filters by name) candidate rooms.%R%R[ansi(hw,+port <target>)]%R%TTeleport to a specific room. <target> must be the room's dbref.%R%TAlternatively, <target> can be a player, if you have the permissions to locate player and they're in a room that you could access via +port.
 +help/add Navigation/+port=#port/HLP.PORT
 
 +shelp/add Navigation/+port=#port/SHLP.PORT

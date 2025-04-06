@@ -14,7 +14,7 @@
 &TRY_CONNECT #fobj=if(strlen(%0),if(strlen(%1),if(isdbref(setr(!,pmatch(%0),char)),if(isdbref(get(%q<char>/_ACCOUNT)),if(account_owner(get(%q<char>/_ACCOUNT),_PASSWORD,%2,%1),if(account_login(%q<char>,_PASSWORD,%2),Now playing as: [cname(%q<char>)],Login failed. Contact staff.),Invalid credentials.),Invalid credentials.),Invalid credentials.),Must enter a password.),Must enter a character name.)
 @@ %0 character name, %1 character password, %2 for port.
 
-&RUN_PLAY #fobj=[if(isdbref(setr(!,#[account_owner(%4)],acc)),if(words(setr(!,u(#acc/FN.CHARACTERS,%q<acc>),chars)),if(isobjid(setr(!,namegrab(%q<chars>,trim(%1)),char)),if(account_login(%q<char>,_PASSWORD,%4),Now playing as: [cname(%q<char>)],Login failed. Contact Staff.),Character not found.),You have no characters.),u(TRY_CONNECT,before(%1,=),after(%1,=),%4))]
+&RUN_PLAY #fobj=[if(isdbref(setr(!,#[account_owner(%4)],acc)),if(words(setr(!,u(#acc/FN.CHARACTERS,%q<acc>),chars)),if(isobjid(setr(!,namefind(%q<chars>,trim(%1),1),char)),if(account_login(%q<char>,_PASSWORD,%4),Now playing as: [cname(%q<char>)],Login failed. Contact Staff.),Character not found.),You have no characters.),u(TRY_CONNECT,before(%1,=),after(%1,=),%4))]
 
 &REG_CONN1 #fobj="(.+)"\s+(.+)?
 &REG_CONN2 #fobj=(\S+)\s+(.+)?
@@ -40,7 +40,7 @@
 
 &FN.LIST_CHARACTERS_COLUMNS #fobj=ansi(confoverride(%#,COLUMN),printf($-5s $-30s $-4s $-4s,Dbref,Name,Last,Idle))
 
-&FN.LIST_CHARACTERS_ROW #fobj=printf($-5s $-30s $-4s $-4s,num(%5),cname(%5),lastconn(%5),hideidle(%5))
+&FN.LIST_CHARACTERS_ROW #fobj=printf($-5s $-30s $-4s $-4s,num(%5),cname(%5)[if(strlen(setr(!,getalias(%5),alias)),%b[chr(40)]%q<alias>[chr(41)])],lastconn(%5),hideidle(%5))
 
 &FN.LIST_CHARACTERS #fobj=trim(iter(u(#acc/FN.CHARACTERS,%4),u(FN.LIST_CHARACTERS_ROW,%0,%1,%2,%3,%4,%i0),%b,%R),b,%r)
 

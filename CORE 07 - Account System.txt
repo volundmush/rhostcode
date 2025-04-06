@@ -38,7 +38,7 @@
 
 &SWITCHES.0 #acc=OPTIONS|RENAME|PASSWORD
 &SWITCHES.4 #acc=BIND|UNBIND|UNBOUND|CREATE|LIST|INACTIVE
-&SWITCHES.5 #acc=CONFIG|NEWPASSWORD
+&SWITCHES.5 #acc=CONFIG|NEWPASSWORD|DELETE
 
 &SW.CONFIG #acc=@attach #inc/CONFIG=%0,trim(%1),%!
 
@@ -98,7 +98,7 @@
 &FN.CHARACTERS #acc=sortname(filter(%!/FIL.CHARACTER,filterobjid(get(%0/CHARACTERS))))
 @@ %0 - dbref/objid of account.
 
-&SW.MAIN #acc=@attach %!/INC.ACCPLAYER=if(cand(strlen(%0),gtebittype(%#,4)),trim(%0),%#),acc;@pemit %#=header([ansi(hw,Account:)] [cname(%q<acc>)]);@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.ACC_COLUMNS));@pemit %#=subheader();@dolist/inline [u(FN.CHARACTERS,%q<acc>)]=@pemit %#=u(FN.ACC_ROW,%d0);@pemit %#=footer()
+&SW.MAIN #acc=@attach %!/INC.ACCPLAYER=if(cand(strlen(%0),gtebittype(%#,4)),trim(%0),%#),acc;@pemit %#=header([ansi(hw,Account:)] [cname(%q<acc>)]);@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.ACC_COLUMNS));@pemit %#=subheader();@dolist/inline [setr(!,u(FN.CHARACTERS,%q<acc>),characters)]=@pemit %#=u(FN.ACC_ROW,%d0);@pemit %#=footer(u(FN.MAIN_FOOTER,%q<acc>,%q<characters>))
 
 &FN.ACC_COLUMNS #acc=printf($-7s $-3s $-2s $-4s $-s $s,Dbref,Bit,Al,Mail,Name)
 
@@ -114,6 +114,8 @@
 
 &DO_RENAME #acc=@attach %!/INC.CANMODIFY=%0;@assert/inline t(setr(!,u(FN.VALID_ACCOUNT_NAME,%1,%0),res))=@pemit %#=ERROR: %q<res>;th setq(!,cname(%0),oldname);@if has_markup(%1)={@name/ansi %0=%1},{@name %0=%1};@pemit %#=Your account has been renamed from '%q<oldname>' to: [cname(%0)].;@attach #inc/MSG_ALERT=Account '%q<oldname>' renamed to: [cname(%0)]
 @@ %0 - target account, %1 - new name
+
+&SW.DELETE #acc=@attach %!/INC.ACCPLAYER=%0,acc;@assert/inline strmatch(name(%q<acc>),%1)=@pemit %#=ERROR: validation field doesn't match account name.;@break/inline words(u(FN.CHARACTERS,%q<acc>))=@pemit %#=ERROR: Account still has characters. They must be dealt with using @nuke\, @toad\, or @turtle. Check wizhelp for those commands.;@attach #inc/MSG_ALERT=Account '[cname(%q<acc>)]' [ansi(hr,deleted.)].;@set %q<acc>=!SAFE;@destroy %q<acc>
 
 &SW.PASSWORD #acc=@attach %!/INC.ACCOUNT=%#,acc;@assert/inline attrpass(%q<acc>/_PASSWORD,%0,CHK)=@pemit %#=Provided old password does not match.;@attach %!/DO_PASSWORD=%q<acc>,%1;@pemit %#=Password changed.;@attach #inc/MSG_ALERT=Changed own account password.
 
@@ -155,4 +157,4 @@
 &HLP.ACCOUNT #acc=[ansi(hc,Player Commands)]%R%R[ansi(hw,@acc)]%R%TDisplay your current account details.%R%R[ansi(hw,@acc/password <old>=<new>)]%R%TChange your password. Use this instead of @password!%R%R[ansi(hw,@acc/rename <new name>)]%R%TRename your account. Supports ansi() colors.%R%R[ansi(hw,@acc/options)]%R%TDisplay available account options and current settings.%R%R[ansi(hw,@acc/options <option>=<value>)]%R%TChange an account option's value.
 
 +shelp/add System/+account=#acc/SHLP.ACCOUNT
-&SHLP.ACCOUNT #acc=[ansi(hc,NOTE:)]%RAny command which expects an <account> can take either a player name (their account will be auto-detected) OR a name beginning with @ to force an account lookup.%R%R[ansi(hc,Administrator Commands)]%R%R[ansi(hw,+account <account>)]%R%TDisplay details about an account.%R%R[ansi(hw,+account/list)]%R%TDisplay all accounts in system.%R%R[ansi(hw,+account/create <name>=<password>)]%R%TCreates a new account.%R%R[ansi(hw,+account/newpassword <account>=<password>)]%R%TSets a new password for the account.%R%R[ansi(hw,+account/rename <account>=<new name>)]%R%TRename an account.%R%R[ansi(hw,+account/bind <character>=<account>)]%R%TMakes <character> a member of <account>.%R%R[ansi(hw,+account/unbind <character>)]%R%TMakes <character> account-less. Not really a good idea.%R%R[ansi(hw,+account/inactive)]%R%TLists accounts that are currently inactive.%R%R[ansi(hw,+account/config)]%R%TDisplays the account system configuration.%R%R[ansi(hw,+account/config <parameter>=<value>)]%R%TSet an account system configuration option.
+&SHLP.ACCOUNT #acc=[ansi(hc,NOTE:)]%RAny command which expects an <account> can take either a player name (their account will be auto-detected) OR a name beginning with @ to force an account lookup.%R%R[ansi(hc,Administrator Commands)]%R%R[ansi(hw,+account <account>)]%R%TDisplay details about an account.%R%R[ansi(hw,+account/list)]%R%TDisplay all accounts in system.%R%R[ansi(hw,+account/create <name>=<password>)]%R%TCreates a new account.%R%R[ansi(hw,+account/newpassword <account>=<password>)]%R%TSets a new password for the account.%R%R[ansi(hw,+account/rename <account>=<new name>)]%R%TRename an account.%R%R[ansi(hw,+account/bind <character>=<account>)]%R%TMakes <character> a member of <account>.%R%R[ansi(hw,+account/unbind <character>)]%R%TMakes <character> account-less. Not really a good idea.%R%R[ansi(hw,+account/inactive)]%R%TLists accounts that are currently inactive.%R%R[ansi(hw,+account/config)]%R%TDisplays the account system configuration.%R%R[ansi(hw,+account/config <parameter>=<value>)]%R%TSet an account system configuration option.%R%R[ansi(hw,+account/delete <account>=<account name to validate>)]%R%TDeletes an account from the system. This will only work if all characters on the account have been eliminated using @nuke, @toad, or @turtle, which are covered in wizhelp.

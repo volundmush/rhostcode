@@ -1,0 +1,2 @@
+&FN.ROSTER.COLUMNS #theme=printf($-23s $-41s $11s,Name,Job,LastOn/Idle)
+&FN.ROSTER.ROW #theme=printf($-|"23s $-|"41s $11s,cname(%0),default(%0/FINGER.JOB,???),lastidle(%0))

@@ -4,11 +4,16 @@
 &CMD.WHO #WHO=$^(?s)(?\:\+)(who)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2;@attach %!/SW.[strfirstof(%q<switch>,MAIN)]=%3,%4
 @set #WHO/CMD.WHO=regexp
 
+&SWITCHES.0 #who=IDLE|CONN
+
 &FN.WHO.COLUMNS #who=printf($-23s $-11s $-3s $-4s $-4s $-1s $-s,Name,Alias,Fac,Idle,Conn,G,Location)
-&FN.WHO.ROW #who=printf($-23s $-11s $-3s $4s $4s $-1s $-&s,cname(%0),getalias(%0),,hideidle(%0),hideconn(%0),left(default(%0/SEX,?),1),if(!strmatch(setr(!,objeval(%#,loc(%0),3),loc),#-*),cname(%q<loc>),*UNFINDABLE*))
+&FN.WHO.ROW #who=printf($-23|"s $-11s $-3s $4s $4s $-1s $-25|"s,cname(%0),getalias(%0),,hideidle(%0),hideconn(%0),left(default(%0/SEX,?),1),if(!strmatch(setr(!,objeval(%#,loc(%0),3),loc),#-*),cname(%q<loc>),*UNFINDABLE*))
 
-&SW.MAIN #who=@pemit %#=header(Who's Online);@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.WHO.COLUMNS));@pemit %#=separator();@dolist/inline lwho(0,%#,1)={@pemit %#=u(FN.WHO.ROW,%d0)};@pemit %#=footer()
+&SW.MAIN #who=@attach %!/INC.LIST=sortname(lwho(0,%#,1))
+&SW.CONN #who=@attach %!/INC.LIST=lwho(0,%#,1),Sorted by Connection Time
+&SW.IDLE #who=@attach %!/INC.LIST=sortby(#lambda/[lit([comp(idle(%0),idle(%1),n)])],lwho(0,%#,1)),Sorted by Idle Time
 
+&INC.LIST #who=@pemit %#=header(Who's Online[if(%1,:%1)]);@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.WHO.COLUMNS));@pemit %#=separator();@dolist/inline %0={@pemit %#=u(FN.WHO.ROW,%d0)};@pemit %#=footer(words(%0) Player Characters Online)
 
 +help/add Community/+who=#who/HLP.WHO
-&HLP.WHO #who=[ansi(hc,Aliases:)] +who%R%R[ansi(hw,+who)]%R%TThe +who Command displays online player characters.
+&HLP.WHO #who=[ansi(hc,Aliases:)] +who%R%R[ansi(hw,+who)]%R%TThe +who Command displays online player characters.%R%R[ansi(hw,+who/idle)]%R%TSorts +who by idle time.%R%R[ansi(hw,+who/conn)]%R%TSorts +who by connection time.

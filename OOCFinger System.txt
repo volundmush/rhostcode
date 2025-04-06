@@ -1,0 +1,36 @@
+@skip isdbref(tag(setr(1,oocfinger)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(OOCFinger System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom()}
+
+@@ Commands and stuff.
+&CMD.OOCFINGER #oocfinger=$^(?s)(?\:@|\+)?(oocfinger|ofinger)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2;@attach %!/SW.[strfirstof(%q<switch>,MAIN)]=%3,%4
+@set #oocfinger/CMD.OOCFINGER=regexp
+
+&SWITCHES.0 #oocfinger=SET
+
+&CONFIG.FIELDS.DESC #oocfinger=Special/Official fields players can set. Fields beginning with _ are visible only to staff.
+&CONFIG.FIELDS.DEFAULT #oocfinger=EMAIL|_EMAIL|DISCORD|_DISCORD
+&CONFIG.FIELDS.TYPE #oocfinger=WORD
+
+&SW.SET #oocfinger=@if strmatch(%0,*/*)={@assert/inline gtebittype(%#,5)=@pemit %#=Permission denied.;th setq(!,before(%0,/),player);th setq(!,after(%0,/),field);@attach #inc/GET_PLAYER=%q<player>,target},{th setq(!,%:,target);th setq(!,%0,field)};@assert/inline words(setr(!,getconf(%!,FIELDS),fields),|)=@pemit %#=No oocfinger fields that can be set by you!;@attach #inc/PARTIAL=%q<field>,%q<fields>,|,field,finger field;@attach %!/SETTER.%q<field>=%q<target>,%1;@if strmatch(%q<target>,%:)={@pemit %#=Set.},{@pemit %#=You set [cname(%q<target>)]'s Finger Field '%q<field>' to: %1;@pemit %q<target>=Your Finger Field '%q<field>' has been set to: %1}
+
+&GETTER.EMAIL #oocfinger=get(%0/OOCFINGER.EMAIL)
+&GETTER._EMAIL #oocfinger=get(%0/OOCFINGER._EMAIL)
+&GETTER.DISCORD #oocfinger=get(%0/OOCFINGER.DISCORD)
+&GETTER._DISCORD #oocfinger=get(%0/OOCFINGER._DISCORD)
+
+&SETTER.EMAIL #oocfinger=@set %0=OOCFINGER.EMAIL:%1
+&SETTER._EMAIL #oocfinger=@set %0=OOCFINGER._EMAIL:%1
+&SETTER.DISCORD #oocfinger=@set %0=OOCFINGER.DISCORD:%1
+&SETTER._DISCORD #oocfinger=@set %0=OOCFINGER._DISCORD:%1
+
+&SW.MAIN #oocfinger=@attach #inc/GET_PLAYER=strfirstof(%0,%#),target;@attach %!/RENDER_FINGER=%q<target>;@skip %2={@trigger %q<target>/AOOCFINGER=%:}
+
+&SW.SILENT #oocfinger=@attach %!/SW.MAIN=%0,%1,1
+
+&FN.OFINGER.ROW #oocfinger=printf($1.&:%q<bord>:s $17|"s $1.&:%q<bord>:s $-54|"s $1.&:%q<bord>:s,%R,capnames(%0):,%R,%1,%R)
+
+&RENDER_FINGER #oocfinger=th setq(!,ansi(confoverride(%#,BORDER),if(confoverride(%#,SCREENREADER),%b,|)),bord);@pemit %#=header(alcname(%0),,,1);@if words(lattr(%0/OOCFINGER.*))={@pemit %#=separator(Main Fields);@dolist/inline/nobreak/delimit | [getconf(%!,FIELDS)]={@break cand(strmatch(%d0,_*),!cor(gtebittype(%#,2),strmatch(%q<target>,%:)));@assert strlen(setr(!,u(GETTER.%d0,%0,%:),contents));@pemit %#=u(FN.OFINGER.ROW,%d0,%q<contents>)}};@if words(setr(!,sort(lattr(%0/OF.*)),of))={@pemit %#=separator(Custom Fields);@dolist/inline %q<of>={@pemit %#=u(FN.OFINGER.ROW,medit(rest(%d0,.),_,%B),get(%0/%d0))}};@pemit %#=footer(,,,1)
+
+&HLP.SETTABLE #oocfinger=%R%R[ansi(hw,Fields settable by players:)]%R[edit(getconf(%!,FIELDS),|,\,%B)]%RFields beginning with a _ are visible only to you and staff.
+
+&HLP.OOCFINGER #oocfinger=[ansi(hw,NOTE:)] This command also accepts +ofinger%R%R[ansi(hw,+oocfinger \[<player>\])]%R%TDisplays overview of out-of-character information about <player>. Defaults to self if <player> is blank.%R%R[ansi(hw,+oocfinger/set <field>=<value>)]%R%TSets a field.[u(HLP.SETTABLE)]%R%R[ansi(hc,Custom Fields)]%R%TUser-attributes under the OF.* pattern will be displayed as Custom Fields. Use this to add any fields you want to your +oocfinger. underscores in the atribute name will be converted to spaces.%RExample: [ansi(hw,&OF.AVAILABILITY me=Evenings EST)]%R%R[ansi(hc,Aoocfinger)]%R%TBeing a target of +oocfinger triggers the AOOCFINGER attribute. You can use this to be alerted when others +oocfinger you. Example:%R&aoocfinger me=think \[cname(%%0)\] has +oocfinger'd you.%R%RTo +oocfinger without triggering AOOCFINGER, use [ansi(hw,+oocfinger/silent)]
++help/add Character/+oocfinger=#oocfinger/HLP.OOCFINGER
