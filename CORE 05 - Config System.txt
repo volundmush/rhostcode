@@ -34,7 +34,7 @@
 &CONFIG.EMAIL.DEFAULT #conf=
 &CONFIG.EMAIL.TYPE #conf=WORD
 
-&SW.MAIN #conf=@if strlen(%0)={@assert/inline gtebittype(%#,6)=@pemit %#=Permission denied.};@attach #inc/CONFIG=%0,%1,%!
+&SW.MAIN #conf=@if strlen(%0)={@assert/inline gtebittype(%#,6)=@pemit %#=Permission denied.};@attach #inc/CONFIGURATOR=%0,%1,%!,CONFIG,1
 
 @@ Help stuffs.
 &SHLP.GAMECONFIG #conf=The Global Configuration affects softcoded config options that affect the whole game.%R%R[ansi(hc,Commands)]%R%R[ansi(hw,+globalconfig)]%R%TDisplay current configuration.%R%R[ansi(hw,+globalconfig <option>=<value>)]%R%TSet an option.%R%R[ansi(hc,Extending)]%RIf you @decompile #conf you'll see the attributes beginning with &CONFIG.<type>. create more of those to add more options. The .TYPE fields must align with VALID_<type> found on #inc.

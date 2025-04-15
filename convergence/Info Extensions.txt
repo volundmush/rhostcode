@@ -87,7 +87,7 @@
 &COMPLICATIONS #superpower=tag(com_info)
 &EXTRA #superpower=tag(ext_info)
 
-&DO_LIST #superpower=@attach #inc/GET_PLAYER=strfirstof(%0,%#),target;th setq(!,,choice);@if strlen(%1)={@attach #inc/PARTIAL=%1,ABILITIES|COPY|RESOURCES|NPCS|EXTRA|COMPLICATIONS,|,choice,choice};@dolist/inline/delimit | [strfirstof(%q<choice>,ABILITIES|COPY|RESOURCES|NPCS|EXTRA|COMPLICATIONS)]={th setq(!,u(%d0),obj);@if words(setr(!,u(%q<obj>/FN.LIST_ATTRS_ORDER,%q<target>),attrs))={@pemit %#=header(cname(%q<target>)'s [get(%q<obj>/INFO.PLURAL)][if(%2,%B- Full)]);@dolist/inline %q<attrs>={th setq(!,ucleanget(%q<target>/%d0.BODY),body);th setq(!,get(%q<target>/%d0.SUMMARY),summary);@pemit %#=separator(get(%q<target>/%d0.NAME) - [if(%2,Body,if(strlen(%q<summary>),Summary,Body))]);@pemit %#=if(%2,%q<body>,strfirstof(%q<summary>,%q<body>))}}};@pemit %#=footer()
+&DO_LIST #superpower=@attach #inc/GET_PLAYER=strfirstof(%0,%#),target;th setq(!,,choice);@if strlen(%1)={@attach #inc/PARTIAL=%1,ABILITIES|COPY|RESOURCES|NPCS|EXTRA|COMPLICATIONS,|,choice,choice};@dolist/inline/delimit | [strfirstof(%q<choice>,ABILITIES|COPY|RESOURCES|NPCS|COMPLICATIONS)]={th setq(!,u(%d0),obj);@if words(setr(!,u(%q<obj>/FN.LIST_ATTRS_ORDER,%q<target>),attrs))={@pemit %#=header(cname(%q<target>)'s [get(%q<obj>/INFO.PLURAL)][if(%2,%B- Full)]);@dolist/inline %q<attrs>={th setq(!,ucleanget(%q<target>/%d0.BODY),body);th setq(!,get(%q<target>/%d0.SUMMARY),summary);@pemit %#=separator(get(%q<target>/%d0.NAME) - [if(%2,Body,if(strlen(%q<summary>),Summary,Body))]);@pemit %#=if(%2,%q<body>,strfirstof(%q<summary>,%q<body>))}}};@pemit %#=footer()
 
 &SW.LIST.MAIN #superpower=@attach %!/DO_LIST=%0,%1,0
 &SW.LIST.FULL #superpower=@attach %!/DO_LIST=%0,%1,1

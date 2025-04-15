@@ -1,9 +1,11 @@
 @skip isdbref(tag(setr(1,colorizer)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(Colorizer System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom()}
 
-&CMD.COLOR #colorizer=$^(?s)(?\:@|\+)?(color)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@assert/inline isdbref(setr(!,get(%#/_ACCOUNT),acc))=@pemit %#=You have no account set!;@attach #inc/GET_SWITCH=%2;@attach %!/SW.[strfirstof(%q<switch>,MAIN)]=%3,%4
+&INC.ACCOUNT_CHECK #colorizer=@assert/inline isdbref(setr(!,get(%#/_ACCOUNT),acc))=@pemit %#=You have no account set!
+
+&CMD.COLOR #colorizer=$^(?s)(?\:@|\+)?(color)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach %!/INC.ACCOUNT_CHECK;@attach #inc/GET_SWITCH=%2;@attach %!/SW.[strfirstof(%q<switch>,MAIN)]=%3,%4
 @set #colorizer/CMD.COLOR=regexp
 
-&SWITCHES.0 #colorizer=SET|NAME|DEMO
+&SWITCHES.0 #colorizer=SET|NAME|DEMO|ALIASES|TEST
 
 &SW.DEMO #colorizer=@pemit %#=header(Color Demo);@pemit %#=iter(lnum(0,255),rjust(%i0,3,0)%b[ansi(%i0,colors(%i0,n))],%B,%R);@pemit %#=footer()
 
@@ -27,6 +29,12 @@
 &COLOR.QUOTES.DEFAULT #acc_parent=hc
 &COLOR.OTHER.TYPE #acc_parent=COLOR
 
+@@ &COLOR.ALIASES.DESC #acc_parent=A sequence of |-separated aliases your character will also match. Useful for superheroes and secret identities.
+@@ &COLOR.ALIASES.DEFAULT #acc_parent=
+@@ &COLOR.ALIASES.TYPE #acc_parent=LIST
+
+&SW.ALIASES #colorizer=@if strlen(%0)={@attach #inc/VALID.LIST=%0;@if strmatch(%q<value>,None)={@set %#=GAME.COLOR_ALIAS:;th setq(!,,value)},{@set %#=GAME.COLOR_ALIAS:%q<value>};@pemit %#=Your color-alias names are now: %q<value>},{@pemit %#=Your current color-alias names are: [default(%#/GAME.COLOR_ALIAS,ansi(hr,not a darn thing!))]}
+
 &FN.LIST_NAMES #colorizer=sortname(filterdbref(iter(lattr(%0/COLOR.*),elementsmux(%i0,2,.))))
 @@ %0 - the account.
 
@@ -37,5 +45,20 @@
 &FN.COLOR_NAME #colorizer=privatize(1,if(isdbref(setr(!,get(%0/_ACCOUNT),acc)),if(strlen(setr(!,strfirstof(get(%q<acc>/COLOR.[num(%2)]),if(strmatch(num(%1),num(%0)),getconf(%q<acc>,ME,COLOR)),if(strmatch(num(%1),num(%2)),getconf(%q<acc>,SPEAKER,COLOR)),getconf(%q<acc>,OTHER,COLOR)),color)),ansi(%q<color>,%3),%3),%3))
 @@ %0 - dbref of viewer, %1 - dbref of target, %2 - dbref of speaker, %3 - text to color.
 
-&HLP.COLOR #colorizer=The Colorizer System handles automatic coloring of player character names and quotes in the various communication systems. It is recommended to read [ansi(hw,help ansi usage)] to have a full understanding of available color codes and be on a client that supports xterm256..%R%R[ansi(hc,Commands)]%R[ansi(hw,+color <color>=<text>)]%R%TEchoes <text> with <color> applied. Useful for testing.%R%R[ansi(hw,+color/demo)]%R%TDisplays the entire listing of available xterm256 colors in their numbers and symbolic names. WARNING: VERY SPAMMY!%R%R[ansi(hw,+color/set \[<option>=<value>\])]%R%TView or set the account-wide color options.%R%R[ansi(hw,+color/name \[<player>=<color>)\])]%R%TView all, or set a color to a specific player. Setting to n will delete the entry.
+&FIL.GOODNAMES #colorizer=!match(of|the|and,%0,|)
+
+&FN.GENERATE_MATCH_FOR #colorizer=privatize(1,first(name(%0))~%0|[name(%0)]~%0[if(strlen(setr(!,get(%0/GAME.COLOR_ALIAS),ali)),|[iter(%q<ali>,%i0~%0,|,|)])])
+&FN.GENERATE_MATCHER #colorizer=revwords(sortby(#lambda/[lit(comp(strlen(%0),strlen(%1),n))],iter(filterdbref(%0),u(FN.GENERATE_MATCH_FOR,%i0),%b,|),|,|),|)
+&FN.GENERATE_NAMES #colorizer=filter(FIL.GOODNAMES,iter(%0,before(%i0,~),|,|),|,|)
+&FN.NOSPOOF #colorizer=chr(91)[name(%0)][chr(40)][num(%0)][chr(41)][chr(93)]
+
+&FN.GENERATE_TEMPLATE #colorizer=regeditalli(%0,\\\\b[chr(40)][u(FN.GENERATE_NAMES,%1)][chr(41)]\\\\b,^^^[get_kv(%1,$1)]:$1^^^)
+@@ %0 - string to template, %1 - the output of a GENERATE_MATCHER call.
+
+&REG.TEMPLATE_NAME #colorizer=\^\^\^(#\d+):(.*?)\^\^\^
+
+&FN.COLORIZE_TEMPLATE #colorizer=regeditalli(%0,v(REG.TEMPLATE_NAME),u(FN.COLOR_NAME,%1,$1,%#,$2),\\",ansi(accoption(%1,QUOTES,COLOR),$0))
+@@ %0 - template string, %1 - viewer dbref, %2 - enactor dbref
+
+&HLP.COLOR #colorizer=The Colorizer System handles automatic coloring of player character names and quotes in the various communication systems. It is recommended to read [ansi(hw,help ansi usage)] to have a full understanding of available color codes and be on a client that supports xterm256..%R%R[ansi(hc,Commands)]%R[ansi(hw,+color <color>=<text>)]%R%TEchoes <text> with <color> applied. Useful for testing.%R%R[ansi(hw,+color/demo)]%R%TDisplays the entire listing of available xterm256 colors in their numbers and symbolic names. WARNING: VERY SPAMMY!%R%R[ansi(hw,+color/set \[<option>=<value>\])]%R%TView or set the account-wide color options.%R%R[ansi(hw,+color/name \[<player>=<color>)\])]%R%TView all, or set a color to a specific player. Setting to n will delete the entry.%R%R[ansi(hw,+color/aliases <entry>)]%R%TSet your aliases. This is useful for superheroes, alteregoes, weird nicknames and so on that should also be colored. Separate them by |. Set to None to clear.
 +help/add Communications/+color=#colorizer/HLP.COLOR

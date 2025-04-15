@@ -23,7 +23,7 @@
 &SW.MEET.JOIN #meet=@assert/inline u(FN.VALID_SUMMON,%:,MEET,%q<target>)=@pemit %#=No meet has been extended.;@attach %!/DO_JOIN=%:,%q<target>;@attach %!/REM_SUMMONS=%:,MEET,%q<target>
 
 &SW.SUMMON.MAIN #meet=@if gtebittype(%#,4)={@attach %!/DO_SUMMON=%:,%q<target>},{@break/inline u(FN.VALID_SUMMON,%q<target>,SUMMON,%:)=@pemit %#=You've already extended a summons to [cname(%q<target>)].;@attach %!/ADD_SUMMONS=%q<target>,SUMMON,%:;@pemit %#=Extended a Summons to [cname(%q<target>)].;@pemit %q<target>=%k has extended a summons. To meet with %k, type [ansi(hw,+summon/agree %n)] within ten minutes.}
-&SW.SUMMON.AGREE #meet=@assert/inline u(FN.VALID_SUMMON,%:,SUMMON,%q<target>)=@pemit %#=No summons has been extended.;@attach %!/DO_SUMMON=%q<target>,%:;@attach %!/REM_SUMMONS=%:,SUMMON,%q<target>
+&SW.SUMMON.AGREE #meet=@assert/inline u(FN.VALID_SUMMON,%:,SUMMON,%q<target>)=@pemit %#=No summons has been extended.;@attach %!/DO_SUMMON=%:,%q<target>;@attach %!/REM_SUMMONS=%:,SUMMON,%q<target>
 
 &DO_SUMMON #meet=@remit [loc(%0)]=[cname(%0)] is whisked away by a summons.;@tel %0=[loc(%1)];@remit [loc(%1)]=[cname(%0)] appears in a flash courtesy of [cname(%1)]'s summons.
 

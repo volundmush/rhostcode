@@ -214,3 +214,14 @@ CREATE OR REPLACE VIEW pose_view AS
        LEFT JOIN channel_view AS c ON p.channel_id = c.channel_id
        LEFT JOIN actrole_view as a ON p.actrole_id = a.actrole_id
        ORDER BY p.pose_date_created ASC;
+
+CREATE OR REPLACE VIEW pose_last_view AS
+SELECT *
+FROM (
+         SELECT
+             p.*,
+             ROW_NUMBER() OVER (PARTITION BY scene_id, entity_id ORDER BY pose_date_created DESC) AS rn
+         FROM pose_view AS p
+         WHERE channel_category = 0 AND pose_is_deleted = 0
+     ) AS sub
+WHERE rn = 1;

@@ -58,9 +58,9 @@
 
 &CONFIG #inc=@attach #inc/CONFIGURATOR=%0,%1,%2,CONFIG
 
-&CONF_LIST #inc=@pemit %#=header(cname(%2) [capnames(%3)] Options);@dolist/inline/delimit | [u(#conf/FN.LIST_CONFIGS,%2,%3)]={@pemit %#=separator(%d0);@pemit %#=get(%2/%3.%d0.DESC);@pemit %#=[ansi(hw,TYPE:)] [get(%2/%3.%d0.TYPE)];@pemit %#=[ansi(hw,DEFAULT:)] [get(%2/%3.%d0.DEFAULT)];@pemit %#=[ansi(hw,CURRENT:)] [getconf(%2,%d0)]};@pemit %#=footer()
+&CONF_LIST #inc=@pemit %#=header(cname(%2) [capnames(%3)] Options);@dolist/inline/delimit | [u(#conf/FN.LIST_CONFIGS,%2,%3)]={@pemit %#=separator(%d0);@pemit %#=get(%2/%3.%d0.DESC);@pemit %#=[ansi(hw,TYPE:)] [get(%2/%3.%d0.TYPE)];@pemit %#=[ansi(hw,DEFAULT:)] [get(%2/%3.%d0.DEFAULT)];@pemit %#=[ansi(hw,CURRENT:)] [getconf(%2,%d0,%3)]};@pemit %#=footer()
 
-&CONF_SET #inc=@attach %2/%3.PERM;@attach #inc/PARTIAL=%0,u(#conf/FN.LIST_CONFIGS,%2,%3),|,op,option;@attach %2/%3.%q<op>.PERM=%0,%1,%2;@attach #inc/VALID.[get(%2/%3.%q<op>.TYPE)]=%1;th setq(!,getconf(%2,%q<op>),oldvalue);@attach %2/%3.%q<op>.VALID=%q<value>,%q<oldvalue>,%2;@set %2=%3.%q<op>.VALUE:%q<value>;@attach %2/%3.%q<op>.TRIGGER=%q<oldvalue>,%q<value>,%2;@pemit %#=[cname(%2)] %q<op> is now: %q<valueformat>;@attach #inc/MSG_ALERT=[cname(%2)] %q<op> is now: %q<valueformat>
+&CONF_SET #inc=@attach %2/%3.PERM;@attach #inc/PARTIAL=%0,u(#conf/FN.LIST_CONFIGS,%2,%3),|,op,option;@attach %2/%3.%q<op>.PERM=%0,%1,%2;@attach #inc/VALID.[get(%2/%3.%q<op>.TYPE)]=%1;th setq(!,getconf(%2,%q<op>),oldvalue);@attach %2/%3.%q<op>.VALID=%q<value>,%q<oldvalue>,%2;@set %2=%3.%q<op>.VALUE:%q<value>;@attach %2/%3.%q<op>.TRIGGER=%q<oldvalue>,%q<value>,%2;@pemit %#=[cname(%2)] %q<op> is now: %q<valueformat>;@if t(%4)={@attach #inc/MSG_ALERT=[cname(%2)] %q<op> is now: %q<valueformat>}
 
 &DOSQL #inc=@break/inline strmatch(setr(!,mysql(before(%0,/),%1,%2,%3,%4,%5,%6,%7,%8,%9),errcheck),#-*)[if(strlen(after(%0,/)),setq(!,sql(SELECT last_insert_id\(\)),after(%0,/)))]={@pemit %#=[ansi(hr,SQL ERROR)] - [before(%0,/)]: %q<errcheck>;@attach #inc/MSG_ALERT=SQL ERROR - %!/[before(%0,/)]: %q<errcheck> - QUERY: %q<sqlformat>}
 
