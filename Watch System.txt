@@ -21,9 +21,11 @@
 
 &SW.ACCREM #watch=@assert/inline isdbref(setr(!,account(%#),acc))=@pemit %#=You don't have an account!;@attach #inc/GET_PLAYER=%0,target;@assert/inline match(setr(!,filterobjid(get(%q<acc>/WATCH)),watch),%q<target>)=@pemit %#=[cname(%q<target>)] is not being account-watched!;@set %q<acc>=WATCH:[setdiff(%q<watch>,%q<target>)];@pemit %#=Removed [cname(%q<target>)] from account-watch list.
 
-@aconnect #watch=
+&FIL.WATCH #watch=t(match(setunion(get(%0/GAME.WATCH),get(account(%0)/WATCH)),%1))
 
-@adisconnect #watch=
+@aconnect #watch=@break/inline cor(%0,hasflag(%#,DARK),hidden(%#));@assert/inline words(setr(!,filter(FIL.WATCH,listunion(lwho(,,1)),%b,%b,%:),targets));@pemit/list %q<targets>=[ansi(hg,WATCH:)]%b%k has connected.
+
+@adisconnect #watch=@assert/inline %2;@break/inline cor(hasflag(%#,DARK),hidden(%#));@assert/inline words(setr(!,filter(FIL.WATCH,listunion(lwho(,,1)),%b,%b,%:),targets));@pemit/list %q<targets>=[ansi(hg,WATCH:)]%b%k has disconnected.
 
 &HLP.WATCH #watch=The Watch system allows you to monitor when specific players connect and disconnect.%R[ansi(hc,Aliases:)] +watch, +friend%R%R[ansi(hc,Commands)]%R%R[ansi(hw,+watch)]%R%TDisplays your account and personal watch lists.%R%R[ansi(hw,+watch/who)]%R%TShows only online players from your account and personal lists.%R%R[ansi(hw,+watch/add <player>)]%R%TAdd a player to personal watch list.%R%R[ansi(hw,+watch/rem <player>)]%R%TRemoves a player from your personal watch list.%R%R[ansi(hw,+watch/accadd <player>)]%R%TAdds a player to account watch list.%R%R[ansi(hw,+watch/accrem <player>)]%R%TRemoves a player from account watch list.%R%R[ansi(hc,Reminder: Be Considerate)]%RNot everyone wants to be pounced the moment they log on. Watch is a tool for convenience to stay in touch with friends, not being some kind of creepy clingy stalker.
 +help/add Community/+watch=#watch/HLP.WATCH

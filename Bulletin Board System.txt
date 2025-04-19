@@ -99,9 +99,9 @@
 
 &SW.RENAME #bbs=@attach %!/BOARD_ADMIN;@assert/inline strlen(%1)=@pemit %#=Must enter a new board name!;@assert/inline valid(name,stripansi(trim(%1)))=@pemit %#=That's not a good name for a board.;th setq(!,cname(%q<board>),oldname);@name/ansi %q<board>=%1;@pemit %#=Renamed Board '[u(%q<board>/GETID)]: %q<oldname>' to: [cname(%q<board>)];@attach #inc/MSG_ALERT=Renamed Board '[u(%q<board>/GETID)]: %q<oldname>' to: [cname(%q<board>)]
 
-&SW.CATEGORY #bbs=@attach %!/BOARD_ADMIN;@assert/inline strlen(%1)=@pemit %#=Must enter a category name!;@set %q<board>=CATEGORY:%1;@pemit %#=Category set!
+&SW.CATEGORY #bbs=@attach %!/BOARD_ADMIN;@assert/inline strlen(%1)=@pemit %#=Must enter a category name!;@set %q<board>=CATEGORY:%1;@pemit %#=Category set!;@attach #inc/MSG_ALERT=Category of Board '[u(%q<board>/GETID)]: [cname(%q<board>)]' changed to: %1
 
-&SW.ORDER #bbs=@attach %!/BOARD_ADMIN;@attach #inc/VALID.POSINT=%1,Board Order;@assert/inline lmax(iter(u(FN.GETBOARDS,strfirstof(%q<boardfac>,%!)),eq(get(%i0/ORDER),%q<value>)))=@pemit %#=There is a Board with a conflicting Order in the [if(isdbref(%q<boardfac>),cname(%q<boardfac>),cname(%!))].;th setq(!,get(%q<board>/ORDER),old);@pemit %#=Order of Board '[u(%q<board>/GETID)]: [cname(%q<board>)]' changed to: %q<value>;@attach #inc/MSG_ALERT=Order of Board '[u(%q<board>/GETID)]: [cname(%q<board>)]' changed to: %q<value>;@set %q<board>=ORDER:%q<value>
+&SW.ORDER #bbs=@attach %!/BOARD_ADMIN;@attach #inc/VALID.POSINT=%1,Board Order;@break/inline lmax(iter(u(FN.GETBOARDS,strfirstof(%q<boardfac>,%!)),eq(get(%i0/ORDER),%q<value>)))=@pemit %#=There is a Board with a conflicting Order in the [if(isdbref(%q<boardfac>),cname(%q<boardfac>),cname(%!))].;th setq(!,get(%q<board>/ORDER),old);@pemit %#=Order of Board '[u(%q<board>/GETID)]: [cname(%q<board>)]' changed to: %q<value>;@attach #inc/MSG_ALERT=Order of Board '[u(%q<board>/GETID)]: [cname(%q<board>)]' changed to: %q<value>;@set %q<board>=ORDER:%q<value>
 
 &SW.DELETE #bbs=@attach %!/BOARD_ADMIN;@assert/inline strmatch(%1,setr(!,cname(%q<board>),oldname))=@pemit %#=You must verify this by entering the name exactly as the second argument.;th setq(!,u(%q<board>/GETID),bid);@attach %!/DO_DELETE=objid(%q<board>);@pemit %#=Board '%q<bid>: %q<oldname>' deleted.;@attach #inc/MSG_ALERT=Board '%q<bid>: %q<oldname>' deleted.
 
@@ -121,7 +121,7 @@
 
 &FN.LIST_ROW #bbs=printf($-7s $-30s $-22s $-5s $-5s $-5s,u(%0/GETID),cname(%0),if(u(FIL.SUBSCRIBED,%0,%#),Yes,No),words(setr(!,get(%0/POSTS),posts)),words(setdiff(%q<posts>,get(strfirstof(account(%#),%#)/BBS.[edit(objid(%0),:,_)].READ))),u(FN.PERMDISP,%0,%#))
 
-&INC.LIST #bbs=@pemit %#=header(mudname() BBS - %1);@pemit %#=u(FN.%2);@if words(%0)={th setq(!,listunion(iter(%0,loc(%i0)),),facs);@dolist/inline %q<facs>={th setq(!,setunion(iter(setr(!,filter(#lambda/[lit(strmatch(%d0,loc(%0)))],%0),facboards),default(%i0/CATEGORY,Uncategorized),%b,|),,|,|),categories);@dolist/inline/delimit | %q<categories>={@pemit %#=separator(if(hastotem(%d1,FACTION),cname(%d1),Public) Boards - %d0);@dolist/inline [filter(#lambda/[lit(strmatch(%d0,default(%0/CATEGORY,Uncategorized)))],%q<facboards>)]={@pemit %#=u(FN.%3,%d0)}}}};@pemit %#=footer()
+&INC.LIST #bbs=@pemit %#=header(mudname() BBS - %1);@pemit %#=u(FN.%2);@if words(%0)={th setq(!,listunion(iter(%0,loc(%i0)),),facs);@dolist/inline %q<facs>={th setq(!,setunion(iter(setr(!,filter(#lambda/[lit(strmatch(%d0,loc(%0)))],%0),facboards),default(%i0/CATEGORY,Uncategorized),%b,|),,|,|),categories);@dolist/inline/delimit | [revwords(%q<categories>,|)]={@pemit %#=separator(if(hastotem(%d1,FACTION),cname(%d1),Public) Boards - %d0);@dolist/inline [filter(#lambda/[lit(strmatch(%d0,default(%0/CATEGORY,Uncategorized)))],%q<facboards>)]={@pemit %#=u(FN.%3,%d0)}}}};@pemit %#=footer()
 
 &SW.LIST #bbs=@attach %!/INC.LIST=%q<visiboards>,Board Listing,LIST_COLUMNS,LIST_ROW
 

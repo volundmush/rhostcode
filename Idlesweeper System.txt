@@ -1,0 +1,38 @@
+@skip isdbref(tag(setr(1,idlesweep)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(Idlesweeper System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom()}
+
+&CMD.IDLESWEEP #idlesweep=$^(?s)(?\:@|\+)?(idlesweep)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@assert/inline gtebittype(%#,5)=@pemit %#=error();@attach #inc/GET_SWITCH=%2;@attach %!/SW.[strfirstof(%q<switch>,MAIN)]=%3,%4
+@set #idlesweep/CMD.idlesweep=regexp
+
+&SWITCHES.5 #idlesweep=CONFIG|SWEEP
+
+&SW.CONFIG #idlesweep=@attach #inc/CONFIG=%0,trim(%1),%!
+
+&CONFIG.DESTINATION.DESC #idlesweep=The destination room. If the value is not a valid DBREF then the system will use the player's home().
+&CONFIG.DESTINATION.DEFAULT #idlesweep=#-1
+&CONFIG.DESTINATION.TYPE #idlesweep=WORD
+
+&CONFIG.EXCLUDE.DESC #idlesweep=Room DBREF list (space separated) that people can safely idle in.
+&CONFIG.EXCLUDE.DEFAULT #idlesweep=#-1
+&CONFIG.EXCLUDE.TYPE #idlesweep=WORD
+
+&CONFIG.IDLEMAX.DESC #idlesweep=The maximum amount of time (in seconds) a player can be idle before they are sweeped.
+&CONFIG.IDLEMAX.DEFAULT #idlesweep=7200
+&CONFIG.IDLEMAX.TYPE #idlesweep=DURATION
+
+&FIL.ISIDLE #idlesweep=cand(!gtebittype(%0,2),gte(idle(%0),%1),!match(%2,loc(%0)))
+
+&SW.MAIN #idlesweep=@attach %!/SW.SWEEP
+&SW.SWEEP #idlesweep=@pemit %#=Manually running an idlesweep.;@attach %!/DO_SWEEP
+
+&DO_SWEEP #idlesweep=@assert/inline words(setr(!,filter(FIL.ISIDLE,listunion(lwho(),),%b,%b,getconf(%!,IDLEMAX,getconf(%!,EXCLUDE))),idlers));th setq(!,num(getconf(%!,DESTINATION)),dest);@attach %!/DO_SWEEP_[if(isdbref(%q<dest>),DESTINATION,HOME)]
+
+&DO_SWEEP_DESTINATION #idlesweep=@dolist/inline/nobreak %q<idlers>={@break/inline strmatch(loc(%d0),%q<dest>);@remit loc(%d0)=[cname(%d0)] is swept away into the doldrums for idleness.;@tel/quiet %d0=%q<dest>;@remit loc(%d0)=[cname(%d0)] is blown here by the idlesweeper.}
+
+&DO_SWEEP_HOME #idlesweep=@dolist/inline/nobreak %q<idlers>={@break/inline strmatch(loc(%d0),home(%d0));@remit loc(%d0)=[cname(%d0)] is swept away into the doldrums for idleness.;@tel/quiet %d0=[home(%d0)];@remit loc(%d0)=[cname(%d0)] is blown here by the idlesweeper.}
+
+&STARTUP #idlesweep=@trigger %!/SWEEP_LOOPER;
+
+&SWEEP_LOOPER #idlesweep=@trigger %!/DO_SWEEP;@wait 60=@trigger %!/SWEEP_LOOPER
+
+&SHLP.IDLESWEEP #idlesweep=The Idlesweeper runs every minute, uncluttering the grid of idle players.%R%R[ansi(hw,+idlesweep/config)]%R%TDisplays the configuration. Can be changed via [ansi(hw,+idlesweep/config <op>=<value>)]%R%R[ansi(hw,+idlesweep)] on its own will trigger a sweep. This is only really for testing since it runs every minute automatically.
++shelp/add System/+idlesweep=#idlesweep/SHLP.IDLESWEEP

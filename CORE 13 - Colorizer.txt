@@ -27,7 +27,7 @@
 
 &COLOR.QUOTES.DESC #acc_parent=What color to display quotes as?
 &COLOR.QUOTES.DEFAULT #acc_parent=hc
-&COLOR.OTHER.TYPE #acc_parent=COLOR
+&COLOR.QUOTES.TYPE #acc_parent=COLOR
 
 @@ &COLOR.ALIASES.DESC #acc_parent=A sequence of |-separated aliases your character will also match. Useful for superheroes and secret identities.
 @@ &COLOR.ALIASES.DEFAULT #acc_parent=
@@ -42,7 +42,7 @@
 
 &SW.NAME #colorizer=@if strlen(%0)={@attach #inc/GET_PLAYER=%0,target;@attach #inc/VALID.COLOR=%1;@set %q<acc>=COLOR.[num(%q<target>)]:%q<value>;@pemit %#=You will now see [cname(%q<target>)]'s name in %q<valueformat>.},{@attach %!/INC.DISPLAY_NAMES}
 
-&FN.COLOR_NAME #colorizer=privatize(1,if(isdbref(setr(!,get(%0/_ACCOUNT),acc)),if(strlen(setr(!,strfirstof(get(%q<acc>/COLOR.[num(%2)]),if(strmatch(num(%1),num(%0)),getconf(%q<acc>,ME,COLOR)),if(strmatch(num(%1),num(%2)),getconf(%q<acc>,SPEAKER,COLOR)),getconf(%q<acc>,OTHER,COLOR)),color)),ansi(%q<color>,%3),%3),%3))
+&FN.COLOR_NAME #colorizer=if(cand(strmatch(name(%1),%3),hasattr(%1/ANSINAME)),cname(%1),privatize(1,if(isdbref(setr(!,get(%0/_ACCOUNT),acc)),if(strlen(setr(!,strfirstof(get(%q<acc>/COLOR.[num(%2)]),if(strmatch(num(%1),num(%0)),getconf(%q<acc>,ME,COLOR)),if(strmatch(num(%1),num(%2)),getconf(%q<acc>,SPEAKER,COLOR)),getconf(%q<acc>,OTHER,COLOR)),color)),ansi(%q<color>,%3),%3),%3)))
 @@ %0 - dbref of viewer, %1 - dbref of target, %2 - dbref of speaker, %3 - text to color.
 
 &FIL.GOODNAMES #colorizer=!match(of|the|and,%0,|)

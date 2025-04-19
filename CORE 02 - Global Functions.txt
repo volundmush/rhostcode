@@ -20,18 +20,18 @@
 
 &GFN.SORTNAME #gfun=sortby(#lambda/[lit([comp(lcstr(name(%0)),lcstr(name(%1)))])],%0,if(strlen(%1),%1,%B),if(strlen(%2),%2,%B))
 
-&GFN.GETALIAS #gfun=switch(type(%0),EXIT,if(strfirstof(%1,1),elementsmux(fullname(%0),2,;),after(fullalias(%0),chr(59))),get(%0/ALIAS))
-@@ %0 - dbref, %1 - full alias if exit.
+&GFN.GETALIAS #gfun=switch(type(%0),EXIT,if(strfirstof(%1,1),elementsmux(fullname(%0),2,;),after(fullalias(%0),chr(59))),PLAYER,get(%0/ALIAS),if(strlen(%2),get(%0/%2)))
+@@ %0 - dbref, %1 - full alias if exit. %2 - custom attribute
 
 &GFN.ALNAME #gfun=name(%0)[if(strlen(getalias(%0)),%b[chr(40)][getalias(%0)][chr(41)])]
 &GFN.ALCNAME #gfun=cname(%0)[if(strlen(getalias(%0)),%b[chr(40)][getalias(%0)][chr(41)])]
 
 &GFN.RANDWORD #gfun=first(shuffle(%0,strfirstof(%1,%b),strfirstof(%1,%b)),strfirstof(%1,%b))
 
-&GFN.NAMEMATCH #gfun=t(match([name(%0)]|[num(%0)]|[objid(%0)][if(%2,|[getalias(%0)])][if(%3,|[u(%0/%3)])],%1,|))
+&GFN.NAMEMATCH #gfun=cor(match([name(%0)]|[num(%0)]|[objid(%0)][if(%2,|[getalias(%0,,%5)])][if(%3,|[u(%0/%3)])],%1,|),if(%4,strmatch(name(%0),%1*)))
 
-&GFN.NAMEFIND #gfun=trim(localize(iter(sortname(%0),if(namematch(%i0,%1,%2,%3),%i0[ibreak()]))))
-@@ %0 - dbrefs. %1 - name. %2 - check aliases. %3 - match against results of this function call
+&GFN.NAMEFIND #gfun=trim(localize(iter(sortname(%0),if(namematch(%i0,%1,%2,%3,%4,%5),%i0[ibreak()]))))
+@@ %0 - dbrefs. %1 - name. %2 - check aliases. %3 - match against results of this function call, %4 - partial match, %5 - alias attribute
 
 &GFN.OBJIDS #gfun=squish(iter(%0,if(isdbref(%i0),objid(%i0))))
 @@ %0 dbref list.

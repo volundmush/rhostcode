@@ -58,7 +58,7 @@
 
 &CONFIG #inc=@attach #inc/CONFIGURATOR=%0,%1,%2,CONFIG
 
-&CONF_LIST #inc=@pemit %#=header(cname(%2) [capnames(%3)] Options);@dolist/inline/delimit | [u(#conf/FN.LIST_CONFIGS,%2,%3)]={@pemit %#=separator(%d0);@pemit %#=get(%2/%3.%d0.DESC);@pemit %#=[ansi(hw,TYPE:)] [get(%2/%3.%d0.TYPE)];@pemit %#=[ansi(hw,DEFAULT:)] [get(%2/%3.%d0.DEFAULT)];@pemit %#=[ansi(hw,CURRENT:)] [getconf(%2,%d0,%3)]};@pemit %#=footer()
+&CONF_LIST #inc=@pemit %#=header(cname(%2) [capnames(%3)] Options);@dolist/inline/delimit | [u(#conf/FN.LIST_CONFIGS,%2,%3)]={@pemit %#=separator(%d0);@pemit %#=get(%2/%3.%d0.DESC);@pemit %#=[ansi(hw,TYPE:)] [setr(!,get(%2/%3.%d0.TYPE),type)];@pemit %#=[ansi(hw,DEFAULT:)] [get(%2/%3.%d0.DEFAULT)];@pemit %#=[ansi(hw,CURRENT:)] [setr(!,getconf(%2,%d0,%3),val)][if(strmatch(%q<type>,COLOR),%B-%b[ansi(%q<val>,THIS)])]};@pemit %#=footer()
 
 &CONF_SET #inc=@attach %2/%3.PERM;@attach #inc/PARTIAL=%0,u(#conf/FN.LIST_CONFIGS,%2,%3),|,op,option;@attach %2/%3.%q<op>.PERM=%0,%1,%2;@attach #inc/VALID.[get(%2/%3.%q<op>.TYPE)]=%1;th setq(!,getconf(%2,%q<op>),oldvalue);@attach %2/%3.%q<op>.VALID=%q<value>,%q<oldvalue>,%2;@set %2=%3.%q<op>.VALUE:%q<value>;@attach %2/%3.%q<op>.TRIGGER=%q<oldvalue>,%q<value>,%2;@pemit %#=[cname(%2)] %q<op> is now: %q<valueformat>;@if t(%4)={@attach #inc/MSG_ALERT=[cname(%2)] %q<op> is now: %q<valueformat>}
 

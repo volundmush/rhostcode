@@ -3,8 +3,10 @@
 &CMD.SCENE #scene=$^(?s)(?\:\+)(scene|scenes|plot|plots|rplog|rplogs|log|logs|summary)(?\:/(\\S+)?)?(?\: +(.+?)?)?(?\:=(.*))?$:th setq(!,switch(%1,scene,scene,scenes,scene,plot,plot,plots,plot,rplog,scene,rplogs,scene,log,scene,logs,scene,summary,summary),family);@assert/inline isint(setr(!,u(FN.PREPENT,%#),ent))=@pemit %#=Couldn't create Entity: %q<ent>;@attach #inc/GET_SWITCH=%2,%q<family>;@attach %!/SW.%q<family>.[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
 @set #scene/CMD.SCENE=regexp
 
-&CMD.EVENT #scene=$^(?s)(?\:\+)(event|events|upcoming|calendar)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:th setq(!,scene,family);@assert/inline isint(setr(!,u(FN.PREPENT,%#),ent))=@pemit %#=Couldn't create Entity: %q<ent>;@@ @attach #inc/GET_SWITCH=%2,%q<family>;@attach %!/SW.%q<family>.UPCOMING=trim(%3),%4
+&CMD.EVENT #scene=$^(?s)(?\:\+)(event|events|upcoming|calendar|schedule)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:th setq(!,scene,family);@assert/inline isint(setr(!,u(FN.PREPENT,%#),ent))=@pemit %#=Couldn't create Entity: %q<ent>;@@ @attach #inc/GET_SWITCH=%2,%q<family>;@attach %!/SW.%q<family>.[if(strlen(%3),MAIN,UPCOMING)]=trim(%3),%4
 @set #scene/CMD.EVENT=regexp
+
+@aconnect #scene=+events
 
 @@ SCENE section
 &SWITCHES.SCENE.0 #scene=CREATE|TITLE|PITCH|OUTCOME|START|PAUSE|FINISH|TAG|UNTAG|SCHEDULE|RESCHEDULE|UNDO|REDO|EDIT|UPCOMING|OLD|ROLE|WITH|RECALL|LAST
@@ -85,7 +87,7 @@
 
 &STATUSCHANGE #scene=@attach %!/FINDSCENE=%0,scene;@attach %!/CANCONTROL;@attach #inc/DOSQL=UPDATE.SCENE,scene_status,%1,%q<scene>;@pemit %#=Scene %q<scene>: '%q<sname>' has been marked: %2!;@attach %!/MSG_SCENE=%q<scene>,0,lcon(%l,LISTEN,,,1),Scene has been %2 by $you()!;@if eq(1,%1)={@set %l=GAME.SCENE:%q<scene>},{@set %l=GAME.SCENE:}
 
-&SW.SCENE.START #scene=@attach %!/STATUSCHANGE=%0,1,started
+&SW.SCENE.START #scene=@attach %!/STATUSCHANGE=%0,1,started;@if isdbref(tag(radio))={@attach %!/MSG_SCENE=%q<scene>,0,lcon(%l,LISTEN,,,1),Remember to [ansi(hw,+radio/log <freq>=%q<scene>)] all desired radio channels!}
 &SW.SCENE.PAUSE #scene=@attach %!/STATUSCHANGE=%0,2,paused
 &SW.SCENE.FINISH #scene=@attach %!/STATUSCHANGE=%0,3,finished
 
