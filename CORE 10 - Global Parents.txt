@@ -55,7 +55,7 @@
 &CONFIG.PAGEPLUS.DEFAULT #acc_parent=1
 &CONFIG.PAGEPLUS.TYPE #acc_parent=BOOL
 
-&PAGEFORMAT.NEWSTYLE #globplayer=[ansi(hg,PAGE)]%B[ansi(hr,chr(40))][iter(sortname(%3),cname(%i0),%b,\,%b)][ansi(hr,chr(41))][ansi(hw,:)]%B[speech(%0,%1)]
+&PAGEFORMAT.NEWSTYLE #globplayer=[ansi(hg,PAGE)]%B[ansi(hr,chr(40))][iter(sortname(%3),cname(%i0),%b,\,%b)][ansi(hr,chr(41))][ansi(hw,:)]%B[parsestr(%1%0,%0,",",,&%k)]
 &pageformat #globplayer=[if(myaccoption(PAGEPLUS),u(PAGEFORMAT.NEWSTYLE,%0,%1,%2,%3,%4),%4)]
 &outpageformat #globplayer=[if(myaccoption(PAGEPLUS),u(PAGEFORMAT.NEWSTYLE,%0,%1,%2,%3,%4),%4)]
 

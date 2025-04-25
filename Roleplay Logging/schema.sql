@@ -145,7 +145,7 @@ CREATE OR REPLACE VIEW scene_scheduled AS
        SELECT s.*,a.tagged_objids,a.tagged_names
          FROM scene_view as s
             LEFT JOIN actor_tagged as a ON s.scene_id = a.scene_id
-            WHERE s.scene_status = 0 AND s.scene_date_scheduled > NOW() - INTERVAL 10 HOUR
+            WHERE s.scene_date_scheduled > NOW() - INTERVAL 10 HOUR
        ORDER BY scene_date_scheduled;
 
 CREATE TABLE IF NOT EXISTS actrole (

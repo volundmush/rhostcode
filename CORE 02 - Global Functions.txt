@@ -121,7 +121,7 @@
 
 &GPFN.MYACCOPTION #gfun=accoption(%@,%0)
 
-&GPFN.SPEECH #gfun=parsestr(%1%0,%0,",",,&%k)
+&GPFN.SPEECH #gfun=parsestr(%1,%1,",",,&%k)
 
 &GPFN.LASTIDLE #gfun=switch(objeval(%#,conn(%0)),-1,ansi(hx,elementsmux(get(%0/last),2 3)),hideidle(%0))
 

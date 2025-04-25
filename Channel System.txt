@@ -65,7 +65,7 @@
 
 &SW.CATEGORY #chan_lib=@attach %!/INC.CREATE_CHECK;@attach %!/INC.FIND;@assert/inline strlen(setr(!,capnames(trim(stripansi(%1))),cat))=@pemit %#=No category entered!;@set %q<chan>=CATEGORY:%q<cat>;@pemit %#=Category for Channel '[cname(%q<chan>)]' set to: %1
 
-&INC.STARTLOCK #chan_lib=@attach %!/INC.FIND=before(stripansi(%0),/);@attach %!/INC.ADMIN;@attach #inc/PARTIAL=after(stripansi(%0),/),get(%!/LOCKS),|,lock,locktype;
+&INC.STARTLOCK #chan_lib=@attach %!/INC.FIND=before(stripansi(%0),/);@attach %!/INC.ADMIN;@assert/inline strlen(after(stripansi(%0),/))=@pemit %#=Must enter a Lock type!;@attach #inc/PARTIAL=after(stripansi(%0),/),get(%!/LOCKS),|,lock,locktype;
 
 &SW.LOCK #chan_lib=@attach %!/INC.STARTLOCK;@attach #inc/VALID.LOCKKEY=%1;@lock/user %q<chan>|%q<lock>=%q<value>;@pemit %#=[setr(!,Set Channel '[cname(%q<chan>)]' %q<lock> Lock to: %q<valueformat>,msg)];@attach #inc/MSG_ALERT=%q<msg>
 

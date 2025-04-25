@@ -1,0 +1,19 @@
+@skip isdbref(tag(setr(1,call)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(Call System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom()}
+
+&CMD.CALL #call=$^(?s)(?\:\+)(call|rcall)(?\:/(\\S+)?)?(?\: +(.*))?$:@attach #inc/GET_SWITCH=%2;@attach %!/SW.%1.[strfirstof(%q<switch>,MAIN)]=trim(before(%3,=)),after(%3,=),%3
+@set #call/CMD.CALL=regexp
+
+&CALLFORMAT #call=[ansi(hc,CALL)]%B[ansi(hr,chr(40))][iter(sortname(%2),cname(%i0),%b,\,%b)][ansi(hr,chr(41))][ansi(hw,:)]%B[parsestr(%0,%0,",",,&[cname(%1)])]
+
+&FIL.ISONLINE #call=if(gte(conn(%0),0),1,0[null(pemit(%1,Sorry but [cname(%0)] is not connected.))])
+
+&INC.CHECK #call=@if strlen(setr(!,trim(%0),target))={@attach #inc/GET_PLAYER=%q<target>,t1;th setq(!,setunion(%q<targets>,%q<t1>),targets)}
+
+&DO_CALL #call=@assert/inline words(setr(!,filter(FIL.ISONLINE,%q<targets>,%b,%b,%#),online))=@pemit %#=Nobody online to hear it!;th setq(!,u(CALLFORMAT,%q<msg>,%:,%q<targets>),disp);@pemit/list [setunion(%:,%q<targets>)]=%q<disp>;@set %#=GAME.LASTCALL_SEND:%q<targets>;@dolist/inline %q<targets>={@set %d0=GAME.LASTCALL_RECEIVE:[setdiff(setunion(%q<targets>,%:),%d0)]}
+
+&SW.CALL.MAIN #call=@if strmatch(%2,*=*)={th setq(!,%1,msg);th setq(!,,targets);@if strmatch(%0,*[chr(44)]*)={@dolist/inline/delim [chr(44)] %0={@attach %!/INC.CHECK=%d0}},{@dolist/inline %0={@attach %!/INC.CHECK=%d0}}},{th setq(!,setdiff(filterobjid(get(%#/GAME.LASTCALL_SEND)),%:),targets);th setq(!,%2,msg)};@attach %!/DO_CALL
+
+&SW.RCALL.MAIN #call=@assert/inline words(setr(!,filterobjid(get(%#/GAME.LASTCALL_RECEIVE)),targets))=@pemit %#=Nobody to call back!;th setq(!,%2,msg);@attach %!/DO_CALL
+
+&HLP.CALL #call=The +Call system is an in-character variation of page ([ansi(hw,help page)]) for direct messaging to one or more targets. the syntax and features work almost exactly like page for familiarity so do please check that helpfile.%R%R[ansi(hc,On Delimiter)]%RWhen targeting multiple characters, the default delimiter is a space. As some characters might have multiple words in their name and are missing an alias, the system will also detect if a comma is present and automatically switch to comma-delimiting.%R%R[ansi(hc,Commands)]%R[ansi(hw,+call <targets>=<message>)]%R%TSend a message.%R%R[ansi(hw,+call <message>)]%R%TSend a second message to the same targets you just called. Note that = must not appear in the message for this to work.%R%R[ansi(hw,+rcall <message>)]%R%TSend a response call. It will automatically target everyone else if the caller targeted a group.
++help/add Communications/+call=#call/HLP.CALL
