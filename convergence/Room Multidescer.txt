@@ -1,0 +1,33 @@
+@@ Dependencies: Info Lib
+
+@skip isdbref(tag(setr(1,rdesc)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No global room set!;@assert/inline isdbref(setr(0,create(MultiDescer System,,t)))=@pemit %#=ERROR: Could not create code object: %q0;@set %q0=INDESTRUCTIBLE;@tag/add %q1=%q0;@tel %q0=globalroom();@parent %q0=#info_lib}
+
+&CMD.RDESC #rdesc=$^(?s)(?\:\+)(rdesc)(?\:/(\\S+)?)?(?\: +(.+?))?(/(.+?)?)?(?\:=(.*))?$:@attach %!/DO_INFO
+@set #rdesc/CMD.RDESC=regexp
+
+&SWITCHES.INFO.0 #rdesc=setunion(u(parent(%!)/SWITCHES.INFO.0),SWITCH|NOISY,|,|)
+
+&INFO.ATTR #rdesc=DESC
+&INFO.NAME #rdesc=RoomMultiDescription
+&INFO.PLURAL #rdesc=RoomMultiDescriptions
+&INFO.CMD #rdesc=+RDESC
+&INFO.CMD_SHORT #rdesc=+rdesc
+&INFO.INIT #rdesc=
+
+&INFO.ADMIN #rdesc=lmax(iter(PARENT LOCK THEME FACTION,if(u(INFO.ADMIN.%i0,%0,%1),1[ibreak()],0)))
+&INFO.ADMIN.PARENT #rdesc=u(parent(%!)/INFO.ADMIN,%0,%1)
+&INFO.ADMIN.LOCK #rdesc=if(!strmatch(lock(%1/User|DescLock),#-*),elock(%1/user|DescLock,%0),0)
+&INFO.ADMIN.THEME #rdesc=lmax(iter(filterdbref(get(%1/THEME)),if(match(filterobjid(setunion(get(%i0/OWNER),get(%i0/MEMBERS))),objid(%0)),1[ibreak()],0)))
+&INFO.ADMIN.FACTION #rdesc=lmax(iter(filterdbref(get(%1/FACTION)),if(fachasperm(objid(%i0),objid(%0),RDESC),1[ibreak()],0)))
+
+&INC.INFO.CANMODIFY #rdesc=@assert/inline u(INFO.ADMIN,%:,%q<target>)=@pemit %#=Permission denied. You cannot modify another's entries.;@if !gtebittype(%#,5)={@break/inline cand(v(INFO.LOCKAPPROVE),get(%q<target>/GAME.APPROVED),!t(%3))=@pemit %#=Cannot edit [v(INFO.NAME)] Files while approved!}
+
+&INC.INFO.GET_TARGET #rdesc=@assert/inline cand(isdbref(%0),strmatch(type(%0),ROOM))=@pemit %#=Not a valid room dbref!;th setq(!,objid(%0),target)
+&INC.INFO.DEFAULT_TARGET #rdesc=th setq(!,objid(%l),target)
+
+&SW.INFO.SWITCH #rdesc=@assert/inline strlen(%q<filename>)=@pemit %#=Must enter a desc filename!;@attach %!/INC.INFO.FINDFILE=%q<filename>;@cpattr %q<target>/%q<attr>.BODY=%l/DESC;@if hasattr(%q<target>/%q<attr>.SUMMARY)=@cpattr %q<target>/%q<attr>.SUMMARY=%l/short-desc;@cpattr %q<target>/%q<attr>.NAME=%l/DESC.NAME;@set %l/DESC.NAME=visual;@if t(%3)={@remit %l=%k switches the local description to: [ansi(hw,%q<fname>)]},{@pemit %#=You quietly switched the local description to: [ansi(hw,%q<fname>)]}
+
+&SW.INFO.NOISY #rdesc=@attach %!/SW.INFO.SWITCH=%0,%1,%2,1
+
+&HLP.RDESC #rdesc=The RoomMultiDescer system, or Rdesc, is used for storing multiple room descriptions for cast/organization rooms. This allows one coded room to represent numerous related locations.%R%ROur RoomMultidescer shares all of the same code as the [ansi(hw,+info)] system for creating and administrating +rdesc files. So it's a good idea to check out [ansi(hw,+help +info)]%R%R[ansi(hc,Additional Commands)]%R[ansi(hw,+rdesc/switch <file>)]%R%TSwitches to a specific file. The file's contents will be assigned to the local room's @desc. The name will be set to the &DESC.NAME attribute.%R%R[ansi(hw,+rdesc/noisy <file>)]%R%TLike /switch but will announce to the room.%R%R[ansi(hc,Permissions)]%RAnyone who meets the following conditions is considered an 'owner' and can create/modify/delete desc files.%RA) Staff.%RB) Anyone who passes a @lock/user|DescLock set on the room.%RC) Anyone in the member list of any THEME set to the room. &THEME room=dbref1 dbref2....%RD) Anyone who has an RDESC permission in any of the factions set in the FACTION attribute. &FACTION room=dbref1 dbref2...
++help/add Navigation/+rdesc=#rdesc/HLP.RDESC

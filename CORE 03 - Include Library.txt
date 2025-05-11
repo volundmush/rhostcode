@@ -9,7 +9,8 @@
 &MSG_ALERT #inc=@attach/localize #inc/MSG_ALERT_DO=%0,%1
 &MSG_ALERT_DO #inc=th setq(!,[chr(91)][strfirstof(%1,cname(%!) - %!)][chr(93)]-[chr(91)]%k[chr(93)] %0,msg);@log [chr(91)][time()][chr(93)]-%q<msg>;@dolist/inline filter(#lambda/[lit(default(%0/ALERTS,1))],bitwho(globalconf(ALERTLEVEL)))={@pemit %d0=[chr(91)][runintz(gettz(%d0),time())][chr(93)]-%q<msg>}
 
-&GET_PLAYER #inc=@assert/inline strlen(%0)=@pemit %#=You must enter a player name!;@assert/inline strlen(%1);@assert/inline isdbref(pmatchreg(%0,%1))=@pemit %#=%0 [if(strmatch(r(%1),#-2*),matches multiple players!,does not match a player!)];th setq(!,objid(r(%1)),%1)
+&GET_PLAYER #inc=@assert/inline strlen(%0)=@pemit %#=You must enter a player name!;@assert/inline strlen(%1);@if strmatch(%0,me)={th setq(!,%:,%1)},{@assert/inline isdbref(pmatchreg(%0,%1))=@pemit %#=%0 [if(strmatch(r(%1),#-2*),matches multiple players!,does not match a player!)];th setq(!,objid(r(%1)),%1)}
+
 @@ GET_PLAYER Arguments: %0 = player being checked, %1 = register number to load their data into.
 
 &VALID.BASE #inc=@assert/inline strlen(setr(!,trim(%0),value))=@pemit %#=Nothing entered!

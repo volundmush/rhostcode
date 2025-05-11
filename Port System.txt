@@ -5,7 +5,7 @@
 
 &SWITCHES.0 #port=LIST
 
-&SW.MAIN #port=@if !strlen(%0)={@attach %!/SW.LIST},{@if isdbref(setr(!,pmatch(%0),player))={th setq(!,objeval(%#,loc(%q<player>),2),target)},{th setq(!,%0,target)};@assert/inline cand(isdbref(%q<target>),hastype(%q<target>,ROOM),isdbref(upzone(%q<target>)))=@pemit %#=That's not a good target.;@assert/inline elock(%q<target>/TportLock,%#)=@pemit %#=Permission denied. You don't pass the TportLock.;@remit %l=%k vanishes in a flash using +port.;@tel %#=%q<target>;@remit %l=%k appears in a flash using +port.}
+&SW.MAIN #port=@if !strlen(%0)={@attach %!/SW.LIST},{@if isdbref(setr(!,pmatch(%0),player))={th setq(!,objeval(%#,loc(%q<player>),2),target)},{th setq(!,%0,target)};@assert/inline cand(isdbref(%q<target>),hastype(%q<target>,ROOM),isdbref(upzone(%q<target>)))=@pemit %#=That's not a good target.;@assert/inline elock(%q<target>/TportLock,%#)=@pemit %#=Permission denied. You don't pass the TportLock.;@break/inline strmatch(objid(%q<target>),objid(%l))=@pemit %#=You're already there!;@remit %l=%k vanishes in a flash using +port.;@tel %#=%q<target>;@remit %l=%k appears in a flash using +port.}
 
 &FN.LIST_ROOMS #port=iter(%0,filter(FIL.ROOM,lzone(%i0)),%B,%B)
 

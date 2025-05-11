@@ -25,3 +25,7 @@
 +help/add Roleplaying/+dice=#uglobals/HLP.DICE
 &HLP.DICE #uglobals=[ansi(hw,+dice <#>d<#>)]%R%TRoll XdY dice. Example: +dice 3d6
 
+&CMD.SHORTDESC #uglobals=$+shortdesc *:@set %#=short-desc:%0;@pemit %#=You set your Short-Desc to: %0
+
+&HLP.SHORTDESC #uglobals=The short-desc is displayed in the default room formatter. Please keep it concise. A small sentence or two at best.%R%R[ansi(hc,Commands)]%R[ansi(hw,+shortdesc <text>)]%R%TSet your short-desc.
++help/add Character/+shortdesc=#uglobals/HLP.SHORTDESC

@@ -36,9 +36,9 @@
 &CMD.ACCOUNT #acc=$^(?s)(?\:\+)(acc|account)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2;@attach %!/SW.[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
 @set #acc/CMD.ACCOUNT=regexp
 
-&SWITCHES.0 #acc=OPTIONS|RENAME|PASSWORD
+&SWITCHES.0 #acc=OPTIONS|RENAME|PASSWORD[if(getconf(%!,OPENPDELETE),|DELCHARACTER)]
 &SWITCHES.4 #acc=BIND|UNBIND|UNBOUND|CREATE|LIST|INACTIVE
-&SWITCHES.5 #acc=CONFIG|NEWPASSWORD|DELETE
+&SWITCHES.5 #acc=CONFIG|NEWPASSWORD|DELETE|DELCHARACTER
 
 &SW.CONFIG #acc=@attach #inc/CONFIG=%0,trim(%1),%!
 
@@ -53,6 +53,10 @@
 &CONFIG.OPENPCREATE.DESC #acc=Players can create new characters at the login screen.
 &CONFIG.OPENPCREATE.DEFAULT #acc=1
 &CONFIG.OPENPCREATE.TYPE #acc=BOOL
+
+&CONFIG.OPENPDELETE.DESC #acc=Players can delete their own (unapproved) characters.
+&CONFIG.OPENPDELETE.DEFAULT #acc=1
+&CONFIG.OPENPDELETE.TYPE #acc=BOOL
 
 &CONFIG.ALTLIMIT.DESC #acc=Maximum amount of characters per account. Only enforced at login menu.
 &CONFIG.ALTLIMIT.DEFAULT #acc=16
@@ -152,9 +156,11 @@
 &FN.INACTIVE_COLUMNS #acc=u(FN.ACCLIST_COLUMNS)
 &FN.INACTIVE_ROW #acc=u(FN.ACCLIST_ROW,%0)
 
+&SW.DELCHARACTER #acc=@attach #inc/GET_PLAYER=%0,t1;@break/inline strmatch(%:,%q<t1>)=@pemit %#=Cannot delete yourself.;@skip gtebittype(%#,5)={@assert/inline strmatch(account(%#),account(%q<t1>))=@pemit %#=You cannot delete characters not belonging to your own account.};@break/inline cand(globalconf(REQAPPROVAL),get(%q<t1>/GAME.APPROVED))=@pemit %#=Cannot delete an approved character.;@assert/inline gt(bittype(%#),bittype(%q<t1>))=@pemit %#=Permission denied. You do not have authority over [cname(%q<t1>)].;@break/inline orflags(%q<t1>,s~)=@pemit %#=ERROR: [cname(%q<t1>)] is set SAFE or INDESTRUCTABLE. Remove these flags first.;@break/inline gt(search(%q<t1>),1)=@pemit %#=Cannot delete. [cname(%q<t1>)] owns objects. They must be deleted or @chown'd first.;@assert/inline strmatch(%q<t1>,%1)=@pemit %#=You must enter the OBJID() of the character as the second argument to verify deletion of [ansi(hw,name(%q<t1>))]. To retrieve it type: [ansi(hw,think objid\(*[name(%q<t1>)]\))];@dolist/inline/nobreak [lattr(%!/INC.DELCHARACTER.*)]={@attach %!/%d0=%q<t1>};@nuke %q<t1>
+
 @@ Help
 +help/add System/+account=#acc/HLP.ACCOUNT
-&HLP.ACCOUNT #acc=[ansi(hc,Player Commands)]%R%R[ansi(hw,@acc)]%R%TDisplay your current account details.%R%R[ansi(hw,@acc/password <old>=<new>)]%R%TChange your password. Use this instead of @password!%R%R[ansi(hw,@acc/rename <new name>)]%R%TRename your account. Supports ansi() colors.%R%R[ansi(hw,@acc/options)]%R%TDisplay available account options and current settings.%R%R[ansi(hw,@acc/options <option>=<value>)]%R%TChange an account option's value.
+&HLP.ACCOUNT #acc=[ansi(hc,Player Commands)]%R%R[ansi(hw,+acc)]%R%TDisplay your current account details.%R%R[ansi(hw,+acc/password <old>=<new>)]%R%TChange your password. Use this instead of @password!%R%R[ansi(hw,+acc/rename <new name>)]%R%TRename your account. Supports ansi() colors.%R%R[ansi(hw,+acc/options)]%R%TDisplay available account options and current settings.%R%R[ansi(hw,+acc/options <option>=<value>)]%R%TChange an account option's value.%R%R[ansi(hw,+acc/delcharacter <name>)]%R%TDeletes a player character if you are allowed to. [ansi(hr,WARNING:)] Difficult or impossible to reverse.
 
 +shelp/add System/+account=#acc/SHLP.ACCOUNT
 &SHLP.ACCOUNT #acc=[ansi(hc,NOTE:)]%RAny command which expects an <account> can take either a player name (their account will be auto-detected) OR a name beginning with @ to force an account lookup.%R%R[ansi(hc,Administrator Commands)]%R%R[ansi(hw,+account <account>)]%R%TDisplay details about an account.%R%R[ansi(hw,+account/list)]%R%TDisplay all accounts in system.%R%R[ansi(hw,+account/create <name>=<password>)]%R%TCreates a new account.%R%R[ansi(hw,+account/newpassword <account>=<password>)]%R%TSets a new password for the account.%R%R[ansi(hw,+account/rename <account>=<new name>)]%R%TRename an account.%R%R[ansi(hw,+account/bind <character>=<account>)]%R%TMakes <character> a member of <account>.%R%R[ansi(hw,+account/unbind <character>)]%R%TMakes <character> account-less. Not really a good idea.%R%R[ansi(hw,+account/inactive)]%R%TLists accounts that are currently inactive.%R%R[ansi(hw,+account/config)]%R%TDisplays the account system configuration.%R%R[ansi(hw,+account/config <parameter>=<value>)]%R%TSet an account system configuration option.%R%R[ansi(hw,+account/delete <account>=<account name to validate>)]%R%TDeletes an account from the system. This will only work if all characters on the account have been eliminated using @nuke, @toad, or @turtle, which are covered in wizhelp.

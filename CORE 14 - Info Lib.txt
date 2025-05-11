@@ -46,7 +46,7 @@
 
 &INFO.ADMIN #info_lib=gtebittype(%0,4)
 
-&DO_INFO #info_lib=@attach %!/INFO.INIT;@attach #inc/GET_SWITCH=%2,INFO;@attach %!/INC.INFO.TARGET=trim(%3),trim(%5),t(%4);@attach %!/SW.INFO.[strfirstof(%q<switch>,MAIN)]=trim(%3),trim(%5),%6,t(strlen(%4))
+&DO_INFO #info_lib=@attach %!/INFO.INIT;@attach #inc/GET_SWITCH=%2,INFO;th setq(!,t(strlen(%4)),slash);@attach %!/INC.INFO.TARGET=trim(%3),trim(%5),%q<slash>;@attach %!/SW.INFO.[strfirstof(%q<switch>,MAIN)]=trim(%3),trim(%5),%6
 
 &INC.INFO.FINDFILE #info_lib=@assert/inline strlen(%0)=@pemit %#=File name empty.;@if isint(%0)={@switch/inline/first words(setr(!,grep(%q<target>,u(FN.PREFIX).*.ORDER,%0),choices))=0,{@break/inline 1=@pemit %#=Number '%0' does not match a file. Try using a name instead.},1,{th setq(!,elementsmux(%q<choices>,1 2 3,.,.),attr)},{@break/inline 1=@pemit %#=Order Number '%0' is used by more than one file. Use its name to target it instead.}},{@assert/inline words(setr(!,u(FN.LIST_FILENAMES,%q<target>),files),|)=@pemit %#=No files to choose from.;@attach #inc/PARTIAL=%0,%q<files>,|,filename,info file;th setq(!,u(FN.FILENAME,%q<filename>),attr)};@assert/inline hasattr(%q<target>,%q<attr>.NAME)=@pemit %#=Code error! No attribute for this name. Contact a codewiz.;th setq(!,ucleanget(%q<target>/%q<attr>.BODY),contents);th setq(!,get(%q<target>/%q<attr>.META),meta);th setq(!,get(%q<target>/%q<attr>.NAME),fname)
 @@ Use INC.INFO.FINDFILE above to partial match existing files when searching for them.
