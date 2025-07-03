@@ -41,7 +41,7 @@
 
 &GFN.NUMTH #gfun=%0[switch(%0,11,th,12,th,13,th,switch(right(%0,1),1,st,2,nd,3,rd,th))]
 
-&GPFN.ISAPPROVED #gfun=cor(gtebittype(%0,2),if(globalconf(REQAPPROVAL),default(%0/GAME.APPROVED,0),1))
+&GPFN.ISAPPROVED #gfun=cor(if(%1,0,gtebittype(%0,2)),if(globalconf(REQAPPROVAL),default(%0/GAME.APPROVED,0),1))
 
 &FIL.INHERITABLE_ATTR #gfun=!hasflag(%1/%0,NO_INHERIT)
 
@@ -123,13 +123,13 @@
 
 &GPFN.SPEECH #gfun=parsestr(%1,%1,",",,&%k)
 
-&GPFN.LASTIDLE #gfun=switch(objeval(%#,conn(%0)),-1,ansi(hx,elementsmux(get(%0/last),2 3)),hideidle(%0))
+&GPFN.LASTIDLE #gfun=switch(objeval(%#,conn(%0)),-1,ansi(hx,elementsmux(fancytime(get(%0/GAME.LASTON),%#),1 2)),hideidle(%0))
 
 &GPFN.HIDECONN #gfun=switch(objeval(%#,conn(%0)),-1,ansi(hx,Off),ansi(if(ishidden(%0),hx,hg),smalltime(conn(%0),3)))
 
 &GPFN.HIDEIDLE #gfun=switch(objeval(%#,idle(%0)),-1,ansi(hx,Off),ansi(if(ishidden(%0),hx,ryg(round(mul(fdiv(bound(idle(%0),0,3600),3600),100),0))),smalltime(idle(%0),3)))
 
-&GPFN.LASTCONN #gfun=switch(objeval(%#,conn(%0)),-1,ansi(hx,elementsmux(get(%0/last),2 3)),hideconn(%0))
+&GPFN.LASTCONN #gfun=switch(objeval(%#,conn(%0)),-1,ansi(hx,elementsmux(fancytime(get(%0/GAME.LASTON),%#),1 2)),hideconn(%0))
 
 @@ Header stuff
 &GPFN.HEADER #gfun=localize(u(HEADER_PREP,%1,HEADER,%2,=,%3)[setq(!,if(strlen(%0),[ansi(%q<bordercolor>,<<)]%B[if(has_markup(%0),%0,ansi(%q<htextcolor>,%0))]%B[ansi(%q<bordercolor>,>>)]),headertext)][u(HEADER_RENDER,HEADER,%0)])

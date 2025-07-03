@@ -104,9 +104,9 @@
 
 &SW.MAIN #acc=@attach %!/INC.ACCPLAYER=if(cand(strlen(%0),gtebittype(%#,4)),trim(%0),%#),acc;@pemit %#=header([ansi(hw,Account:)] [cname(%q<acc>)]);@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.ACC_COLUMNS));@pemit %#=subheader();@dolist/inline [setr(!,u(FN.CHARACTERS,%q<acc>),characters)]=@pemit %#=u(FN.ACC_ROW,%d0);@pemit %#=footer(u(FN.MAIN_FOOTER,%q<acc>,%q<characters>))
 
-&FN.ACC_COLUMNS #acc=printf($-7s $-3s $-2s $-4s $-s $s,Dbref,Bit,Al,Mail,Name)
+&FN.ACC_COLUMNS #acc=printf($-7s $-3s $-2s $-4s $-23|"s $-15s $-15s,Dbref,Bit,Al,Mail,Name,Approval Date,Last On)
 
-&FN.ACC_ROW #acc=printf($-7s $3s $2s $-4:0:s $-s $s,num(%d0),bittype(%0),default(%0/ALTS,0),umail(%0),cname(%0))
+&FN.ACC_ROW #acc=printf($-7s $3s $2s $-4:0:s $-23|"s $-15s $-15s,num(%d0),bittype(%0),default(%0/ALTS,0),umail(%0),cname(%0),if(get(%0/GAME.APPROVED),fancytime(get(%0/GAME.APPROVED)),Unapproved),lastidle(%0))
 
 &SW.CREATE #acc=@assert/inline t(setr(!,u(FN.VALID_ACCOUNT_NAME,%0),res))=@pemit %#=ERROR: %q<res>;@assert/inline valid(password,%1)=@pemit %#=ERROR: Cannot use provided password: '%1'.;@assert/inline isobjid(setr(!,u(FN.CREATE_ACCOUNT,%0,%1),acc))=@pemit %#=ERROR: %q<acc>;@if has_markup(%0)={@name/ansi %q<acc>=%0};@pemit %#=Account '[cname(%q<acc>)]' created with password: %1;@attach #inc/MSG_ALERT=Account '[cname(%q<acc>)]' created.
 
@@ -157,6 +157,15 @@
 &FN.INACTIVE_ROW #acc=u(FN.ACCLIST_ROW,%0)
 
 &SW.DELCHARACTER #acc=@attach #inc/GET_PLAYER=%0,t1;@break/inline strmatch(%:,%q<t1>)=@pemit %#=Cannot delete yourself.;@skip gtebittype(%#,5)={@assert/inline strmatch(account(%#),account(%q<t1>))=@pemit %#=You cannot delete characters not belonging to your own account.};@break/inline cand(globalconf(REQAPPROVAL),get(%q<t1>/GAME.APPROVED))=@pemit %#=Cannot delete an approved character.;@assert/inline gt(bittype(%#),bittype(%q<t1>))=@pemit %#=Permission denied. You do not have authority over [cname(%q<t1>)].;@break/inline orflags(%q<t1>,s~)=@pemit %#=ERROR: [cname(%q<t1>)] is set SAFE or INDESTRUCTABLE. Remove these flags first.;@break/inline gt(search(%q<t1>),1)=@pemit %#=Cannot delete. [cname(%q<t1>)] owns objects. They must be deleted or @chown'd first.;@assert/inline strmatch(%q<t1>,%1)=@pemit %#=You must enter the OBJID() of the character as the second argument to verify deletion of [ansi(hw,name(%q<t1>))]. To retrieve it type: [ansi(hw,think objid\(*[name(%q<t1>)]\))];@dolist/inline/nobreak [lattr(%!/INC.DELCHARACTER.*)]={@attach %!/%d0=%q<t1>};@nuke %q<t1>
+
+&STARTUP #acc=@trigger %!/TRG.TIMESTAMP
+
+&TIMESTAMP_ALL #acc=@dolist/inline %0={@set %d0=GAME.LASTON:%1}
+&TRG.TIMESTAMP #acc=@trigger %!/TIMESTAMP_ALL=lwhoid(),secs();@wait 10=@trigger %!/TRG.TIMESTAMP
+
+&ACONNECT #acc=@set %#=GAME.LASTON:[secs()]
+
+&ADISCONNECT #acc=@set %#=GAME.LASTON:[secs()]
 
 @@ Help
 +help/add System/+account=#acc/HLP.ACCOUNT

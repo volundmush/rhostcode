@@ -21,13 +21,13 @@
 
 &INC.VIEW_CATEGORIES #help=@pemit %#=header(mudname() %q<cmd> Categories);@dolist/inline/delimit | [u(FN.CATEGORIES,%q<root>)]={@pemit %#=subheader(%d0);@pemit %#=columns(u(FN.FILE_NAMES,%q<root>,%d0),26,3,,,1,,%b,,1,|,,1)};@if words(%q<legacy>,|)={@pemit %#=subheader(Legacy %q<cmd> Files);@pemit %#=columns(%q<legacy>,14,5,,,,,%b,,1,|,,1)}
 
-&INC.FIND_FILE #help=@assert/inline words(setr(!,listunion(u(FN.FILE_NAMES,%q<root>),if(%2,%q<legacy>),|,|),files),|)=@pemit %#=There are no files!;@attach #inc/PARTIAL=%0,%q<files>,|,%1,file;th setq(!,0,islegacy);@if cand(%2,match(%q<legacy>,r(%1),|))={th setq(!,1,islegacy)},{th setq(!,get(#help_db/[u(FN.HASH,%q<root>,r(%1))]_CATEGORY),category)}
+&INC.FIND_FILE #help=@assert/inline words(setr(!,listunion(u(FN.FILE_NAMES,%q<root>),if(%2,%q<legacy>),|,|),files),|)=@pemit %#=There are no files!;@attach #inc/PARTIAL=%0,%q<files>,|,%1,file,%2;@if cand(%2,!strlen(%q<file>))={@attach %!/SW.SEARCH=%0,,,,,1;@break 1},{th setq(!,0,islegacy);@if cand(%2,match(%q<legacy>,r(%1),|))={th setq(!,1,islegacy)},{th setq(!,get(#help_db/[u(FN.HASH,%q<root>,r(%1))]_CATEGORY),category)}}
 
 &FIL.SEARCH #help=strmatch(stripansi(if(hasattr(setr(!,get(#help_db/%2_%0_ENTRY),entry)),ulocal(%q<entry>,%#),%q<entry>)),*%1*)
 
 &FN.SEARCH #help=filter(FIL.SEARCH,u(FN.ALL_FILES,strfirstof(%1,%q<root>)),|,|,%0,strfirstof(%1,%q<root>))
 
-&SW.SEARCH #help=@assert/inline strlen(%0)=@pemit %#=Search for what?;@assert/inline words(setr(!,u(FN.SEARCH,%0),results),|)=@pemit %#=Nothing found...;@pemit %#=Matches Found: [iter(%q<results>,get(#help_db/%q<root>_%i0_NAME),|,chr(44)%B)]
+&SW.SEARCH #help=@assert/inline strlen(%0)=@pemit %#=Search for what?;@assert/inline words(setr(!,u(FN.SEARCH,%0),results),|)=@pemit %#=Nothing found...;@if cand(%5,eq(words(%q<results>,|),1))={@pemit %#=No file by that name but found 1 match: [setr(!,get(#help_db/%q<root>_%q<results>_NAME),foundname)];@attach %!/SW.MAIN=%q<foundname>},{@pemit %#=Matches Found: [iter(%q<results>,get(#help_db/%q<root>_%i0_NAME),|,chr(44)%B)]}
 
 &INC.VIEW_FILE #help=@attach %!/INC.FIND_FILE=%0,file,1;@if %q<islegacy>={@dynhelp/parse %q<txtfile>/%q<file>=%#},{@pemit %#=header(mudname() %q<cmd>: %q<file>);th setq(!,get(#help_db/[u(FN.HASH,%q<root>,%q<file>)]_ENTRY),data);@pemit %#=if(hasattr(%q<data>),ulocal(%q<data>,%#),%q<data>)}
 

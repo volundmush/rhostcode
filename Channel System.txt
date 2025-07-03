@@ -85,7 +85,7 @@
 &LEAVE_CHANNEL #chan_lib=@set %0=JOINED:[setdiff(u(GET_VALID_JOINED,%0),%1)];@set %1=CHANNELS.[v(CHAN.TYPE)]:[setdiff(filterobjid(get(%1/CHANNELS.[v(CHAN.TYPE)])),objid(%0))];@attach %!/UNGAG_CHANNEL=%0,%1;@attach %!/LEAVE_CHANNEL_AFTER
 &LEAVE_CHANNEL_AFTER #chan_lib=th u(FN.CEMIT,%0,:has left the channel.,%1)
 
-&DO_ALTERTITLE #chan_lib=@attach %!/INC.FIND;@assert/inline getconf(%q<chan>,%2)=@pemit %#=This channel has them disabled.;th setq(!,CHANINFO.[edit(objid(%q<chan>),:,_)].%2,attr);@set %#=%q<attr>:%1;@pemit %#=Set.
+&DO_ALTERTITLE #chan_lib=@attach %!/INC.FIND;@assert/inline getconf(%q<chan>,%2)=@pemit %#=This channel has them disabled.;th setq(!,CHANINFO.[edit(objid(%q<chan>),:,_)].%2,attr);@set %#=%q<attr>:%1;@skip hasflag(%#,QUIET)={@pemit %#=Set.}
 
 &SW.ALTEREGO #chan_lib=@attach %!/DO_ALTERTITLE=%0,%1,ALTEREGO
 

@@ -21,10 +21,12 @@
 
 &FIL.ISIDLE #idlesweep=cand(!gtebittype(%0,2),gte(idle(%0),%1),!match(%2,loc(%0)))
 
+&FN.ALLIDLE #idlesweep=filter(FIL.ISIDLE,strfirstof(%0,listunion(lwho(),)),%b,%b,getconf(%!,IDLEMAX),getconf(%!,EXCLUDE))
+
 &SW.MAIN #idlesweep=@attach %!/SW.SWEEP
 &SW.SWEEP #idlesweep=@pemit %#=Manually running an idlesweep.;@attach %!/DO_SWEEP
 
-&DO_SWEEP #idlesweep=@assert/inline words(setr(!,filter(FIL.ISIDLE,listunion(lwho(),),%b,%b,getconf(%!,IDLEMAX),getconf(%!,EXCLUDE)),idlers));th setq(!,num(getconf(%!,DESTINATION)),dest);@attach %!/DO_SWEEP_[if(isdbref(%q<dest>),DESTINATION,HOME)]
+&DO_SWEEP #idlesweep=@assert/inline words(setr(!,u(FN.ALLIDLE),idlers));th setq(!,num(getconf(%!,DESTINATION)),dest);@attach %!/DO_SWEEP_[if(isdbref(%q<dest>),DESTINATION,HOME)]
 
 &DO_SWEEP_DESTINATION #idlesweep=@dolist/inline/nobreak %q<idlers>={@break/inline strmatch(loc(%d0),%q<dest>);@remit loc(%d0)=[cname(%d0)] is swept away into the doldrums for idleness.;@tel/quiet %d0=%q<dest>;@remit loc(%d0)=[cname(%d0)] is blown here by the idlesweeper.}
 

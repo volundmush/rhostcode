@@ -1,7 +1,9 @@
 @skip isdbref(tag(setr(1,scene)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No global room set!;@assert/inline isdbref(setr(0,create(Scene System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=[globalroom()]}
 
-&CMD.SCENE #scene=$^(?s)(?\:\+)(scene|scenes|plot|plots|rplog|rplogs|log|logs|summary|pot)(?\:/(\\S+)?)?(?\: +(.+?)?)?(?\:=(.*))?$:th setq(!,switch(%1,scene,scene,scenes,scene,plot,plot,plots,plot,rplog,scene,rplogs,scene,log,scene,logs,scene,summary,summary,pot,pot),family);@assert/inline isint(setr(!,u(FN.PREPENT,%#),ent))=@pemit %#=Couldn't create Entity: %q<ent>;@attach #inc/GET_SWITCH=%2,%q<family>;@attach %!/SW.%q<family>.[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
+&CMD.SCENE #scene=$^(?s)(?\:\+)(scene|scenes|plot|plots|rplog|rplogs|log|logs|pot)(?\:/(\\S+)?)?(?\: +(.+?)?)?(?\:=(.*))?$:th setq(!,switch(%1,scene,scene,scenes,scene,plot,plot,plots,plot,rplog,scene,rplogs,scene,log,scene,logs,scene,pot,pot),family);@assert/inline isint(setr(!,u(FN.PREPENT,%#),ent))=@pemit %#=Couldn't create Entity: %q<ent>;@attach #inc/GET_SWITCH=%2,%q<family>;@attach %!/SW.%q<family>.[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
 @set #scene/CMD.SCENE=regexp
+
+&CMD.SUMMARY #scene=$+summary *:th setq(!,summary,family);@assert/inline isint(setr(!,u(FN.PREPENT,%#),ent))=@pemit %#=Couldn't create Entity: %q<ent>;@attach %!/SW.SUMMARY.MAIN=%0
 
 &CMD.EVENT #scene=$^(?s)(?\:\+)(event|events|upcoming|calendar|schedule)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:th setq(!,scene,family);@assert/inline isint(setr(!,u(FN.PREPENT,%#),ent))=@pemit %#=Couldn't create Entity: %q<ent>;@@ @attach #inc/GET_SWITCH=%2,%q<family>;@attach %!/SW.%q<family>.[if(strlen(%3),MAIN,UPCOMING)]=trim(%3),%4
 @set #scene/CMD.EVENT=regexp
@@ -19,9 +21,9 @@
 &LIST.SCENES #scene=@pemit %#=header(%0);@pemit %#=ansi(confoverride(%#,COLUMN),u(LIST.SCENES.COLUMN));@if words(%1)={@dolist/inline %1={@pemit %#=u(LIST.SCENES.ROW,%d0)}};@pemit %#=footer();
 @@ %0 - header display. %1 - list of scene IDs.
 
-&Q.SELECT.SCENES_OF #scene=SELECT scene_id FROM scene_view WHERE owner_objid=? AND scene_status!
+&Q.SELECT.SCENES_OF #scene=SELECT a.scene_id FROM actor_view AS a LEFT JOIN scene_view AS s ON a.scene_id=s.scene_id WHERE a.entity_objid=? AND (a.action_count>0 or a.actor_type>0) AND s.scene_status! ORDER BY a.scene_id
 
-&Q.SELECT.PARTICIPANTS #scene=SELECT entity_objid,entity_name,actor_type,actor_type_name,action_count,actor_id FROM actor_view WHERE scene_id=? ORDER BY actor_type DESC
+&Q.SELECT.PARTICIPANTS #scene=SELECT entity_objid,entity_name,actor_type,actor_type_name,action_count,actor_id FROM actor_view WHERE scene_id=? AND (action_count>0 OR actor_type>0) ORDER BY actor_type DESC
 
 &Q.SELECT.ROLES #scene=SELECT ! FROM actrole_view WHERE actor_id=?
 
@@ -39,7 +41,7 @@
 
 &Q.SELECT.UPCOMING #scene=SELECT scene_id,owner_objid,owner_name,scene_date_scheduled_secs,tagged_objids,scene_capacity FROM scene_scheduled WHERE scene_status < 2
 
-&SW.SCENE.UPCOMING #scene=@pemit %#=header(Upcoming Scenes - [gettz(%#)]);@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.SCHEDULE.COLUMN));@if words(setr(!,mysql2(SELECT.UPCOMING),data),|)={@dolist/inline/delimit | %q<data>={@skip strmatch(%q<lastdate>,setr(!,fancytime(elementsmux(%d0,4,^),4,%#,$a $b $D $Y $i),lastdate))={@pemit %#=separator(%q<lastdate>)};@pemit %#=u(FN.SCHEDULE.ROW,%d0)}};@pemit %#=footer();@skip cand(hasattr(%#/TIMEZONE),valid(timezone,get(%#/TIMEZONE)))={@pemit %#=[ansi(hr,ERROR:)] You do not have a valid timezone set. Displayed datetimes may not be what you expect. Use [ansi(hw,+account/op timezone=<choice>)] to set.}
+&SW.SCENE.UPCOMING #scene=@pemit %#=header(Upcoming Scenes - [gettz(%#)]);@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.SCHEDULE.COLUMN));@if words(setr(!,mysql2(SELECT.UPCOMING),data),|)={@pemit %#=separator(setr(!,fancytime(secs(),4,%#,$a $b $D $Y $i),lastdate));@dolist/inline/delimit | %q<data>={@skip strmatch(%q<lastdate>,setr(!,fancytime(elementsmux(%d0,4,^),4,%#,$a $b $D $Y $i),lastdate))={@pemit %#=separator(%q<lastdate>)};@pemit %#=u(FN.SCHEDULE.ROW,%d0)}};@pemit %#=footer();@skip cand(hasattr(%#/TIMEZONE),valid(timezone,get(%#/TIMEZONE)))={@pemit %#=[ansi(hr,ERROR:)] You do not have a valid timezone set. Displayed datetimes may not be what you expect. Use [ansi(hw,+account/op timezone=<choice>)] to set.}
 
 &SW.SCENE.OLD #scene=@attach #inc/GET_PLAYER=strfirstof(%0,%#),t1;@attach %!/LIST.SCENES=[if(strmatch(%q<t1>,%:),Your,cname(%q<t1>)'s)] Finished Scenes,mysql(SELECT.SCENES_OF,%q<t1>,=3)
 
@@ -69,7 +71,7 @@
 
 &Q.INSERT.ACTOR #scene=INSERT actor (scene_id,entity_id,actor_type,actor_date_created) VALUES (?,?,?,FROM_UNIXTIME(?))
 
-&MSG_SCENE #scene=@pemit/list [setunion(sql(SELECT entity_objid FROM actor_view WHERE scene_id=%0 AND actor_type>=%1),%2)]=[ansi(c,SCENE [ansi(h,%0)]:)] [gm_format(%3,##,%:)]
+&MSG_SCENE #scene=@pemit/list [setunion(if(isint(%1,sql(SELECT entity_objid FROM actor_view WHERE scene_id=%0 AND actor_type>=%1),%:)),%2)]=[ansi(c,SCENE [ansi(h,%0)]:)] [gm_format(%3,##,%:)]
 @@ %0 - scene id, %1 - minimum actor_type to display to, %2 - extra objids to send to. %3 - message. %4 - send to this room too.
 
 &Q.INSERT.SCENE #scene=INSERT INTO scene (scene_title,scene_date_created,scene_date_scheduled) VALUES (?,FROM_UNIXTIME(?),FROM_UNIXTIME(?))
@@ -80,7 +82,7 @@
 
 &Q.SELECT.SCENE #scene=SELECT ! FROM scene WHERE scene_id=?
 
-&FINDSCENE #scene=@assert/inline strlen(%0)=@pemit %#=No Scene ID entered!;@assert/inline isint(setr(!,mysql(SELECT.SCENE,scene_id,%0),%1))=@pemit %#=That isn't a valid scene ID!;th setq(!,mysql(SELECT.SCENE,scene_title,%0),sname);
+&FINDSCENE #scene=@assert/inline strlen(%0)=@pemit %#=No Scene ID entered!;@assert isint(%0)=@pemit %#=That's not a Scene ID!;@assert/inline isint(setr(!,mysql(SELECT.SCENE,scene_id,%0),%1))=@pemit %#=That isn't a valid scene ID!;th setq(!,mysql(SELECT.SCENE,scene_title,%0),sname);
 
 &Q.SELECT.ACTOR.TYPE #scene=SELECT actor_type FROM actor WHERE scene_id=? AND entity_id=?
 
@@ -88,34 +90,34 @@
 
 &STARTUP #scene=@trigger %!/TRG.SCENE_AUTOPAUSE
 
-&TRG.SCENE_AUTOPAUSE #scene=@dolist/inline [mysql(SELECT scene_id FROM scene WHERE scene_status=1 AND scene_date_activity < NOW() - INTERVAL 90 MINUTES)]={@attach #inc/DOSQL=UPDATE.SCENE,scene_status,2,%d0;@attach %!/MSG_SCENE=%d0,0,,The scene has been auto-paused for inactivity.};@wait 300=@trigger %!/TRG.SCENE_AUTOPAUSE
+&TRG.SCENE_AUTOPAUSE #scene=@dolist/inline [mysql(SELECT scene_id FROM scene WHERE scene_status=1 AND scene_date_activity < NOW() - INTERVAL 90 MINUTE)]={@attach #inc/DOSQL=UPDATE.SCENE,scene_status,2,%d0;@attach %!/MSG_SCENE=%d0,0,,The scene has been auto-paused for inactivity.};@wait 300=@trigger %!/TRG.SCENE_AUTOPAUSE
 
-&STATUSCHANGE #scene=@attach %!/FINDSCENE=%0,scene;@attach %!/CANCONTROL;@attach #inc/DOSQL=UPDATE.SCENE,scene_status,%1,%q<scene>;@pemit %#=Scene %q<scene>: '%q<sname>' has been marked: %2!;@attach %!/MSG_SCENE=%q<scene>,0,lcon(%l,LISTEN,,,1),Scene has been %2 by $you()!;@if eq(1,%1)={@set %l=GAME.SCENE:%q<scene>},{@set %l=GAME.SCENE:}
+&STATUSCHANGE #scene=@attach %!/FINDSCENE=%0,scene;@attach %!/CANCONTROL;@attach #inc/DOSQL=UPDATE.SCENE,scene_status,%1,%q<scene>;@pemit %#=Scene %q<scene>: '%q<sname>' has been marked: %2!;@attach %!/MSG_SCENE=%q<scene>,,lcon(%l,LISTEN,,,1),Scene has been %2 by $you()!;@if eq(1,%1)={@set %l=GAME.SCENE:%q<scene>},{@set %l=GAME.SCENE:}
 
-&SW.SCENE.START #scene=@attach %!/STATUSCHANGE=%0,1,started;@if isdbref(tag(radio))={@attach %!/MSG_SCENE=%q<scene>,0,lcon(%l,LISTEN,,,1),Remember to [ansi(hw,+radio/log <freq>=%q<scene>)] all desired radio channels!}
+&SW.SCENE.START #scene=@attach %!/STATUSCHANGE=%0,1,started;@if isdbref(tag(radio))={@attach %!/MSG_SCENE=%q<scene>,,lcon(%l,LISTEN,,,1),Remember to [ansi(hw,+radio/log <freq>=%q<scene>)] all desired radio channels!}
 &SW.SCENE.PAUSE #scene=@attach %!/STATUSCHANGE=%0,2,paused
 &SW.SCENE.FINISH #scene=@attach %!/STATUSCHANGE=%0,3,finished
 
-&PITCHCOME #scene=@attach %!/FINDSCENE=%0,scene;@attach %!/CANCONTROL;@assert/inline strlen(%1)=@pemit %#=No %1 entered!;@attach #inc/DOSQL=UPDATE.SCENE,scene_%1,%2,%q<scene>;@attach %!/MSG_SCENE=%0,0,%:,[capstr(%1)] updated by $you()!
+&PITCHCOME #scene=@attach %!/FINDSCENE=%0,scene;@attach %!/CANCONTROL;@assert/inline strlen(%1)=@pemit %#=No %1 entered!;@attach #inc/DOSQL=UPDATE.SCENE,scene_%1,%2,%q<scene>;@attach %!/MSG_SCENE=%0,1,%:,[capstr(%1)] updated by $you()!
 @@ %0 - scene, %1 - field, %2 - text
 
 &SW.SCENE.TITLE #scene=@attach %!/PITCHCOME=%0,title,%1;
 &SW.SCENE.PITCH #scene=@attach %!/PITCHCOME=%0,pitch,%1;
 &SW.SCENE.OUTCOME #scene=@attach %!/PITCHCOME=%0,outcome,%1;
 
-&SW.SCENE.RESCHEDULE #scene=@assert/inline cand(hasattr(%#/TIMEZONE),valid(timezone,get(%#/TIMEZONE)))=@pemit %#=[ansi(hr,ERROR:)] Your Timezone is not set. use [ansi(hw,+account/op Timezone=<choice>)] To fix this. Scheduling converts from your timezone to UTC so all players see datetimes in their respective timezones.;@attach %!/FINDSCENE=%0,scene;@attach %!/CANCONTROL;@attach #inc/VALID.FUTURE=%1;@attach #inc/DOSQL=UPDATE.SCENE.UNIXTIME,scene_date_scheduled,%q<value>,%q<scene>;@attach #inc/DOSQL=UPDATE.SCENE,scene_status,0,%q<scene>;@attach %!/MSG_SCENE=%q<scene>,0,%:,$you() rescheduled the Scene to: $fancytime(%q<value>)
+&SW.SCENE.RESCHEDULE #scene=@assert/inline cand(hasattr(%#/TIMEZONE),valid(timezone,get(%#/TIMEZONE)))=@pemit %#=[ansi(hr,ERROR:)] Your Timezone is not set. use [ansi(hw,+account/op Timezone=<choice>)] To fix this. Scheduling converts from your timezone to UTC so all players see datetimes in their respective timezones.;@attach %!/FINDSCENE=%0,scene;@attach %!/CANCONTROL;@attach #inc/VALID.FUTURE=%1;@attach #inc/DOSQL=UPDATE.SCENE.UNIXTIME,scene_date_scheduled,%q<value>,%q<scene>;@attach #inc/DOSQL=UPDATE.SCENE,scene_status,0,%q<scene>;@attach %!/MSG_SCENE=%q<scene>,1,%:,$you() rescheduled the Scene to: $fancytime(%q<value>)
 
 &Q.UPDATE.ACTOR.FIELD #scene=UPDATE actor SET !=? WHERE actor_id=?
 
-&SW.SCENE.CAPACITY #scene=@attach %!/FINDSCENE=%0,scene;@assert/inline cor(gtebittype(%#,5),gte(mysql(SELECT.ACTOR.TYPE,%q<scene>,%q<ent>),2))=@pemit %#=Permission denied.;@attach #inc/VALID.INT=%1,Scene Capacity;@attach #inc/DOSQL=UPDATE.SCENE,scene_capacity,%q<value>,%q<scene>;@attach %!/MSG_SCENE=%0,0,%:,$you() altered capacity to: %q<value>
+&SW.SCENE.CAPACITY #scene=@attach %!/FINDSCENE=%0,scene;@assert/inline cor(gtebittype(%#,5),gte(mysql(SELECT.ACTOR.TYPE,%q<scene>,%q<ent>),2))=@pemit %#=Permission denied.;@attach #inc/VALID.INT=%1,Scene Capacity;@attach #inc/DOSQL=UPDATE.SCENE,scene_capacity,%q<value>,%q<scene>;@attach %!/MSG_SCENE=%0,1,%:,$you() altered capacity to: %q<value>
 
 &SW.SCENE.ACTOR_VIEW_TYPE #scene=SELECT ! FROM actor_view WHERE scene_id=? AND actor_type=?
 
-&SW.SCENE.TAG #scene=@attach %!/FINDSCENE=%0,scene;@break/inline cand(gt(setr(!,mysql(SELECT.SCENE,scene_capacity,%q<scene>),capacity),0),gte(words(filterobjid(mysql(SCENE.ACTOR_VIEW_TYPE,entity_objid,%q<scene>,1))),%q<capacity>))=@pemit %#=Scene is at tagging capacity. Sorry.;@break/inline gt(mysql(SELECT.ACTOR.TYPE,%q<scene>,%q<ent>),0)=@pemit %#=You already tagged Scene %q<scene>: '%q<sname>'!;th setq(!,u(FN.PREPACT,%q<scene>,%:),actor);@attach #inc/DOSQL=UPDATE.ACTOR.FIELD,actor_type,1,%q<actor>;@attach %!/MSG_SCENE=%0,0,%:,$you() tagged the scene!
+&SW.SCENE.TAG #scene=@attach %!/FINDSCENE=%0,scene;@break/inline cand(gt(setr(!,mysql(SELECT.SCENE,scene_capacity,%q<scene>),capacity),0),gte(words(filterobjid(mysql(SCENE.ACTOR_VIEW_TYPE,entity_objid,%q<scene>,1))),%q<capacity>))=@pemit %#=Scene is at tagging capacity. Sorry.;@break/inline gt(mysql(SELECT.ACTOR.TYPE,%q<scene>,%q<ent>),0)=@pemit %#=You already tagged Scene %q<scene>: '%q<sname>'!;th setq(!,u(FN.PREPACT,%q<scene>,%:),actor);@attach #inc/DOSQL=UPDATE.ACTOR.FIELD,actor_type,1,%q<actor>;@attach %!/MSG_SCENE=%q<scene>,1,%:,$you() tagged the scene!
 
-&SW.SCENE.UNTAG #scene=@attach %!/FINDSCENE=%0,scene;@assert/inline eq(mysql(SELECT.ACTOR.TYPE,%q<scene>,%q<ent>),1)=@pemit %#=You haven't tagged Scene %q<scene>: '%q<sname>'!;th setq(!,u(FN.PREPACT,%q<scene>,%:),actor);@attach %!/MSG_SCENE=%0,0,%:,$you() un-tagged the scene!;@attach #inc/DOSQL=UPDATE.ACTOR.FIELD,actor_type,0,%q<actor>
+&SW.SCENE.UNTAG #scene=@attach %!/FINDSCENE=%0,scene;@assert/inline eq(mysql(SELECT.ACTOR.TYPE,%q<scene>,%q<ent>),1)=@pemit %#=You haven't tagged Scene %q<scene>: '%q<sname>'!;th setq(!,u(FN.PREPACT,%q<scene>,%:),actor);@attach %!/MSG_SCENE=%0,1,%:,$you() un-tagged the scene!;@attach #inc/DOSQL=UPDATE.ACTOR.FIELD,actor_type,0,%q<actor>
 
-&SW.SCENE.ROLE #scene=@if strlen(%0)={@set %#=GAME.SCENE.ROLE:[if(strmatch(%0,None),,%0)];@pemit %#=Your new Scene Role is: [if(strmatch(%0,None),<none - yourself!>),%0)]},{@pemit %#=Your current Scene Role is: [default(%#/GAME.SCENE.ROLE,<none - yourself!>)]}
+&SW.SCENE.ROLE #scene=@if strlen(%0)={@set %#=GAME.SCENE.ROLE:[if(strmatch(%0,None),,%0)];@pemit %#=Your new Scene Role is: [if(strmatch(%0,None),<none - yourself!>,%0)]},{@pemit %#=Your current Scene Role is: [default(%#/GAME.SCENE.ROLE,<none - yourself!>)]}
 
 &Q.SELECT.POSE #scene=SELECT ! FROM pose_view WHERE scene_id=? and pose_id=?
 &Q.UPDATE.POSE #scene=UPDATE pose SET !=? WHERE pose_id=?
@@ -124,10 +126,10 @@
 
 &FINDPOSE #scene=@attach %!/LOCALSCENE;@assert/inline strlen(%0)=@pemit %#=No pose ID entered!;@assert/inline isint(setr(!,mysql(SELECT.POSE,pose_id,%q<scene>,%0),pose))=@pemit %#=Pose ID '%0' not found in Scene %q<scene>.;@assert/inline eq(%q<ent>,mysql(SELECT.POSE,entity_id,%q<scene>,%q<pose>))=@pemit %#=Permission denied. You are not the poster.;@break/inline eq(mysql(SELECT.SCENE,scene_status,%q<scene>),3)=@pemit %#=That scene is finished!;@break/inline gte(sub(secs(),mysql(SELECT.POSE,pose_date_created_secs,%q<scene>,%q<pose>)),mul(60,60,2))=@pemit %#=That pose is older than 2 hours. It can no longer be modified.
 
-&SW.SCENE.EDIT #scene=@attach %!/FINDPOSE=%0;@assert/inline strlen(setr(!,first(%1,^^^),before))=@pemit %#=Nothing entered to edit!;th setq(!,after(%1,^^^),after);th setq(!,mysql(SELECT.POSE,pose_text,%q<scene>,%q<pose>),data);th setq(!,medit(%q<data>,%q<before>,%q<after>),newpose);@break/inline eq(0,comp(%q<data>,%q<newpose>))=@pemit %#=Nothing seems to have changed!;@attach #inc/DOSQL=UPDATE.POSE,pose_text,%q<newpose>,%q<pose>;@attach %!/MSG_SCENE=%q<scene>,0,%:,$you() edited Pose %q<pose>: '%q<before>' to '%q<after>'
+&SW.SCENE.EDIT #scene=@attach %!/FINDPOSE=%0;@assert/inline strlen(setr(!,first(%1,^^^),before))=@pemit %#=Nothing entered to edit!;th setq(!,after(%1,^^^),after);th setq(!,mysql(SELECT.POSE,pose_text,%q<scene>,%q<pose>),data);th setq(!,medit(%q<data>,%q<before>,%q<after>),newpose);@break/inline eq(0,comp(%q<data>,%q<newpose>))=@pemit %#=Nothing seems to have changed!;@attach #inc/DOSQL=UPDATE.POSE,pose_text,%q<newpose>,%q<pose>;@attach %!/MSG_SCENE=%q<scene>,1,%:,$you() edited Pose %q<pose>: '%q<before>' to '%q<after>'
 
-&SW.SCENE.UNDO #scene=@attach %!/FINDPOSE=%0;@break/inline t(mysql(SELECT.POSE,pose_is_deleted,%q<scene>,%q<pose>))=@pemit %#=That pose is already off the record!;@attach #inc/DOSQL=UPDATE.POSE,pose_is_deleted,1,%q<pose>;@attach %!/MSG_SCENE=%q<scene>,0,%:,$you() scrubbed Pose %q<pose> from the log.
-&SW.SCENE.REDO #scene=@attach %!/FINDPOSE=%0;@assert/inline t(mysql(SELECT.POSE,pose_is_deleted,%q<scene>,%q<pose>))=@pemit %#=That pose is not off the record!;@attach #inc/DOSQL=UPDATE.POSE,pose_is_deleted,0,%q<pose>;@attach %!/MSG_SCENE=%q<scene>,0,%:,$you() re-added Pose %q<pose> to the log.
+&SW.SCENE.UNDO #scene=@attach %!/FINDPOSE=%0;@break/inline t(mysql(SELECT.POSE,pose_is_deleted,%q<scene>,%q<pose>))=@pemit %#=That pose is already off the record!;@attach #inc/DOSQL=UPDATE.POSE,pose_is_deleted,1,%q<pose>;@attach %!/MSG_SCENE=%q<scene>,1,lcon(%l,LISTEN,,,1),$you() scrubbed Pose %q<pose> from the log.
+&SW.SCENE.REDO #scene=@attach %!/FINDPOSE=%0;@assert/inline t(mysql(SELECT.POSE,pose_is_deleted,%q<scene>,%q<pose>))=@pemit %#=That pose is not off the record!;@attach #inc/DOSQL=UPDATE.POSE,pose_is_deleted,0,%q<pose>;@attach %!/MSG_SCENE=%q<scene>,1,lcon(%l,LISTEN,,,1),$you() re-added Pose %q<pose> to the log.
 
 &Q.SELECT.RECALL #scene=SELECT pose_id,channel_category,channel_category_name,display_name,channel_name,pose_date_created_secs,entity_objid FROM pose_view WHERE scene_id=? AND pose_is_deleted=0 ORDER by pose_id DESC LIMIT ?
 
@@ -215,20 +217,23 @@
 
 @@ Pose Order Tracker (POT)
 
-&FIL.POT #scene=strmatch(get(%0/GAME.POT.SCENE),%1)
+&FIL.POT #scene=1
+
+@@ strmatch(get(%0/GAME.POT.SCENE),%1)
 
 &FN.LASTPOSE #scene=ansi(if(ishidden(%0),hx,ryg(round(mul(fdiv(bound(%1,0,3600),3600),100),0))),smalltime(%1,3))
 
-&SWITCHES.POT.0 #scene=LIST|GM|OBSERVE
+&SWITCHES.POT.0 #scene=LIST|GM|OBSERVE|BRIEF
 
-&FN.POT.COLUMNS #scene=printf($-23s $-4s $-4s $-40s,Name,Idle,Pose,Summary)
-&FN.POT.ROWS #scene=printf($-23|"s $4s $4s $-40|"s,switch(type(%0),ROOM,>> GM Pose <<,cname(%0)),switch(type(%0),ROOM,,hideidle(%0)),u(FN.LASTPOSE,%0,sub(secs(),get(%0/GAME.POT.LAST))),switch(type(%0),ROOM,,get(%0/GAME.SUMMARY)))
+&FN.POT.COLUMNS #scene=printf($-23s $-4s $-4s[if(t(%1),,%B)],Name,Idle,Pose,Summary)
+&FN.POT.ROWS #scene=printf($-23|"s $4s $4s $-40|"s,switch(type(%0),ROOM,>> GM Pose <<,cname(%0)),switch(type(%0),ROOM,,hideidle(%0)),switch(get(%0/GAME.POT.SCENE),%2,u(FN.LASTPOSE,%0,sub(secs(),get(%0/GAME.POT.LAST))),default(%0/GAME.POT.SCENE,None)),if(t(%1),,switch(type(%0),ROOM,,get(%0/GAME.SUMMARY))))
 
 &SW.POT.MAIN #scene=@attach %!/SW.POT.LIST
-&SW.POT.LIST #scene=@attach %!/LOCALSCENE;@assert/inline words(setr(!,filter(FIL.POT,lcon(%l/CONNECT),%b,%b,%q<scene>),potters))=@pemit %#=Nobody has posed!;@pemit %#=header(Pose Order Tracker);@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.POT.COLUMNS));@pemit %#=separator();@dolist/inline [sortby(#lambda/[lit(comp(get(%0/GAME.POT.LAST),get(%1/GAME.POT.LAST),N))],%q<potters>[if(hasattr(%l/GAME.POT.LAST),%b%l)])]={@pemit %#=u(FN.POT.ROWS,%d0)};@pemit %#=footer()
+&SW.POT.LIST #scene=@attach %!/LOCALSCENE;@assert/inline words(setr(!,filter(FIL.POT,lcon(%l/CONNECT),%b,%b,%q<scene>),potters))=@pemit %#=Nobody has posed!;@pemit %#=header(Pose Order Tracker[if(%q<briefmode>,%B- Brief View)]);@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.POT.COLUMNS,,%q<briefmode>));@pemit %#=separator();@dolist/inline [sortby(#lambda/[lit(comp(get(%0/GAME.POT.LAST),get(%1/GAME.POT.LAST),N))],%q<potters>[if(hasattr(%l/GAME.POT.LAST),%b%l)])]={@pemit %#=u(FN.POT.ROWS,%d0,%q<briefmode>,%q<scene>)};@pemit %#=footer()
+&SW.POT.BRIEF #scene=th setq(!,1,briefmode);@attach %!/SW.POT.LIST
 
 &SW.POT.GM #scene=@attach %!/LOCALSCENE;@set %l=GAME.POT.LAST:[secs()];@attach %!/MSG_SCENE=%q<scene>,0,%:,$you() set the POT GM Timestamp.
-&SW.POT.OBSERVE #scene=@attach %!/LOCALSCENE;@attach %!/MSG_SCENE=%q<scene>,0,%:,$you() are now marked as an Observer.;@wipe %#/GAME.POT.SCENE
+&SW.POT.OBSERVE #scene=@attach %!/LOCALSCENE;@attach %!/MSG_SCENE=%q<scene>,0,%:,$you() are now marked as an Observer.;@set %#=GAME.POT.SCENE:Obs
 
 @@ Pose Recording
 
@@ -283,7 +288,7 @@
 &HANDLE_RECORD_SYSTEM #scene=@attach %!/GET_SYSTEM_CHANNEL=%0,2,%1;@attach #inc/DOSQL=INSERT.POSE/pose_id,NULL,%q<chan_id>,secs(),%2;@attach #inc/DOSQL=UPDATE.SCENE.UNIXTIME,scene_date_activity,secs(),%q<scene>
 @@ %0 - scene id, %1 - system name, %2 - pose content.
 
-&SCENE_HEADER #scene=th setq(!,cname(%1)[if(strlen(%q<setrole>),%B\(as %q<setrole>\))],dname);th setq(!,[chr(91)][ansi(hg,Scene %0)][chr(93)] %q<dname>'s Pose [chr(91)][ansi(hg,%q<pose_id>)][chr(93)]%B>,disp);th setq(!,printf($^78s,%q<disp>),minimal);@dolist/inline setr(!,lcon(%l,CONNECT),recip)={@if accoption(%d0,SCENEBORDER)={@pemit %d0=subheader(%q<disp>,%d0)},{@pemit %d0=%q<minimal>}}
+&SCENE_HEADER #scene=th setq(!,cname(%1)[if(strlen(%q<setrole>),%B\(as %q<setrole>\))],dname);th setq(!,[chr(91)][ansi(hg,Scene %0)][chr(93)] %q<dname>'s Pose [chr(91)][ansi(hg,%q<pose_id>)][chr(93)],disp);th setq(!,printf($^78s,%q<disp>),minimal);@dolist/inline setr(!,lcon(%l,CONNECT),recip)={@if accoption(%d0,SCENEBORDER)={@pemit %d0=subheader(%q<disp>,%d0)},{@pemit %d0=%q<minimal>}}
 
 &SCENE_FOOTER #scene=@dolist/inline %q<recip>={@if accoption(%d0,SCENEBORDER)={@pemit %d0=footer(,%d0)}}
 
@@ -315,10 +320,10 @@
 
 @@ Help Files
 
-&HLP.SCENE #scene=The +scene command is core to the latest version of SceneSys, our game's way of handling roleplay logging, plot tracking, and session scheduling. It covers the creation and administration of roleplay sessions, or 'scenes.'%R%R[ansi(hw,Command Aliases:)] +scene, +log, +rplogs, etc%R%R[ansi(hc,Usage Notes)]%RThe Local +OOC chat, IC actions \(such as say or @emit\), and system messages are logged by all who are in a room that a scene started in. To change rooms, /pause and re-/start a scene. Messages from channels and radio can also be logged, check relevant helpfiles.%R%R[ansi(hc,Scene Administration Commands)]%R[ansi(hw,+scene/create <title>\[=<pitch>\])]%R%TAll scenes must have a unique title (case insensitive.) They may optionally have a pitch, the broad strokes gist of what the scene's meant to be about.%R%R[ansi(hw,+scene/title <id>=<new title>)]%R%TChange a scene's title.%R%R[ansi(hw,+scene/pitch <id>=<new pitch>)]%R%TSet or change a scene's pitch.%R%R[ansi(hw,+scene/outcome <id>=<new outcome>)]%R%TSet or change a scene's outcome. This is a brief summary of how things went.%R%R[ansi(hw,+scene/start <id>)]%R%TStart a scene. It will bind the current room to it. Only one scene can be in a room at a time.%R%R[ansi(hw,+scene/pause <id>)]%R%TPause an ongoing scene. It will stop recording poses.%R%R[ansi(hw,+scene/finish <id>)]%R%TMark a scene as finished. Don't forget to set an outcome!%R%R[ansi(hc,Scene Scheduling)]%R[ansi(hw,+scene/schedule <date>/<title>=<pitch>)]%R%TLike /create, but it will assign a scheduled date to the scene that appears on the calendar. <date> must be a format recognized by the [ansi(hw,convtime\(\))] function such as Oct 12 17:00 2025.%R%R[ansi(hw,+scene/reschedule <id>=<date>)]%R%TReschedule a scene.%R%R[ansi(hw,+scene/tag <id>)]%R%T'Tag' a scheduled scene to show interest/claim a spot, however the scene runner chooses to consider it. Can [ansi(hw,/untag)] to reverse.%R%R[ansi(hw,+scene/capacity <id>=<#>)]%R%TSet the capacity for tags. Set to 0 for unlimited.%R%R[ansi(hw,+scene/upcoming)]%R%TDisplay all scheduled future scenes.%R%R[ansi(hc,Pose Management)]%R[ansi(hw,+scene/undo <poseID>)]%R%TStrike a pose from the record. Can also [ansi(hw,/redo)] it to reverse this.%R%R[ansi(hw,+scene/edit <poseID>=<search>^^^<replace>)]%R%TEdit a pose's text. This uses the logic of [ansi(hw,medit\(\))] under the hood.%R%R[ansi(hw,+scene/role \[<name>\])]%R%TCheck or change your role \(the name attached to your roleplayed actions.\) Useful for spoofing, NPCs, and complex character bits. Use [ansi(hw,+scene/role None)] to clear.%R%R[ansi(hw,+summary <text>)]%R%TSets a summary to your latest pose. This doesn't log, but it can be viewed with [ansi(hw,+scene/last)]. These are meant to be short tl;dr blurbs, a few sentences at most.%R%R[ansi(hc,Viewing Scene Logs)]%R[ansi(hw,+scene)]%R%TList all unfinished scenes you're a part of.%R%R[ansi(hw,+scene/old)]%R%TList all finished scenes you're a part of.%R%R[ansi(hw,+scene <id>)]%R%TDisplay information about a given scene.%R%R[ansi(hw,+scene/recall <id>\[=<actions>\])]%R%TDisplay <actions> \(10 if not entered\) of the last actions for a scene. Use actions=0 to view it all. \(Very spammy.\)%R%R[ansi(hw,+scene/last \[<player>\])]%R%TDisplays the last action-type pose of the current scene's participants or optionally filter by given player.%R%R[ansi(hw,+scene/with \[<name1>\[=<name2>\]\])]%R%TSee which scenes the given players have in common. The shortened form will fill missing name with yourself. IE: [ansi(hw,+scene/with Steve)] would list any you have in common with Steve. [ansi(hw,+scene/with Steve=Lily)] would show which scenes feature both Steve and Lily.%R%RSee also [ansi(hw,+help +plot)]
+&HLP.SCENE #scene=The +scene command is core to the latest version of SceneSys, our game's way of handling roleplay logging, plot tracking, and session scheduling. It covers the creation and administration of roleplay sessions, or 'scenes.'%R%R[ansi(hw,Command Aliases:)] +scene, +log, +rplogs, etc%R%R[ansi(hc,Usage Notes)]%RThe Local +OOC chat, IC actions \(such as say or @emit\), and system messages are logged by all who are in a room that a scene started in. To change rooms, /pause and re-/start a scene. Messages from channels and radio can also be logged, check relevant helpfiles.%R%R[ansi(hc,Scene Administration Commands)]%R[ansi(hw,+scene/create <title>\[=<pitch>\])]%R%TAll scenes must have a unique title (case insensitive.) They may optionally have a pitch, the broad strokes gist of what the scene's meant to be about.%R%R[ansi(hw,+scene/title <id>=<new title>)]%R%TChange a scene's title.%R%R[ansi(hw,+scene/pitch <id>=<new pitch>)]%R%TSet or change a scene's pitch.%R%R[ansi(hw,+scene/outcome <id>=<new outcome>)]%R%TSet or change a scene's outcome. This is a brief summary of how things went.%R%R[ansi(hw,+scene/start <id>)]%R%TStart a scene. It will bind the current room to it. Only one scene can be in a room at a time.%R%R[ansi(hw,+scene/pause <id>)]%R%TPause an ongoing scene. It will stop recording poses.%R%R[ansi(hw,+scene/finish <id>)]%R%TMark a scene as finished. Don't forget to set an outcome!%R%R[ansi(hc,Scene Scheduling)]%R[ansi(hw,+scene/schedule <date>/<title>=<pitch>)]%R%TLike /create, but it will assign a scheduled date to the scene that appears on the calendar. <date> must be a format recognized by the [ansi(hw,convtime\(\))] function such as Oct 12 17:00 2025.%R%TExample: [ansi(hw,+scejne/schedule Oct 12 17:00 2025/Who ya gonna call?=Let's go ghost busting!%R%R[ansi(hw,+scene/reschedule <id>=<date>)]%R%TReschedule a scene.%R%R[ansi(hw,+scene/tag <id>)]%R%T'Tag' a scheduled scene to show interest/claim a spot, however the scene runner chooses to consider it. Can [ansi(hw,/untag)] to reverse.%R%R[ansi(hw,+scene/capacity <id>=<#>)]%R%TSet the capacity for tags. Set to 0 for unlimited.%R%R[ansi(hw,+scene/upcoming)]%R%TDisplay all scheduled future scenes. Aliased to +events, +schedule, and +calendar%R%R[ansi(hc,Pose Management)]%R[ansi(hw,+scene/undo <poseID>)]%R%TStrike a pose from the record. Can also [ansi(hw,/redo)] it to reverse this.%R%R[ansi(hw,+scene/edit <poseID>=<search>^^^<replace>)]%R%TEdit a pose's text. This uses the logic of [ansi(hw,medit\(\))] under the hood.%R%TExample: [ansi(hw,+scene/edit 14549=ops a tpyo^^^oops a typo)]%R%R[ansi(hw,+scene/role \[<name>\])]%R%TCheck or change your role \(the name attached to your roleplayed actions.\) Useful for spoofing, NPCs, and complex character bits. Use [ansi(hw,+scene/role None)] to clear.%R%R[ansi(hw,+summary <text>)]%R%TSets a summary to your latest pose. This doesn't log, but it can be viewed with [ansi(hw,+scene/last)]. These are meant to be short tl;dr blurbs, a few sentences at most.%R%R[ansi(hc,Viewing Scene Logs)]%R[ansi(hw,+scene)]%R%TList all unfinished scenes you're a part of.%R%R[ansi(hw,+scene/old)]%R%TList all finished scenes you're a part of.%R%R[ansi(hw,+scene <id>)]%R%TDisplay information about a given scene.%R%R[ansi(hw,+scene/recall <id>\[=<actions>\])]%R%TDisplay <actions> \(10 if not entered\) of the last actions for a scene. Use actions=0 to view it all. \(Very spammy.\)%R%R[ansi(hw,+scene/last \[<player>\])]%R%TDisplays the last action-type pose of the current scene's participants or optionally filter by given player.%R%R[ansi(hw,+scene/with \[<name1>\[=<name2>\]\])]%R%TSee which scenes the given players have in common. The shortened form will fill missing name with yourself. IE: [ansi(hw,+scene/with Steve)] would list any you have in common with Steve. [ansi(hw,+scene/with Steve=Lily)] would show which scenes feature both Steve and Lily.%R%RSee also [ansi(hw,+help +plot)]
 +help/add Roleplaying/+scene=#scene/HLP.SCENE
 
-&HLP.POT #scene=The Pose Order Tracker system integrates with SceneSys. It provides a minimal, streamlined display of when everyone in a scene last posed and the summary they used.%R%R[ansi(hc,Commands)]%R[ansi(hw,+pot)]%R%TShow the main +pot display. equal to +pot/list%R%R[ansi(hw,+pot/observe)]%R%TMark yuorself as an observer. Simply make an action pose (say, @emit, etc) to rejoin. This will not prevent your +ooc or channel-based actions from logging.%R%R[ansi(hw,+pot/gm)]%R%TThe GM may use this to set a special timestamp that shows when the last major scene pose/set was made. This makes it easier to see who has yet to act.
+&HLP.POT #scene=The Pose Order Tracker system integrates with SceneSys. It provides a minimal, streamlined display of when everyone in a scene last posed and the summary they used.%R%R[ansi(hc,Commands)]%R[ansi(hw,+pot)]%R%TShow the main +pot display. equal to +pot/list%R%R[ansi(hw,+pot/brief)]%R%Tlike /list but doesn't display summaries.%R%R[ansi(hw,+pot/observe)]%R%TMark yuorself as an observer. Simply make an action pose (say, @emit, etc) to rejoin. This will not prevent your +ooc or channel-based actions from logging.%R%R[ansi(hw,+pot/gm)]%R%TThe GM may use this to set a special timestamp that shows when the last major scene pose/set was made. This makes it easier to see who has yet to act.
 +help/add Roleplaying/+pot=#scene/HLP.POT
 
 &HLP.PLOT #scene=The +plot command organizes scene logs into greater groups for better handling of ongoing story arcs and major plots. Only staff may create them and appoint runners, but a runner can then manage them.%R[ansi(hc,Aliases:)]%B+plot, +plots%R%R[ansi(hc,Viewing Plots)]%R[ansi(hw,+plot)]%R%TView all plots.%R%R[ansi(hw,+plot <id>)]%R%TView details about a specific plot.%R%R[ansi(hc,Runner Commands)]%R[ansi(hw,+plot/addhelper <id>=<name>)]%R%TAppoint a helper, who can then add scenes to a plot. Can later [ansi(hw,+plot/remhelper)] using same syntax.%R%R[ansi(hw,+plot/addscene <plotID>=<sceneID>)]%R%TAdd a Scene to a plot. Scenes can belong to multiple plots. Can also use [ansi(hw,+plot/remscene)] with same syntax.%R%R[ansi(hw,+plot/started <id>=<date>)]%R%TMark the date where a plot is due to start.%R%R[ansi(hw,+plot/ended <id>=<date>)]%R%TMark the date where a plot ended.

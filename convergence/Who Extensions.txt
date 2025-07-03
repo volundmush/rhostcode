@@ -1,0 +1,4 @@
+&FN.WHO.COLUMNS #who=printf($-23s $-11s $-3s $-4s $-4s $-1s $-s,Name,Alias,Fac,Idle,Conn,G,Location)
+&FN.WHO.ROW #who=printf($-23|"s $-11s $-3s $4s $4s $-1s $-25|"s,cname(%0),getalias(%0),u(FN.WHO.FACABBR,%0,%:),hideidle(%0),hideconn(%0),left(default(%0/SEX,?),1),if(!strmatch(setr(!,objeval(%#,loc(%0),3),loc),#-*),cname(%q<loc>),*UNFINDABLE*))
+
+&FN.WHO.FACABBR #who=squish(iter(u(#fac/FN.VISIBLE_MEMBERSHIPS,%0,%1),getconf(%i0,ABBREVIATION)))

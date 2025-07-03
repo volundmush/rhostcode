@@ -189,6 +189,8 @@
 
 &SW.SCAN #bbs=@pemit %#=header(mudname() BBS - Unread Posts);@if words(%q<visiboards>)={th setq(!,strfirstof(account(%#),%#),target);@dolist/inline %q<visiboards>={@if words(setr(!,setdiff(get(%d0/POSTS),get(%q<target>/BBS.[edit(objid(%d0),:,_)].READ)),unread))={@if !strmatch(%q<last>,setr(!,loc(%d0),last))={@pemit %#=separator(if(hastotem(%q<last>,FACTION),cname(%q<last>),Public) Boards)};@pemit %#=\([u(%d0/GETID)]\) [cname(%d0)]: [words(%q<unread>)] Unread \([iter(%q<unread>,%i0,%b,%,%B)]\)}}};@pemit %#=footer()
 
+&ACONNECT #bbs=@force %#=+bbscan
+
 &DO_CATCHUP #bbs=@cpattr %0/POSTS=%1/BBS.[edit(objid(%0),:,_)].READ
 @@ %0 - board, %1 - target
 

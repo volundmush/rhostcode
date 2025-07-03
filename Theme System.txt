@@ -14,6 +14,8 @@
 &SWITCHES.THEME.5 #theme=APPROVE|UNAPPROVE|ADD|REMOVE|DELETE|CATEGORY
 
 &FN.THEMES #theme=sortname(lcon(%!,OBJECT,,,1))
+&FIL.APPROVED #theme=default(%0/APPROVED,0)
+&FN.THEMES_APPROVED #theme=filter(FIL.APPROVED,u(FN.THEMES))
 
 &FN.FINDEXACT #theme=namefind(u(FN.THEMES),%0)
 &FN.FINDTHEME #theme=namegrab(u(FN.THEMES),%0)

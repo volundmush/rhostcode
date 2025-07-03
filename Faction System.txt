@@ -137,7 +137,7 @@
 &LK.FACLTERANK #globobj=privatize(1,if(cand(isint(setr(0,facgetrank(before(%1,_),%:))),lte(%q0,after(%1,_))),%1,#-1))
 
 @@ Command and Logic
-&CMD.FACTION #fac=$^(?s)(?\:\+)(fac|faction)(?\:/(\\S+)?)?(?\: +(.+?))?(/(.+?)?)?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2,FACTION;@attach %!/SW.FACTION.[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
+&CMD.FACTION #fac=$^(?s)(?\:\+)(fac|faction)(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:@attach #inc/GET_SWITCH=%2,FACTION;@attach %!/SW.FACTION.[strfirstof(%q<switch>,MAIN)]=trim(%3),%4
 @set #fac/CMD.FACTION=regexp
 
 &CMD.FINFO #fac=$^(?s)(?\:\+)(finfo)(?\:/(\\S+)?)?(?\: +(.+?))?(/(.+?)?)?(?\:=(.*))?$:@attach %!/DO_INFO
@@ -183,13 +183,13 @@
 
 &SW.FACTION.DESC #fac=@attach %!/FIND_FACTION=%0,fac,0;@assert/inline u(FACTION_ADMIN,%#)=@pemit %#=Permission denied.;@assert/inline strlen(%1)=@pemit %#=Set the description to what?;@describe %q<fac>=%1;@attach #inc/MSG_ALERT=Set new description to Faction '[cname(%q<fac>)]'
 
-&SW.FACTION.DELETE #fac=@attach %!/FIND_FACTION=%0,fac,0;@assert/inline match(name(%q<fac>)|[num(%q<fac>)]|[objid(%q<fac>)],%1,|)=@pemit %#=ERROR: Must enter faction's full name, dbref or objid as second argument to verify.;@attach %!/FACTION_ALERT=Deleted the Faction.;@set %q<fac>=!INDESTRUCTIBLE !SAFE;th setq(!,FAC.[edit(objid(%q<fac>,:,_))],attr);@dolist/inline [get(%q<fac>/MEMBERS)]={@wipe %d0/%q<attr>.*;@pemit %d0=The [cname(%q<fac>)] Faction has been deleted.}
+&SW.FACTION.DELETE #fac=@attach %!/FIND_FACTION=%0,fac,0;@assert/inline match(name(%q<fac>)|[num(%q<fac>)]|[objid(%q<fac>)],%1,|)=@pemit %#=ERROR: Must enter faction's full name, dbref or objid as second argument to verify.;@attach %!/FACTION_ALERT=Deleted the Faction.;@set %q<fac>=!INDESTRUCTIBLE !SAFE;th setq(!,FAC.[edit(objid(%q<fac>),:,_)],attr);@dolist/inline [filterobjid(get(%q<fac>/MEMBERS))]={@wipe %d0/%q<attr>.*;@set %d0/FAC.MEMBERSHIPS:[listdiff(get(%d0/FAC.MEMBERSHIPS),objid(%q<fac>))];@pemit %d0=The [cname(%q<fac>)] Faction has been deleted.};@destroy %q<fac>
 
 &FN.LIST_COLUMN #fac=ansi(confoverride(%#,COLUMN),printf($-5s $-20s $-21s $-21s $-7s,Dbref,Name,Leader,Second,Onl/Mem))
 
 &FN.IS_PRIVATE #fac=if(getconf(%0,PRIVATE),if(facismember(%0,%1),2,1),0)
 
-&FN.VISIBLE_MEMBER #fac=cor(!cor(getconf(%0,PRIVATE),getconf(%0,HIDDEN)),facismember(%0,%2))
+&FN.VISIBLE_MEMBER #fac=cor(!cor(getconf(%0,PRIVATE),getconf(%0,HIDDEN)),cand(isobjid(%2),facismember(%0,%2)))
 &FN.VISIBLE_MEMBERSHIPS #fac=filter(FN.VISIBLE_MEMBER,get(%0/FAC.MEMBERSHIPS),%b,%b,objid(%0),objid(%1))
 @@ %0 - target objid, %1 - viewer objid
 

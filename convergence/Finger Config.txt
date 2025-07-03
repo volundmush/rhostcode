@@ -8,3 +8,5 @@
 &GETTER.ORIGIN #finger=if(isobjid(get(%0/GAME.THEME)),cname(get(%0/GAME.THEME)),???)
 
 &GETTER.FACTIONS #finger=edit(iter(u(#fac/FN.VISIBLE_MEMBERSHIPS,%0,%1),cname(%i0),%b,|),|,\,%B)
+
+&ALLFIELDS #finger=SEX SPECIES JOB QUOTE PROFILE SKILLS FACTIONS ORIGIN
