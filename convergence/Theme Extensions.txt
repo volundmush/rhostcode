@@ -3,8 +3,13 @@
 
 &INFO.ADMIN #theme=cor(u(parent(%!)/INFO.ADMIN,%0,%1),match(get(%q<target>/OWNER)%B[get(%q<target>/ADMINS)],objid(%0)))
 
+&SWITCHES.THEME.0 #theme=CREATE|RENAME|DESCRIBE|GET|TRANSFER|GRANT|REVOKE|CAST|LINKS
 &SWITCHES.THEME.5 #theme=APPROVE|UNAPPROVE|ADD|REMOVE|DELETE|CATEGORY|SPIREWAY
 
 &SW.THEME.SPIREWAY #theme=@attach %!/FINDTHEME=%0,theme;@assert/inline cor(gtebittype(%#,5),cand(u(FN.ISADMIN,%q<theme>,%:),!u(FIL.APPROVED,%q<theme>)))=@pemit %#=Permission denied.;@set %q<theme>=spireway_link:%2;@pemit %#=Theme '[cname(%q<theme>)]' spireway link location set.;@if u(FIL.APPROVED,%q<theme>)={@attach #inc/MSG_ALERT=Theme '[cname(%q<theme>)]' spireway link location set: %2.}
 
 &INC.THEME.DISPLAY #theme=@attach %!/FINDTHEME=%0,theme;@pemit %#=header(Theme: [cname(%q<theme>)]);@if cand(strlen(setr(!,ucleanget(%q<theme>/DESCRIBE),desc)),t(%3))={@pemit %#=%q<desc>};@if words(setr(!,u(FN.LIST_FILENAMES,%q<theme>),files),|)={@pemit %#=separator(+tinfo Files);@pemit %#=columns(%q<files>,26,3,l,1,1,,%b,,1,|,%B,1)};@if words(setr(!,filterobjid(get(%q<theme>/MEMBERS)),mem))={@pemit %#=separator(Cast of Characters);@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.ROSTER.COLUMNS));@dolist/inline %q<mem>={@pemit %#=u(FN.ROSTER.ROW,%d0,%q<theme>)}};@if or(isobjid(setr(!,get(%q<theme>/OWNER),owner)),words(setr(!,filterobjid(get(%q<theme>/ADMINS)),admin)))={@pemit %#=separator(Metadata);@if isobjid(%q<owner>)={@pemit %#=[ansi(hw,Owner/Founder:)]%B[cname(%q<owner>)]};@if words(%q<admins>)={@pemit %#[ansi(hw,Admins:)]%B[iter(%q<admins>,cname(%i0),%b,\,%b)]}};@pemit %#=[ansi(hw,Spireway Link:)]%B[default(%q<theme>/SPIREWAY_LINK,???)];@pemit %#=footer()
+
+&FIL.LINK #theme=strmatch(default(%0/SPIREWAY_LINK,Unknown),%1)
+
+&SW.THEME.LINKS #theme=@assert/inline words(setr(!,u(FN.THEMES),all))=@pemit %#=No themes to list!;@pemit %#=header(Spireway Links);th setq(!,setunion(capnames(iter(%q<all>,default(%i0/SPIREWAY_LINK,Unknown),%b,|)),,|,|),links);@dolist/inline/delimit | %q<links>={th setq(!,filter(FIL.LINK,%q<all>,%b,%b,%d0),filtered);@attach %!/DO.THEME.LIST=%q<filtered>,%d0};@pemit %#=footer(words(%q<all>) Total Themes. [ansi(hr,X)] are not approved.)

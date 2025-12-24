@@ -1,9 +1,13 @@
 @finger/config playerfields=SEX|SPECIES|JOB|QUOTE|PROFILE|SKILLS
 @finger/config lockedfields=SEX|SPECIES|JOB|QUOTE|PROFILE|SKILLS
 @finger/config vertical=FACTIONS|QUOTE|PROFILE|SKILLS
++finger/config left=SEX|SPECIES
++Finger/config right=JOB|ORIGIN|ONLINE
 
 &GETTER.JOB #finger=get(%0/FINGER.JOB)
 &SETTER.JOB #finger=@set %0=FINGER.JOB:%1
+
+&GETTER.ONLINE #finger=switch(objeval(%#,conn(%0)),-1,ansi(hx,fancytime(get(%0/GAME.LASTON),,%#))%B[chr(40)][smalltime(sub(secs(),get(%0/GAME.LASTON)))] ago[chr(41)],hideconn(%0)[chr(44)]%BIdle: [hideidle(%0)])
 
 &GETTER.ORIGIN #finger=if(isobjid(get(%0/GAME.THEME)),cname(get(%0/GAME.THEME)),???)
 

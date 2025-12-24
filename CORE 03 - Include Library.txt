@@ -29,7 +29,7 @@
 
 &VALID.TIMEZONE #inc=@attach #inc/VALID.BASE=%0;@assert/inline valid(timezone,%q<value>)=@pemit %#={That is not a valid timezone. Check [ansi(hw,help timezone)]};th setq(!,%q<value>,valueformat)
 
-&VALID.DURATION #inc=@attach #inc/VALID.BASE=%0;@assert/inline setr(!,stringsecs(%0),value)=@pemit %#={'%0' did not resolve into a time. Example input: 30d 5h 3m for 30 days 5 hours and 3 minutes.};th setq(!,u(etime,%q<value>),valueformat)
+&VALID.DURATION #inc=@attach #inc/VALID.BASE=%0;@assert/inline setr(!,stringsecs(%0),value)=@pemit %#={'%0' did not resolve into a time. Example input: 30d 5h 3m for 30 days 5 hours and 3 minutes.};th setq(!,%q<value> seconds,valueformat)
 
 &VALID.POSINT #inc=@assert/inline cand(isint(%0),gte(%0,1))=@pemit %#={'[strfirstof(%1,%0)]' must be a whole number 1 or greater.};th setq(!,%0,value);th setq(!,%q<value>,valueformat)
 

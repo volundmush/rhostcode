@@ -37,7 +37,7 @@
 
 @skip isdbref(tag(setr(1,bbs_fparent)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object set!;@assert/inline isdbref(setr(0,create(BBS Faction Parent,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE NO_COMMAND;@tag/add %q1=%q0;@tel %q0=#stor;@parent %q0=[tag(bbs_parent)]}
 
-&GETID #bbs_fparent=[getconf(loc(%!),ABBREVIATION)][u(ORDER)]
+&GETID #bbs_fparent=[if(%1,stripansi(getconf(loc(%!),ABBREVIATION)),getconf(loc(%!),ABBREVIATION))][u(ORDER)]
 
 &LK.MYFACMEMBERS #bbs_fparent=facismember(loc(%!),%:)
 &LK.MYFACLEADERS #bbs_fparent=cand(facismember(loc(%!),%:),lte(facgetrank(loc(%!),%:),2))
@@ -65,7 +65,7 @@
 
 &FN.BOARD_IDS #bbs=iter(if(strlen(%0),%0,u(FN.BOARDS)),[u(%i0/GETID)]~%i0,%b,|)
 
-&FN.GETBOARD #bbs=after(grab(%0,%1~*,|),~)
+&FN.GETBOARD #bbs=after(grab(stripansi(%0),%1~*,|),~)
 
 &CMD.BBS #bbs=$^(?s)(?\:\+)bb(create|rename|order|delete|options|config|list|read|post|reply|edit|remove|write|proof|toss|leave|join|next|new|scan|catchup|lock|unlock|examine|timeout|category)?(?\:/(\\S+)?)?(?\: +(.+?))?(?\:=(.*))?$:th setq(!,u(FN.BOARDS),boards);th setq(!,u(FN.FILTER_BOARDS,%:,READ,%q<boards>),visiboards);th setq(!,u(FN.BOARD_IDS,%q<visiboards>),visiboardids);@attach %!/SW.[strfirstof(%1,WRITE)]=trim(%3),%4,rest(%0)
 @set #bbs/CMD.BBS=regexp
@@ -133,9 +133,9 @@
 
 &INC.READ_BOARDS #bbs=@attach %!/INC.LIST=filter(FIL.SUBSCRIBED,%q<visiboards>,%b,%b,strfirstof(account(%#),%#)),Boards,READBOARDS_COLUMNS,READBOARDS_ROW
 
-&FN.READBOARD_COLUMN #bbs=ansi(confoverride(%#,COLUMN),printf($-7s $-2s $-24s $-20s $-21s,ID,Rd,Title,PostDate,Author))
+&FN.READBOARD_COLUMN #bbs=ansi(confoverride(%#,COLUMN),printf($-9s $-2s $-22s $-20s $-21s,ID,Rd,Title,PostDate,Author))
 
-&FN.READBOARD_ROW #bbs=printf($-7s $-2s $-24s $-20s $-21s,%3/%0,if(!match(%4,%0),U),after(setr(!,get(%1/P_%0_HDR),hdr),^),fancytime(get_kv(before(%q<hdr>,^),PostDate)),if(getconf(%0,ISANONYMOUS),if(%5,getconf(%0,ANONYMOUS)%B\([cname(get_kv(before(%q<hdr>,^),Author))]\),getconf(%0,ANONYMOUS)),cname(get_kv(before(%q<hdr>,^),Author))))
+&FN.READBOARD_ROW #bbs=printf($-9s $-2s $-22|"s $-20s $-21|"s,%3/%0,if(!match(%4,%0),U),after(setr(!,get(%1/P_%0_HDR),hdr),^),fancytime(get_kv(before(%q<hdr>,^),PostDate)),if(getconf(%0,ISANONYMOUS),if(%5,getconf(%0,ANONYMOUS)%B\([cname(get_kv(before(%q<hdr>,^),Author))]\),getconf(%0,ANONYMOUS)),cname(get_kv(before(%q<hdr>,^),Author))))
 
 &INC.READ_BOARD #bbs=@attach %!/FINDBOARD=%0,board;@pemit %#=header(if(isdbref(%q<boardfac>),cname(%q<boardfac>),Public) Boards - [setr(!,u(%q<board>/GETID),boardid)]: [cname(%q<board>)]);@pemit %#=u(FN.READBOARD_COLUMN);@if words(setr(!,get(%q<board>/POSTS),posts))={th setq(!,elock(%q<board>/user|AdminLock,%#),boardmin);th setq(!,get(strfirstof(account(%#),%#)/BBS.[edit(objid(%q<board>),:,_)].READ),read);@dolist/inline %q<posts>={@pemit %#=u(FN.READBOARD_ROW,%d0,%q<board>,%q<boardfac>,%q<boardid>,%q<read>,%q<boardmin>)}};@pemit %#=footer()
 

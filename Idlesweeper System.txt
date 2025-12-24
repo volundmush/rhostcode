@@ -28,9 +28,9 @@
 
 &DO_SWEEP #idlesweep=@assert/inline words(setr(!,u(FN.ALLIDLE),idlers));th setq(!,num(getconf(%!,DESTINATION)),dest);@attach %!/DO_SWEEP_[if(isdbref(%q<dest>),DESTINATION,HOME)]
 
-&DO_SWEEP_DESTINATION #idlesweep=@dolist/inline/nobreak %q<idlers>={@break/inline strmatch(loc(%d0),%q<dest>);@remit loc(%d0)=[cname(%d0)] is swept away into the doldrums for idleness.;@tel/quiet %d0=%q<dest>;@remit loc(%d0)=[cname(%d0)] is blown here by the idlesweeper.}
+&DO_SWEEP_DESTINATION #idlesweep=@dolist/inline/nobreak %q<idlers>={@break/inline strmatch(setr(!,loc(%d0),loc),%q<dest>);@remit loc(%d0)=[cname(%d0)] is swept away into the doldrums for idleness.;@tel/quiet %d0=%q<dest>;@remit loc(%d0)=[cname(%d0)] is blown here by the idlesweeper.;@set %d0=GAME.SWEPT_FROM:%q<loc>}
 
-&DO_SWEEP_HOME #idlesweep=@dolist/inline/nobreak %q<idlers>={@break/inline strmatch(loc(%d0),home(%d0));@remit loc(%d0)=[cname(%d0)] is swept away into the doldrums for idleness.;@tel/quiet %d0=[home(%d0)];@remit loc(%d0)=[cname(%d0)] is blown here by the idlesweeper.}
+&DO_SWEEP_HOME #idlesweep=@dolist/inline/nobreak %q<idlers>={@break/inline strmatch(setr(!,loc(%d0),loc),home(%d0));@remit loc(%d0)=[cname(%d0)] is swept away into the doldrums for idleness.;@tel/quiet %d0=[home(%d0)];@remit loc(%d0)=[cname(%d0)] is blown here by the idlesweeper.;@set %d0=GAME.SWEPT_FROM:%q<loc>}
 
 &STARTUP #idlesweep=@trigger %!/SWEEP_LOOPER;
 

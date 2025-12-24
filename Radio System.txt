@@ -15,6 +15,8 @@
 
 &CHANNEL_ADMIN #radio=cor(u(parent(%!)/CHANNEL_ADMIN,%0,%1),match(setunion(get(%0/ADMINS),get(%0/OWNER)),objid(%1)))
 
+&ADISCONNECT #radio=@break/inline %2;@force %#=+radio/ungag all
+
 @@ TODO: Alter this.
 &BASE_FORMAT #radio==<[u(FN.COLORIZE_NAME,%1,%0)][if(strlen(%6),:%B[ansi(hg,%6)])]>= [if(%7,%2,[if(strlen(%4),%4%B)][parsestr(%2,%0,",",,&[if(strlen(%5),%5 [chr(40)][cname(%3)][chr(41)],cname(%3))])])]
 @@ %0 - recipient, %1 - channel dbref, %2 - message, %3 - sender, %4 - title if enabled and set, %5 - altego if enabled and set, %6 - scene ids,  %7 - system message
@@ -31,7 +33,7 @@
 
 &SW.CHOWN #radio=@attach %!/INC.FIND;@assert/inline u(#chan/LK_OWNER)=@pemit %#=Permission denied.;@attach #inc/GET_PLAYER=%1,t1;@set %q<chan>=OWNER:%q<t1>;@pemit %#=You transferred ownership!;@pemit %q<t1>=%k transferred ownership of Radio Channel '[cname(%q<chan>)]' to you.
 
-&FN.ERR_CHANNEL #radio=privatize(1,if(words(setr(!,setinter(get(%0/CHANNELS.[v(CHAN.TYPE)]),u(FN.CHANNELS)),avail)),if(isobjid(setr(!,namegrab(%q<avail>,%1),chan)),if(setr(!,rademit(%q<chan>,%2,%0),res),1,0[pemit(%0,Permission denied: %q<res>)]),0),0))
+&FN.ERR_CHANNEL #radio=privatize(1,if(words(setr(!,setinter(get(%0/CHANNELS.[v(CHAN.TYPE)]),u(FN.CHANNELS)),avail)),if(isobjid(setr(!,strfirstof(if(hasattr(%0/CHANNELS.[v(CHAN.TYPE)].ALIAS.%1),get(%0/CHANNELS.[v(CHAN.TYPE)].ALIAS.%1)),namegrab(%q<avail>,%1)),chan)),if(setr(!,rademit(%q<chan>,%2,%0),res),1,0[pemit(%0,Permission denied: %q<res>)]),0),0))
 
 &ERR.RADIO #eobj=privatize(1,if(strlen(setr(!,after(%0,.),aplus)),if(strlen(setr(!,objeval(%#,%q<aplus>),feval)),u(#radio/FN.ERR_CHANNEL,%#,stripansi(first(%q<aplus>)),rest(%q<aplus>)),0),0))
 

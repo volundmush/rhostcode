@@ -81,7 +81,7 @@
 &GFN.FILTEROBJID #gfun=filter(#lambda/[lit(isobjid(%0))],%0)
 &GFN.FILTERDBREF #gfun=filter(#lambda/[lit(isdbref(%0))],%0)
 
-&GFN.FANCYTIME #gfun=if(cor(!strlen(%0),isint(%0)),runintz(if(strlen(%2),if(isdbref(%2),gettz(%2),%2),gettz(%#)),timefmt(switch(%1,2,$a $b $02D $02I:$02M$p $Z,3,$b $02D $02I:$02M$p $Y $Z,day,$b $02D $Y,date,$m/$d/$Y,strfirstof(%3,$b $02D $02H:$02T$P $j)),strfirstof(%0,secs()))),<invalid date>)
+&GFN.FANCYTIME #gfun=if(cor(!strlen(%0),isint(%0)),runintz(if(strlen(%2),if(isdbref(%2),gettz(%2),%2),gettz(%#)),timefmt(switch(%1,2,$a $b $02D $02I:$02M$p $Z,3,$b $02D $02I:$02M$p $Y $Z,day,$b $02D $Y,date,$m/$d/$Y,strfirstof(%3,$b $02D $02H:$02T$P $i)),strfirstof(%0,secs()))),<invalid date>)
 
 &GFN.DECOMPOSE #gfun=translate(%0,p)
 
@@ -123,13 +123,13 @@
 
 &GPFN.SPEECH #gfun=parsestr(%1,%1,",",,&%k)
 
-&GPFN.LASTIDLE #gfun=switch(objeval(%#,conn(%0)),-1,ansi(hx,elementsmux(fancytime(get(%0/GAME.LASTON),%#),1 2)),hideidle(%0))
+&GPFN.LASTIDLE #gfun=switch(objeval(%#,conn(%0)),-1,ansi(hx,fancytime(get(%0/GAME.LASTON),,%#,strfirstof(%1,$b $02D))),hideidle(%0,%1))
 
 &GPFN.HIDECONN #gfun=switch(objeval(%#,conn(%0)),-1,ansi(hx,Off),ansi(if(ishidden(%0),hx,hg),smalltime(conn(%0),3)))
 
 &GPFN.HIDEIDLE #gfun=switch(objeval(%#,idle(%0)),-1,ansi(hx,Off),ansi(if(ishidden(%0),hx,ryg(round(mul(fdiv(bound(idle(%0),0,3600),3600),100),0))),smalltime(idle(%0),3)))
 
-&GPFN.LASTCONN #gfun=switch(objeval(%#,conn(%0)),-1,ansi(hx,elementsmux(fancytime(get(%0/GAME.LASTON),%#),1 2)),hideconn(%0))
+&GPFN.LASTCONN #gfun=switch(objeval(%#,conn(%0)),-1,ansi(hx,fancytime(get(%0/GAME.LASTON),,%#,strfirstof(%1,$b $02D))),hideconn(%0))
 
 @@ Header stuff
 &GPFN.HEADER #gfun=localize(u(HEADER_PREP,%1,HEADER,%2,=,%3)[setq(!,if(strlen(%0),[ansi(%q<bordercolor>,<<)]%B[if(has_markup(%0),%0,ansi(%q<htextcolor>,%0))]%B[ansi(%q<bordercolor>,>>)]),headertext)][u(HEADER_RENDER,HEADER,%0)])

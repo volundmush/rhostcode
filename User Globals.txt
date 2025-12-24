@@ -29,3 +29,10 @@
 
 &HLP.SHORTDESC #uglobals=The short-desc is displayed in the default room formatter. Please keep it concise. A small sentence or two at best.%R%R[ansi(hc,Commands)]%R[ansi(hw,+shortdesc <text>)]%R%TSet your short-desc.
 +help/add Character/+shortdesc=#uglobals/HLP.SHORTDESC
+
+&FN.TZ.COLUMNS #uglobals=printf($-24s $-20s $-30s,Name,Offset,Current Time)
+&FN.TZ.ROW #uglobals=printf($-24s $-20s $-30s,%0,%1%B\([if(strmatch(%1,-*),-)][smalltime(abs(%1))]\),%2)
+
+&CMD.TZ #uglobals=$^(?s)(?\:\+)(tz)(?\:/(\\S+)?)?(?\: +(.+?))?$:th setq(!,listtzones(%3),tz);@assert/inline words(%q<tz>)=@pemit %#=No valid timezones for '%3'.;@pemit %#=header(Timezones Matching: [if(strlen(%3),%3,All)]);@pemit %#=ansi(confoverride(%#,COLUMN),u(FN.TZ.COLUMNS));@pemit %#=separator();@dolist/inline [sortby(#lambda/[lit(ncomp(listtzones(%0,1),listtzones(%1,1)))],%q<tz>)]=@pemit %#=u(FN.TZ.ROW,%d0,listtzones(%d0,1),fancytime(,,%d0));@pemit %#=footer();
+
+@set #uglobals/CMD.TZ=regexp
